@@ -2,17 +2,18 @@ using System;
 using LudeonTK;
 using Verse;
 
-namespace RimWorks.RimLogging.LightweaveViewer;
+namespace RimWorks.RimLogging.Viewer;
 
 internal static class LogViewerBoot {
-    public static LightweaveLogSink? Sink { get; private set; }
+    public static ViewerLogSink? Sink { get; private set; }
 
     public static void Init() {
         if (Sink != null) {
             return;
         }
         try {
-            LightweaveLogSink sink = new LightweaveLogSink();
+            ChannelClassifierBootstrap.Install();
+            ViewerLogSink sink = new ViewerLogSink();
             Logging.RegisterSink(sink);
             Sink = sink;
             Log.Info("Log viewer sink registered");

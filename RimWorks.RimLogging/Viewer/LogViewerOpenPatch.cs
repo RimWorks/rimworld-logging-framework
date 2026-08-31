@@ -1,13 +1,13 @@
 using Concord;
 using Verse;
 
-namespace RimWorks.RimLogging.LightweaveViewer;
+namespace RimWorks.RimLogging.Viewer;
 
 [Patch(typeof(Verse.Log))]
 internal static class LogViewerOpenPatch {
     [Inject(At.Head, nameof(Verse.Log.TryOpenLogWindow))]
     private static Control Prefix() {
-        LightweaveLogSink? sink = LogViewerBoot.Sink;
+        ViewerLogSink? sink = LogViewerBoot.Sink;
         WindowStack? windowStack = Find.WindowStack;
         if (sink == null || windowStack == null) {
             return Control.Continue;

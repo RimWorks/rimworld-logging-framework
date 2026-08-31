@@ -31,8 +31,11 @@ public sealed class LoggingSettings : ModSettings
     /// <summary>Optional user-supplied GitHub PAT; when set, it is relayed to the bundle proxy so gists are created under the user's account. Empty means the proxy uses its own token.</summary>
     public string githubToken = LoggingSettingsDefaults.GitHubToken;
 
-    /// <summary>When <c>true</c>, the Lightweave log viewer detail pane combines message and stack trace into one scroll area instead of separate panes. Only consulted when the viewer is active.</summary>
+    /// <summary>When <c>true</c>, the log viewer detail pane combines message and stack trace into one scroll area instead of separate panes.</summary>
     public bool logViewerCombinedDetail;
+
+    /// <summary>Where the log viewer draws the detail pane. Cycled from the viewer's own toolbar.</summary>
+    internal Viewer.DetailPlacement logViewerDetailPlacement = Viewer.DetailPlacement.Bottom;
 
     /// <summary>Serializes and deserializes the settings via RimWorld's Scribe system, applying defaults on post-load.</summary>
     public override void ExposeData()
@@ -44,6 +47,7 @@ public sealed class LoggingSettings : ModSettings
         Scribe_Values.Look(ref captureStackTraces, "captureStackTraces", LoggingSettingsDefaults.CaptureStackTraces);
         Scribe_Values.Look(ref githubToken, "githubToken", LoggingSettingsDefaults.GitHubToken);
         Scribe_Values.Look(ref logViewerCombinedDetail, "logViewerCombinedDetail", false);
+        Scribe_Values.Look(ref logViewerDetailPlacement, "logViewerDetailPlacement", Viewer.DetailPlacement.Bottom);
         Scribe_Collections.Look(ref filterPresetNames, "filterPresetNames", LookMode.Value);
         Scribe_Collections.Look(ref filterPresetExpressions, "filterPresetExpressions", LookMode.Value);
         if (Scribe.mode == LoadSaveMode.PostLoadInit)

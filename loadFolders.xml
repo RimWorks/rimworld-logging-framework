@@ -2,6 +2,5 @@
 <loadFolders>
     <v1.6>
         <li>/</li>
-        <li IfModActive="Cosmere.Lightweave">LightweaveViewer</li>
     </v1.6>
 </loadFolders>

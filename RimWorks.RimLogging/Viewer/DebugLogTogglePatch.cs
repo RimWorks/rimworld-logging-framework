@@ -2,7 +2,7 @@ using Concord;
 using UnityEngine;
 using Verse;
 
-namespace RimWorks.RimLogging.LightweaveViewer;
+namespace RimWorks.RimLogging.Viewer;
 
 [Patch]
 internal abstract class DebugLogTogglePatch : DebugWindowsOpener {
@@ -11,7 +11,7 @@ internal abstract class DebugLogTogglePatch : DebugWindowsOpener {
         if (Event.current != null && Event.current.shift) {
             return Control.Continue;
         }
-        LightweaveLogSink? sink = LogViewerBoot.Sink;
+        ViewerLogSink? sink = LogViewerBoot.Sink;
         WindowStack? windowStack = Find.WindowStack;
         if (sink == null || windowStack == null) {
             return Control.Continue;

@@ -1,17 +1,11 @@
 using System.Collections.Generic;
-using Cosmere.Lightweave.Data;
-using Cosmere.Lightweave.Feedback;
-using Cosmere.Lightweave.Input;
-using Cosmere.Lightweave.Tokens;
-using RimWorks.RimLogging;
 using RimWorks.RimLogging.Filtering;
-using Verse;
 using LogEntry = RimWorks.RimLogging.LogEntry;
 
-namespace RimWorks.RimLogging.LightweaveViewer;
+namespace RimWorks.RimLogging.Viewer;
 
 internal static class LogFilter {
-    public static List<LogChannel> BuildChannels(IReadOnlyList<LogEntry> snapshot, LogViewerState state) {
+    public static List<LogChannel> BuildChannels(IReadOnlyList<LogEntry> snapshot, LogViewerState state, ChannelLabels labels) {
         ChannelClassifier.EnsureBuilt();
 
         Dictionary<string, NodeAccum> nodes = AccumulateNodes(snapshot);
@@ -26,7 +20,7 @@ internal static class LogFilter {
         List<LogChannel> result = new List<LogChannel>(sortedIds.Count + 1) {
             new LogChannel(
                 LogViewerState.AllChannels,
-                (string)"CL_LogViewer_AllChannels".Translate(),
+                labels.All,
                 snapshot.Count,
                 0,
                 false,
@@ -35,7 +29,7 @@ internal static class LogFilter {
             ),
         };
 
-        AppendVisibleChannels(result, sortedIds, nodes, state, hasChildrenSet, hasFilter, keepIds);
+        AppendVisibleChannels(result, sortedIds, nodes, state, hasChildrenSet, hasFilter, keepIds, labels);
         return result;
     }
 
@@ -113,9 +107,10 @@ internal static class LogFilter {
         LogViewerState state,
         HashSet<string> hasChildrenSet,
         bool hasFilter,
-        HashSet<string>? keepIds) {
-        string modLabel = (string)"CL_LogViewer_Group_Mod".Translate();
-        string vanillaLabel = (string)"CL_LogViewer_Group_Vanilla".Translate();
+        HashSet<string>? keepIds,
+        ChannelLabels labels) {
+        string modLabel = labels.ModGroup;
+        string vanillaLabel = labels.VanillaGroup;
 
         HashSet<string> visible = new HashSet<string>(System.StringComparer.Ordinal);
         for (int i = 0; i < sortedIds.Count; i++) {
@@ -207,39 +202,6 @@ internal static class LogFilter {
         string channel = string.IsNullOrEmpty(entry.Channel) ? "(root)" : entry.Channel;
         string pathKey = ChannelClassifier.JoinPath(ChannelClassifier.PathFor(channel));
         return pathKey == state.ActiveChannel || pathKey.StartsWith(activePrefix, System.StringComparison.Ordinal);
-    }
-
-    public static ThemeSlot LevelSlot(LogLevel level) {
-        switch (level) {
-            case LogLevel.Trace:
-                return ThemeSlot.TextMuted;
-            case LogLevel.Debug:
-                return ThemeSlot.StatusInfo;
-            case LogLevel.Info:
-                return ThemeSlot.StatusSuccess;
-            case LogLevel.Warn:
-                return ThemeSlot.StatusWarning;
-            case LogLevel.Error:
-            case LogLevel.Fatal:
-                return ThemeSlot.StatusDanger;
-            default:
-                return ThemeSlot.TextSecondary;
-        }
-    }
-
-    public static ChipVariant LevelVariant(LogLevel level) {
-        switch (level) {
-            case LogLevel.Trace:
-                return ChipVariant.Trace;
-            case LogLevel.Debug:
-                return ChipVariant.Debug;
-            case LogLevel.Info:
-                return ChipVariant.Info;
-            case LogLevel.Warn:
-                return ChipVariant.Warn;
-            default:
-                return ChipVariant.Error;
-        }
     }
 
     private static int TopRank(string id) {

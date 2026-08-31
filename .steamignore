@@ -9,7 +9,6 @@
 
 RimWorks.RimLogging/
 RimWorks.RimLogging.Tests/
-RimWorks.RimLogging.LightweaveViewer/
 
 bin/
 obj/

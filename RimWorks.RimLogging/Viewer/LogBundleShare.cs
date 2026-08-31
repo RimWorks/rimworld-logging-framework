@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using RimWorks.RimLogging;
 using RimWorks.RimLogging.Bundle;
 using RimWorks.RimLogging.Settings;
 using RimWorld;
@@ -8,10 +7,10 @@ using UnityEngine;
 using Verse;
 using LogEntry = RimWorks.RimLogging.LogEntry;
 
-namespace RimWorks.RimLogging.LightweaveViewer;
+namespace RimWorks.RimLogging.Viewer;
 
 internal static class LogBundleShare {
-    public static async void Upload(LightweaveLogSink sink, LogViewerState state, Action invalidate) {
+    public static async void Upload(ViewerLogSink sink, LogViewerState state, Action invalidate) {
         state.Uploading = true;
         invalidate();
         try {
@@ -22,7 +21,7 @@ internal static class LogBundleShare {
             if (result.Success && !string.IsNullOrEmpty(result.GistUrl)) {
                 GUIUtility.systemCopyBuffer = result.GistUrl;
                 Messages.Message(
-                    (string)"CL_LogViewer_BundleShared".Translate(result.GistUrl!.Named("URL")),
+                    (string)"CRL_LogViewer_BundleShared".Translate(result.GistUrl!.Named("URL")),
                     MessageTypeDefOf.PositiveEvent,
                     false
                 );

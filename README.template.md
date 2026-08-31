@@ -8,7 +8,7 @@ RimLogging replaces vanilla `Verse.Log` and `UnityEngine.Debug.Log` with a singl
 
 Install this as a shared dependency. If you are subscribed to a mod that requires RimLogging, this is what gets installed. It captures and organizes log output so bug reports are clean and easy to share.
 
-Pair it with [Lightweave](https://github.com/RimworldCosmere/Lightweave) to get the three-pane in-game log viewer: live channel filtering, an expression filter DSL, and a one-click bug-report bundle that uploads and copies a shareable link to your clipboard. Without Lightweave, logging still works fully. You just use the vanilla log window.
+A three-pane in-game log viewer ships with it: a channel tree, live level toggles, an expression filter DSL, and a one-click bug-report bundle that uploads and copies a shareable link to your clipboard. The detail pane docks to the bottom, docks to the right, or pops out into its own window.
 
 ## For mod authors
 
@@ -30,6 +30,5 @@ Then declare the Workshop item as a dependency in your `About.xml` so subscriber
 ## Links
 
 - Source, docs, and issues: https://github.com/RimWorks/rimworld-logging-framework
-- Companion UI framework: https://github.com/RimworldCosmere/Lightweave
 
 Licensed under MIT.

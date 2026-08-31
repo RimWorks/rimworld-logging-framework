@@ -11,4 +11,44 @@
     <CRL_Settings_UploadBundle>Upload log bundle</CRL_Settings_UploadBundle>
     <CRL_Settings_UploadNoBuffer>No in-memory log buffer is active, so there is nothing to upload.</CRL_Settings_UploadNoBuffer>
     <CRL_Settings_Reset>Reset to defaults</CRL_Settings_Reset>
+    <CRL_LogViewer_Title>Log Viewer</CRL_LogViewer_Title>
+    <CRL_LogViewer_Tailing>TAILING</CRL_LogViewer_Tailing>
+    <CRL_LogViewer_Presets>Presets</CRL_LogViewer_Presets>
+    <CRL_LogViewer_PresetName>Preset {INDEX}</CRL_LogViewer_PresetName>
+    <CRL_LogViewer_HideChannels>Hide channels</CRL_LogViewer_HideChannels>
+    <CRL_LogViewer_ShowChannels>Show channels</CRL_LogViewer_ShowChannels>
+    <CRL_LogViewer_ShareBundle>Share</CRL_LogViewer_ShareBundle>
+    <CRL_LogViewer_OpenVanilla>Open vanilla log (Shift+`)</CRL_LogViewer_OpenVanilla>
+    <CRL_LogViewer_Close>Close</CRL_LogViewer_Close>
+    <CRL_LogViewer_AllChannels>All channels</CRL_LogViewer_AllChannels>
+    <CRL_LogViewer_FilterChannels>Filter channels</CRL_LogViewer_FilterChannels>
+    <CRL_LogViewer_Group_Mod>Mod</CRL_LogViewer_Group_Mod>
+    <CRL_LogViewer_Group_Vanilla>Vanilla</CRL_LogViewer_Group_Vanilla>
+    <CRL_LogViewer_LevelGroup>Level</CRL_LogViewer_LevelGroup>
+    <CRL_LogViewer_DslPlaceholder>level &gt;= Warn OR channel = "Vanilla"</CRL_LogViewer_DslPlaceholder>
+    <CRL_LogViewer_Level_Trace>Trace</CRL_LogViewer_Level_Trace>
+    <CRL_LogViewer_Level_Debug>Debug</CRL_LogViewer_Level_Debug>
+    <CRL_LogViewer_Level_Info>Info</CRL_LogViewer_Level_Info>
+    <CRL_LogViewer_Level_Warn>Warn</CRL_LogViewer_Level_Warn>
+    <CRL_LogViewer_Level_Error>Error</CRL_LogViewer_Level_Error>
+    <CRL_LogViewer_NoSelection>No entry selected</CRL_LogViewer_NoSelection>
+    <CRL_LogViewer_NoSelectionHint>Click a row to inspect</CRL_LogViewer_NoSelectionHint>
+    <CRL_LogViewer_Detail_Crumb>Entry</CRL_LogViewer_Detail_Crumb>
+    <CRL_LogViewer_Detail_Level>Level</CRL_LogViewer_Detail_Level>
+    <CRL_LogViewer_Detail_Channel>Channel</CRL_LogViewer_Detail_Channel>
+    <CRL_LogViewer_Detail_Mod>Mod</CRL_LogViewer_Detail_Mod>
+    <CRL_LogViewer_Detail_Source>Source</CRL_LogViewer_Detail_Source>
+    <CRL_LogViewer_Detail_Message>Message</CRL_LogViewer_Detail_Message>
+    <CRL_LogViewer_Detail_Stack>Stack trace</CRL_LogViewer_Detail_Stack>
+<CRL_LogViewer_Detail_MessageAndStack>Message &amp; stack trace</CRL_LogViewer_Detail_MessageAndStack>
+    <CRL_LogViewer_Detail_NoSource>(no source)</CRL_LogViewer_Detail_NoSource>
+    <CRL_LogViewer_Detail_NoStack>(no stack trace)</CRL_LogViewer_Detail_NoStack>
+    <CRL_LogViewer_Deselect>Deselect</CRL_LogViewer_Deselect>
+    <CRL_LogViewer_Copy>Copy</CRL_LogViewer_Copy>
+    <CRL_LogViewer_BundleShared>Bug bundle shared. URL copied to clipboard: {URL}</CRL_LogViewer_BundleShared>
+    <CRL_LogViewer_Clear>Clear</CRL_LogViewer_Clear>
+    <CRL_LogViewer_Detail_Bottom>Detail: bottom</CRL_LogViewer_Detail_Bottom>
+    <CRL_LogViewer_Detail_Right>Detail: right</CRL_LogViewer_Detail_Right>
+    <CRL_LogViewer_Detail_Popout>Detail: popout</CRL_LogViewer_Detail_Popout>
+    <CRL_LogViewer_DetailWindowTitle>Log Entry Detail</CRL_LogViewer_DetailWindowTitle>
 </LanguageData>

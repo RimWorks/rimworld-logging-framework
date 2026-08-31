@@ -1,7 +1,6 @@
 using System.Collections.Generic;
-using RimWorks.RimLogging;
 
-namespace RimWorks.RimLogging.LightweaveViewer;
+namespace RimWorks.RimLogging.Viewer;
 
 internal sealed class LogViewerState {
     public bool ChannelsOpen = true;
@@ -24,9 +23,9 @@ internal sealed class LogViewerState {
         set => LogViewerSession.DslError = value;
     }
 
-    public LogEntry? Selected;
+    public LogEntry? Selected = null;
 
-    public bool Uploading;
+    public bool Uploading = false;
 
     public readonly Dictionary<string, bool> ExpandedChannels = new Dictionary<string, bool>(System.StringComparer.Ordinal);
 

@@ -11,4 +11,39 @@
     <CRL_Settings_UploadBundle>Protokollpaket hochladen</CRL_Settings_UploadBundle>
     <CRL_Settings_UploadNoBuffer>Es ist kein Protokollpuffer im Arbeitsspeicher aktiv, daher gibt es nichts zum Hochladen.</CRL_Settings_UploadNoBuffer>
     <CRL_Settings_Reset>Auf Standardwerte zurücksetzen</CRL_Settings_Reset>
+    <CRL_LogViewer_Title>Protokoll-Viewer</CRL_LogViewer_Title>
+    <CRL_LogViewer_Tailing>VERFOLGEN</CRL_LogViewer_Tailing>
+    <CRL_LogViewer_Presets>Voreinstellungen</CRL_LogViewer_Presets>
+    <CRL_LogViewer_PresetName>Voreinstellung {INDEX}</CRL_LogViewer_PresetName>
+    <CRL_LogViewer_HideChannels>Kanäle ausblenden</CRL_LogViewer_HideChannels>
+    <CRL_LogViewer_ShowChannels>Kanäle anzeigen</CRL_LogViewer_ShowChannels>
+    <CRL_LogViewer_ShareBundle>Teilen</CRL_LogViewer_ShareBundle>
+    <CRL_LogViewer_OpenVanilla>Standardprotokoll öffnen (Umschalt+`)</CRL_LogViewer_OpenVanilla>
+    <CRL_LogViewer_Close>Schließen</CRL_LogViewer_Close>
+    <CRL_LogViewer_AllChannels>Alle Kanäle</CRL_LogViewer_AllChannels>
+    <CRL_LogViewer_FilterChannels>Kanäle filtern</CRL_LogViewer_FilterChannels>
+    <CRL_LogViewer_Group_Mod>Mod</CRL_LogViewer_Group_Mod>
+    <CRL_LogViewer_Group_Vanilla>Standard</CRL_LogViewer_Group_Vanilla>
+    <CRL_LogViewer_LevelGroup>Stufe</CRL_LogViewer_LevelGroup>
+    <CRL_LogViewer_DslPlaceholder>level &gt;= Warn OR channel = "Vanilla"</CRL_LogViewer_DslPlaceholder>
+    <CRL_LogViewer_Level_Trace>Trace</CRL_LogViewer_Level_Trace>
+    <CRL_LogViewer_Level_Debug>Debug</CRL_LogViewer_Level_Debug>
+    <CRL_LogViewer_Level_Info>Info</CRL_LogViewer_Level_Info>
+    <CRL_LogViewer_Level_Warn>Warnung</CRL_LogViewer_Level_Warn>
+    <CRL_LogViewer_Level_Error>Fehler</CRL_LogViewer_Level_Error>
+    <CRL_LogViewer_NoSelection>Kein Eintrag ausgewählt</CRL_LogViewer_NoSelection>
+    <CRL_LogViewer_NoSelectionHint>Auf eine Zeile klicken, um sie zu prüfen</CRL_LogViewer_NoSelectionHint>
+    <CRL_LogViewer_Detail_Crumb>Eintrag</CRL_LogViewer_Detail_Crumb>
+    <CRL_LogViewer_Detail_Level>Stufe</CRL_LogViewer_Detail_Level>
+    <CRL_LogViewer_Detail_Channel>Kanal</CRL_LogViewer_Detail_Channel>
+    <CRL_LogViewer_Detail_Mod>Mod</CRL_LogViewer_Detail_Mod>
+    <CRL_LogViewer_Detail_Source>Quelle</CRL_LogViewer_Detail_Source>
+    <CRL_LogViewer_Detail_Message>Nachricht</CRL_LogViewer_Detail_Message>
+    <CRL_LogViewer_Detail_Stack>Stacktrace</CRL_LogViewer_Detail_Stack>
+    <CRL_LogViewer_Detail_MessageAndStack>Nachricht und Stacktrace</CRL_LogViewer_Detail_MessageAndStack>
+    <CRL_LogViewer_Detail_NoSource>(keine Quelle)</CRL_LogViewer_Detail_NoSource>
+    <CRL_LogViewer_Detail_NoStack>(kein Stacktrace)</CRL_LogViewer_Detail_NoStack>
+    <CRL_LogViewer_Deselect>Abwählen</CRL_LogViewer_Deselect>
+    <CRL_LogViewer_Copy>Kopieren</CRL_LogViewer_Copy>
+    <CRL_LogViewer_BundleShared>Fehlerpaket geteilt. URL in die Zwischenablage kopiert: {URL}</CRL_LogViewer_BundleShared>
 </LanguageData>

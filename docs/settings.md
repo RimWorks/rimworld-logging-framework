@@ -6,7 +6,8 @@ The in-game mod settings page exposes:
 - **Log directory** (`logDirectory`) - where rolling files are written; normalized to a default under the game's persistent data path when left blank.
 - **Retention count** (`retentionCount`) - number of rotated log files kept.
 - **Bundle proxy URL** (`proxyUrl`) - upload endpoint for bug-report bundles.
-- **Combine message and stack trace** (`logViewerCombinedDetail`) - when Lightweave's viewer is active, shows the message and stack trace together in the detail pane.
+- **Combine message and stack trace** (`logViewerCombinedDetail`) - shows the message and stack trace as one block in the detail pane instead of two.
+- **Detail placement** (`logViewerDetailPlacement`) - `Bottom`, `Right`, or `Popout`. Cycled from the viewer's own toolbar, not from this page.
 - **Filter presets** - saved name/expression pairs for the viewer's filter DSL.
 
 All settings persist across restarts via RimWorld's Scribe system.

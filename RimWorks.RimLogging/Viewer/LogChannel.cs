@@ -1,4 +1,4 @@
-namespace RimWorks.RimLogging.LightweaveViewer;
+namespace RimWorks.RimLogging.Viewer;
 
 internal readonly struct LogChannel {
     public readonly string Id;

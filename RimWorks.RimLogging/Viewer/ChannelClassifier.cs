@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
 using RimWorks.RimLogging.Capture;
-using Verse;
 
-namespace RimWorks.RimLogging.LightweaveViewer;
+namespace RimWorks.RimLogging.Viewer;
 
 internal static class ChannelClassifier {
     private const string ModGroup = "Mod";
@@ -17,6 +16,9 @@ internal static class ChannelClassifier {
     public static string ModGroupId => ModGroup;
     public static string VanillaGroupId => VanillaGroup;
 
+    /// <summary>Fills the mod lookup tables. Installed by <c>ChannelClassifierBootstrap</c>, which owns the Verse dependency.</summary>
+    internal static Action? ModTableLoader;
+
     public static void EnsureBuilt() {
         if (packageIdToPath != null) {
             return;
@@ -26,26 +28,30 @@ internal static class ChannelClassifier {
         fullFacingToPath = new Dictionary<string, string[]>(StringComparer.Ordinal);
         moduleNameToPath = new Dictionary<string, string[]>(StringComparer.Ordinal);
 
-        List<ModContentPack> running = LoadedModManager.RunningModsListForReading;
-        if (running == null) {
+        ModTableLoader?.Invoke();
+    }
+
+    /// <summary>Registers one running mod against the channel paths it owns.</summary>
+    internal static void AddMod(string packageId, string playerFacingId) {
+        if (string.IsNullOrEmpty(packageId)) {
             return;
         }
 
-        for (int i = 0; i < running.Count; i++) {
-            ModContentPack mcp = running[i];
-            if (mcp == null || string.IsNullOrEmpty(mcp.PackageId)) {
-                continue;
-            }
+        string facing = string.IsNullOrEmpty(playerFacingId) ? packageId : playerFacingId;
+        string[] modPath = facing.Split('.');
 
-            string facing = string.IsNullOrEmpty(mcp.PackageIdPlayerFacing) ? mcp.PackageId : mcp.PackageIdPlayerFacing;
-            string[] modPath = facing.Split('.');
-
-            packageIdToPath[ModChannelPrefix + PackageIdSanitizer.ToChannelSegment(mcp.PackageId)] = modPath;
-            fullFacingToPath[facing.ToLowerInvariant()] = modPath;
-            if (modPath.Length > 0) {
-                moduleNameToPath[modPath[modPath.Length - 1].ToLowerInvariant()] = modPath;
-            }
+        packageIdToPath![ModChannelPrefix + PackageIdSanitizer.ToChannelSegment(packageId)] = modPath;
+        fullFacingToPath![facing.ToLowerInvariant()] = modPath;
+        if (modPath.Length > 0) {
+            moduleNameToPath![modPath[modPath.Length - 1].ToLowerInvariant()] = modPath;
         }
+    }
+
+    /// <summary>Drops the cached tables so the next <see cref="EnsureBuilt"/> rebuilds them.</summary>
+    internal static void Reset() {
+        packageIdToPath = null;
+        fullFacingToPath = null;
+        moduleNameToPath = null;
     }
 
     public static string[] PathFor(string? channel) {
@@ -56,8 +62,8 @@ internal static class ChannelClassifier {
         }
 
         if (channel!.StartsWith(ModChannelPrefix, StringComparison.Ordinal)) {
-            if (packageIdToPath != null && packageIdToPath.TryGetValue(channel, out string[] mapped)) {
-                return Prepend(ModGroup, mapped);
+            if (packageIdToPath != null && packageIdToPath.TryGetValue(channel, out string[]? mapped)) {
+                return Prepend(ModGroup, mapped!);
             }
             return Prepend(ModGroup, channel.Substring(ModChannelPrefix.Length).Split('.'));
         }
@@ -69,13 +75,13 @@ internal static class ChannelClassifier {
     private static string[] ResolveNative(string[] segs) {
         if (fullFacingToPath != null && segs.Length >= 2) {
             string twoKey = (segs[0] + "." + segs[1]).ToLowerInvariant();
-            if (fullFacingToPath.TryGetValue(twoKey, out string[] modPath2)) {
-                return BuildNative(modPath2, segs, 2);
+            if (fullFacingToPath.TryGetValue(twoKey, out string[]? modPath2)) {
+                return BuildNative(modPath2!, segs, 2);
             }
         }
 
-        if (moduleNameToPath != null && segs.Length >= 1 && moduleNameToPath.TryGetValue(segs[0].ToLowerInvariant(), out string[] modPath1)) {
-            return BuildNative(modPath1, segs, 1);
+        if (moduleNameToPath != null && segs.Length >= 1 && moduleNameToPath.TryGetValue(segs[0].ToLowerInvariant(), out string[]? modPath1)) {
+            return BuildNative(modPath1!, segs, 1);
         }
 
         return Prepend(ModGroup, segs);

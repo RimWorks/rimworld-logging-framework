@@ -22,7 +22,7 @@ Replaces vanilla and Unity logging with a structured, channel-based, multi-sink 
 
 Other mods can depend on this and call RimWorks.RimLogging.Log.Info / Warn / Error / Fatal directly. Vanilla Verse.Log and UnityEngine.Debug.Log calls are also captured and routed through the framework.
 
-A three-pane in-game log viewer ships with this mod and activates when the Lightweave UI framework (Cosmere.Lightweave) is also installed. RimLogging works fully on its own; install Lightweave alongside it to get the viewer. Get Lightweave at https://github.com/RimworldCosmere/Lightweave
+A three-pane in-game log viewer ships with this mod: a channel tree, level toggles, the filter DSL, and a one-click bug-report bundle. The detail pane docks to the bottom, docks to the right, or pops out into its own window.
 
 Distributed as both a Steam Workshop dependency mod and a NuGet package. MIT licensed.</description>
 </ModMetaData>

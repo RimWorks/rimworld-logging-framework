@@ -11,4 +11,39 @@
     <CRL_Settings_UploadBundle>Téléverser le lot de journaux</CRL_Settings_UploadBundle>
     <CRL_Settings_UploadNoBuffer>Aucun tampon de journaux en mémoire n'est actif, il n'y a donc rien à téléverser.</CRL_Settings_UploadNoBuffer>
     <CRL_Settings_Reset>Réinitialiser aux valeurs par défaut</CRL_Settings_Reset>
+    <CRL_LogViewer_Title>Visionneuse de journaux</CRL_LogViewer_Title>
+    <CRL_LogViewer_Tailing>SUIVI</CRL_LogViewer_Tailing>
+    <CRL_LogViewer_Presets>Préréglages</CRL_LogViewer_Presets>
+    <CRL_LogViewer_PresetName>Préréglage {INDEX}</CRL_LogViewer_PresetName>
+    <CRL_LogViewer_HideChannels>Masquer les canaux</CRL_LogViewer_HideChannels>
+    <CRL_LogViewer_ShowChannels>Afficher les canaux</CRL_LogViewer_ShowChannels>
+    <CRL_LogViewer_ShareBundle>Partager</CRL_LogViewer_ShareBundle>
+    <CRL_LogViewer_OpenVanilla>Ouvrir le journal d'origine (Maj+`)</CRL_LogViewer_OpenVanilla>
+    <CRL_LogViewer_Close>Fermer</CRL_LogViewer_Close>
+    <CRL_LogViewer_AllChannels>Tous les canaux</CRL_LogViewer_AllChannels>
+    <CRL_LogViewer_FilterChannels>Filtrer les canaux</CRL_LogViewer_FilterChannels>
+    <CRL_LogViewer_Group_Mod>Mod</CRL_LogViewer_Group_Mod>
+    <CRL_LogViewer_Group_Vanilla>Origine</CRL_LogViewer_Group_Vanilla>
+    <CRL_LogViewer_LevelGroup>Niveau</CRL_LogViewer_LevelGroup>
+    <CRL_LogViewer_DslPlaceholder>level &gt;= Warn OR channel = "Vanilla"</CRL_LogViewer_DslPlaceholder>
+    <CRL_LogViewer_Level_Trace>Trace</CRL_LogViewer_Level_Trace>
+    <CRL_LogViewer_Level_Debug>Débogage</CRL_LogViewer_Level_Debug>
+    <CRL_LogViewer_Level_Info>Info</CRL_LogViewer_Level_Info>
+    <CRL_LogViewer_Level_Warn>Alerte</CRL_LogViewer_Level_Warn>
+    <CRL_LogViewer_Level_Error>Erreur</CRL_LogViewer_Level_Error>
+    <CRL_LogViewer_NoSelection>Aucune entrée sélectionnée</CRL_LogViewer_NoSelection>
+    <CRL_LogViewer_NoSelectionHint>Cliquez sur une ligne pour l'inspecter</CRL_LogViewer_NoSelectionHint>
+    <CRL_LogViewer_Detail_Crumb>Entrée</CRL_LogViewer_Detail_Crumb>
+    <CRL_LogViewer_Detail_Level>Niveau</CRL_LogViewer_Detail_Level>
+    <CRL_LogViewer_Detail_Channel>Canal</CRL_LogViewer_Detail_Channel>
+    <CRL_LogViewer_Detail_Mod>Mod</CRL_LogViewer_Detail_Mod>
+    <CRL_LogViewer_Detail_Source>Source</CRL_LogViewer_Detail_Source>
+    <CRL_LogViewer_Detail_Message>Message</CRL_LogViewer_Detail_Message>
+    <CRL_LogViewer_Detail_Stack>Pile d'appels</CRL_LogViewer_Detail_Stack>
+    <CRL_LogViewer_Detail_MessageAndStack>Message et pile d'appels</CRL_LogViewer_Detail_MessageAndStack>
+    <CRL_LogViewer_Detail_NoSource>(aucune source)</CRL_LogViewer_Detail_NoSource>
+    <CRL_LogViewer_Detail_NoStack>(aucune pile d'appels)</CRL_LogViewer_Detail_NoStack>
+    <CRL_LogViewer_Deselect>Désélectionner</CRL_LogViewer_Deselect>
+    <CRL_LogViewer_Copy>Copier</CRL_LogViewer_Copy>
+    <CRL_LogViewer_BundleShared>Lot de rapport partagé. URL copiée dans le presse-papiers : {URL}</CRL_LogViewer_BundleShared>
 </LanguageData>

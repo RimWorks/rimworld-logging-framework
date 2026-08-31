@@ -10,7 +10,7 @@ A public, structured logging framework for RimWorld 1.6+ mods. It replaces vanil
 - Six levels: `Trace`, `Debug`, `Info`, `Warn`, `Error`, `Fatal`.
 - Multi-sink output (Verse writeback, rolling text/NDJSON files, in-memory) with a plugin sink API.
 - Lock-free MPSC queue with a background drain; synchronous bypass for `Error` / `Fatal`.
-- Three-pane in-game log viewer with an expression filter DSL, active when [Lightweave](https://github.com/RimworldCosmere/Lightweave) is installed. Without Lightweave, logging still works and you use the vanilla log window.
+- Three-pane in-game log viewer with a channel tree and an expression filter DSL. The detail pane docks to the bottom, docks to the right, or pops out into its own window.
 
 ## Install
 
