@@ -63,6 +63,7 @@ const plugins = [
                 {
                     name: 'RimLogging',
                     path: '.',
+                    previewfile: new URL('./About/Preview.png', import.meta.url).pathname,
                     workshopIds: { stable: '3733484696' },
                 },
             ],
