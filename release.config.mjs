@@ -4,6 +4,7 @@ const plugins = [
         {
             releaseRules: [
                 { scope: 'worker', release: false },
+                { scope: 'about', release: 'patch' },
                 { type: 'refactor', release: 'patch' },
                 { type: 'style', release: 'patch' },
                 { type: 'ci', release: 'patch' },
