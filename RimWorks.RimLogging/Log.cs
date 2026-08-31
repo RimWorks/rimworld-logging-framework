@@ -1,0 +1,561 @@
+using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using RimWorks.RimLogging.Capture;
+using RimWorks.RimLogging.Format;
+
+namespace RimWorks.RimLogging;
+
+/// <summary>Entry point for emitting log messages through the RimLogging framework.</summary>
+public static class Log
+{
+    /// <summary>Name of the default log channel used when no channel is specified.</summary>
+    public const string DefaultChannel = "default";
+
+    /// <summary>Log at Trace using a templated message and positional args (default channel).</summary>
+    public static void Trace(
+        string template,
+        params object?[] args)
+    {
+        EmitInternal(LogLevel.Trace, DefaultChannel, template, args, structuredContext: null, exception: null,
+                 new CallSite(SourceLocation.Empty, 0, string.Empty));
+    }
+
+    /// <summary>Log at Trace using a templated message, positional args, and compiler-supplied caller info (default channel).</summary>
+    public static void Trace(
+        string template,
+        object?[] args,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Trace, DefaultChannel, template, args, null, null, new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Trace using a plain message and an anonymous-object context (default channel).</summary>
+    public static void Trace(
+        string message,
+        object context,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Trace, DefaultChannel, message, args: null, structuredContext: context, exception: null,
+                    new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Trace using an explicit channel, a templated message, and optional positional args.</summary>
+    public static void Trace(
+        string channel,
+        string template,
+        object?[]? args = null,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Trace, channel, template, args, null, null, new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Trace using an explicit channel, a plain message, and an anonymous-object context.</summary>
+    public static void Trace(
+        string channel,
+        string message,
+        object context,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Trace, channel, message, args: null, structuredContext: context, exception: null,
+                    new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Trace with an exception and a context message (default channel).</summary>
+    public static void Trace(
+        Exception ex,
+        string message,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Trace, DefaultChannel, message, null, null, ex, new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Trace with an exception and a context message (explicit channel).</summary>
+    public static void Trace(
+        string channel,
+        Exception ex,
+        string message,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Trace, channel, message, null, null, ex, new CallSite(SourceLocation.Empty, line, file));
+
+    
+
+    /// <summary>Log at Debug using a templated message and positional args (default channel).</summary>
+    public static void Debug(
+        string template,
+        params object?[] args)
+    {
+        EmitInternal(LogLevel.Debug, DefaultChannel, template, args, structuredContext: null, exception: null,
+                 new CallSite(SourceLocation.Empty, 0, string.Empty));
+    }
+
+    /// <summary>Log at Debug using a templated message, positional args, and compiler-supplied caller info (default channel).</summary>
+    public static void Debug(
+        string template,
+        object?[] args,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Debug, DefaultChannel, template, args, null, null, new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Debug using a plain message and an anonymous-object context (default channel).</summary>
+    public static void Debug(
+        string message,
+        object context,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Debug, DefaultChannel, message, args: null, structuredContext: context, exception: null,
+                    new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Debug using an explicit channel, a templated message, and optional positional args.</summary>
+    public static void Debug(
+        string channel,
+        string template,
+        object?[]? args = null,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Debug, channel, template, args, null, null, new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Debug using an explicit channel, a plain message, and an anonymous-object context.</summary>
+    public static void Debug(
+        string channel,
+        string message,
+        object context,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Debug, channel, message, args: null, structuredContext: context, exception: null,
+                    new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Debug with an exception and a context message (default channel).</summary>
+    public static void Debug(
+        Exception ex,
+        string message,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Debug, DefaultChannel, message, null, null, ex, new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Debug with an exception and a context message (explicit channel).</summary>
+    public static void Debug(
+        string channel,
+        Exception ex,
+        string message,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Debug, channel, message, null, null, ex, new CallSite(SourceLocation.Empty, line, file));
+
+    
+
+    /// <summary>Log at Info using a templated message and positional args (default channel).</summary>
+    public static void Info(
+        string template,
+        params object?[] args)
+    {
+        EmitInternal(LogLevel.Info, DefaultChannel, template, args, structuredContext: null, exception: null,
+                 new CallSite(SourceLocation.Empty, 0, string.Empty));
+    }
+
+    /// <summary>Log at Info using a templated message, positional args, and compiler-supplied caller info (default channel).</summary>
+    public static void Info(
+        string template,
+        object?[] args,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Info, DefaultChannel, template, args, null, null, new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Info using a plain message and an anonymous-object context (default channel).</summary>
+    public static void Info(
+        string message,
+        object context,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Info, DefaultChannel, message, args: null, structuredContext: context, exception: null,
+                    new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Info using an explicit channel, a templated message, and optional positional args.</summary>
+    public static void Info(
+        string channel,
+        string template,
+        object?[]? args = null,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Info, channel, template, args, null, null, new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Info using an explicit channel, a plain message, and an anonymous-object context.</summary>
+    public static void Info(
+        string channel,
+        string message,
+        object context,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Info, channel, message, args: null, structuredContext: context, exception: null,
+                    new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Info with an exception and a context message (default channel).</summary>
+    public static void Info(
+        Exception ex,
+        string message,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Info, DefaultChannel, message, null, null, ex, new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Info with an exception and a context message (explicit channel).</summary>
+    public static void Info(
+        string channel,
+        Exception ex,
+        string message,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Info, channel, message, null, null, ex, new CallSite(SourceLocation.Empty, line, file));
+
+    
+
+    /// <summary>Log at Warn using a templated message and positional args (default channel).</summary>
+    public static void Warn(
+        string template,
+        params object?[] args)
+    {
+        EmitInternal(LogLevel.Warn, DefaultChannel, template, args, structuredContext: null, exception: null,
+                 new CallSite(SourceLocation.Empty, 0, string.Empty));
+    }
+
+    /// <summary>Log at Warn using a templated message, positional args, and compiler-supplied caller info (default channel).</summary>
+    public static void Warn(
+        string template,
+        object?[] args,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Warn, DefaultChannel, template, args, null, null, new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Warn using a plain message and an anonymous-object context (default channel).</summary>
+    public static void Warn(
+        string message,
+        object context,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Warn, DefaultChannel, message, args: null, structuredContext: context, exception: null,
+                    new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Warn using an explicit channel, a templated message, and optional positional args.</summary>
+    public static void Warn(
+        string channel,
+        string template,
+        object?[]? args = null,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Warn, channel, template, args, null, null, new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Warn using an explicit channel, a plain message, and an anonymous-object context.</summary>
+    public static void Warn(
+        string channel,
+        string message,
+        object context,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Warn, channel, message, args: null, structuredContext: context, exception: null,
+                    new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Warn with an exception and a context message (default channel).</summary>
+    public static void Warn(
+        Exception ex,
+        string message,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Warn, DefaultChannel, message, null, null, ex, new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Warn with an exception and a context message (explicit channel).</summary>
+    public static void Warn(
+        string channel,
+        Exception ex,
+        string message,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Warn, channel, message, null, null, ex, new CallSite(SourceLocation.Empty, line, file));
+
+    
+
+    /// <summary>Log at Error using a templated message and positional args (default channel).</summary>
+    public static void Error(
+        string template,
+        params object?[] args)
+    {
+        EmitInternal(LogLevel.Error, DefaultChannel, template, args, structuredContext: null, exception: null,
+                 new CallSite(SourceLocation.Empty, 0, string.Empty));
+    }
+
+    /// <summary>Log at Error using a templated message, positional args, and compiler-supplied caller info (default channel).</summary>
+    public static void Error(
+        string template,
+        object?[] args,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Error, DefaultChannel, template, args, null, null, new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Error using a plain message and an anonymous-object context (default channel).</summary>
+    public static void Error(
+        string message,
+        object context,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Error, DefaultChannel, message, args: null, structuredContext: context, exception: null,
+                    new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Error using an explicit channel, a templated message, and optional positional args.</summary>
+    public static void Error(
+        string channel,
+        string template,
+        object?[]? args = null,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Error, channel, template, args, null, null, new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Error using an explicit channel, a plain message, and an anonymous-object context.</summary>
+    public static void Error(
+        string channel,
+        string message,
+        object context,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Error, channel, message, args: null, structuredContext: context, exception: null,
+                    new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Error with an exception and a context message (default channel).</summary>
+    public static void Error(
+        Exception ex,
+        string message,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Error, DefaultChannel, message, null, null, ex, new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Error with an exception and a context message (explicit channel).</summary>
+    public static void Error(
+        string channel,
+        Exception ex,
+        string message,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Error, channel, message, null, null, ex, new CallSite(SourceLocation.Empty, line, file));
+
+    
+
+    /// <summary>Log at Fatal using a templated message and positional args (default channel).</summary>
+    public static void Fatal(
+        string template,
+        params object?[] args)
+    {
+        EmitInternal(LogLevel.Fatal, DefaultChannel, template, args, structuredContext: null, exception: null,
+                 new CallSite(SourceLocation.Empty, 0, string.Empty));
+    }
+
+    /// <summary>Log at Fatal using a templated message, positional args, and compiler-supplied caller info (default channel).</summary>
+    public static void Fatal(
+        string template,
+        object?[] args,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Fatal, DefaultChannel, template, args, null, null, new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Fatal using a plain message and an anonymous-object context (default channel).</summary>
+    public static void Fatal(
+        string message,
+        object context,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Fatal, DefaultChannel, message, args: null, structuredContext: context, exception: null,
+                    new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Fatal using an explicit channel, a templated message, and optional positional args.</summary>
+    public static void Fatal(
+        string channel,
+        string template,
+        object?[]? args = null,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Fatal, channel, template, args, null, null, new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Fatal using an explicit channel, a plain message, and an anonymous-object context.</summary>
+    public static void Fatal(
+        string channel,
+        string message,
+        object context,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Fatal, channel, message, args: null, structuredContext: context, exception: null,
+                    new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Fatal with an exception and a context message (default channel).</summary>
+    public static void Fatal(
+        Exception ex,
+        string message,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Fatal, DefaultChannel, message, null, null, ex, new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>Log at Fatal with an exception and a context message (explicit channel).</summary>
+    public static void Fatal(
+        string channel,
+        Exception ex,
+        string message,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => EmitInternal(LogLevel.Fatal, channel, message, null, null, ex, new CallSite(SourceLocation.Empty, line, file));
+
+    
+
+    private static void EmitInternal(
+        LogLevel level,
+        string channel,
+        string template,
+        object?[]? args,
+        object? structuredContext,
+        Exception? exception,
+        CallSite site)
+    {
+        // Global gate: the cheapest possible short-circuit. NO formatting, NO reflection.
+        if (level < Logging.GlobalMinLevel) return;
+
+        // A single stack walk, reused for both the formatted trace and the source fallback.
+        System.Diagnostics.StackTrace? walk = Logging.CaptureStackTraces ? new System.Diagnostics.StackTrace(1, true) : null;
+        string? capturedTrace = walk != null ? Capture.StackWalker.FormatTrace(walk) : null;
+
+        SourceLocation src = ResolveSource(site.Line, site.File, site.Source, walk, out string? mod);
+        (string rendered, IReadOnlyDictionary<string, object?>? ctx) = RenderMessage(template, args, structuredContext);
+
+        LogEntry entry = new LogEntry
+        {
+            Timestamp = DateTime.UtcNow,
+            Level = level,
+            Channel = channel ?? DefaultChannel,
+            MessageTemplate = template ?? string.Empty,
+            RenderedMessage = rendered,
+            Context = ctx,
+            Source = src,
+            StackTrace = string.IsNullOrEmpty(capturedTrace) ? null : capturedTrace,
+            Exception = exception,
+            Mod = mod,
+        };
+
+        Logging.Emit(entry);
+    }
+
+    /// <summary>
+    /// Bundles the call-site source coordinates (explicit location plus the
+    /// <c>[CallerLineNumber]</c>/<c>[CallerFilePath]</c> values) so the emit entry point stays
+    /// within a reasonable parameter count.
+    /// </summary>
+    private readonly struct CallSite
+    {
+        public readonly SourceLocation Source;
+        public readonly int Line;
+        public readonly string File;
+
+        public CallSite(SourceLocation source, int line, string file)
+        {
+            Source = source;
+            Line = line;
+            File = file;
+        }
+    }
+
+    /// <summary>
+    /// Resolves the source location for an entry: caller-info file/line first (also yielding
+    /// the originating mod via <see cref="ModResolution"/>), then an explicit caller-provided
+    /// location, then a single stack walk as the fallback.
+    /// </summary>
+    private static SourceLocation ResolveSource(int line, string file, SourceLocation explicitSource, System.Diagnostics.StackTrace? walk, out string? mod)
+    {
+        mod = null;
+        if (line > 0 && !string.IsNullOrEmpty(file))
+        {
+            // [CallerFilePath] / [CallerLineNumber] supplied the raw compile-time path with no
+            // Type info. Find the caller's Type cheaply (reuse the existing walk when we already
+            // have one for the formatted trace; otherwise build a no-PDB walk just for this) so
+            // assembly-anchored normalisation has the asm + mod folder it needs.
+            System.Type? callerType = ResolveCallerType(walk);
+            if (callerType != null)
+            {
+                string shortPath = StackWalker.NormalizePath(file, callerType);
+                mod = ModNameCache.ForAssembly(callerType.Assembly);
+                return new SourceLocation(shortPath, line, null);
+            }
+            (string fallbackPath, string? resolvedMod) = ModResolution.ResolveFromPath(file, ModNameCache.Map());
+            mod = resolvedMod;
+            return new SourceLocation(fallbackPath, line, null);
+        }
+        if (explicitSource.IsCallerProvided) return explicitSource;
+        return walk != null ? StackWalker.FirstCallerFrame(walk) : StackWalker.WalkOnce();
+    }
+
+    private static System.Type? ResolveCallerType(System.Diagnostics.StackTrace? walk)
+    {
+        if (walk != null) return StackWalker.FirstCallerType(walk);
+        System.Diagnostics.StackTrace cheap = new System.Diagnostics.StackTrace(1, false);
+        return StackWalker.FirstCallerType(cheap);
+    }
+
+    /// <summary>
+    /// Renders the message template against <paramref name="args"/> and merges in any
+    /// structured context object. Returns the rendered string and the combined context
+    /// dictionary (<c>null</c> when no context was supplied).
+    /// </summary>
+    private static (string rendered, IReadOnlyDictionary<string, object?>? context) RenderMessage(
+        string template, object?[]? args, object? structuredContext)
+    {
+        string rendered;
+        IReadOnlyDictionary<string, object?>? ctx = null;
+        if (args != null && args.Length > 0)
+        {
+            Format.MessageTemplate t = TemplateCache.Get(template);
+            (rendered, ctx) = t.Render(args);
+        }
+        else
+        {
+            rendered = template ?? string.Empty;
+        }
+
+        if (structuredContext != null)
+        {
+            IReadOnlyDictionary<string, object?>? captured = StructuredContext.Capture(structuredContext);
+            if (captured != null)
+                ctx = ctx == null ? captured : MergeContext(ctx, captured);
+        }
+
+        return (rendered, ctx);
+    }
+
+    /// <summary>Merges two context dictionaries, with <paramref name="overrides"/> winning on key collisions.</summary>
+    private static Dictionary<string, object?> MergeContext(
+        IReadOnlyDictionary<string, object?> baseCtx, IReadOnlyDictionary<string, object?> overrides)
+    {
+        Dictionary<string, object?> merged = new Dictionary<string, object?>(baseCtx.Count + overrides.Count);
+        foreach (KeyValuePair<string, object?> kv in baseCtx) merged[kv.Key] = kv.Value;
+        foreach (KeyValuePair<string, object?> kv in overrides) merged[kv.Key] = kv.Value;
+        return merged;
+    }
+
+    
+
+    /// <summary>
+    /// Entry point for captured logs that originate outside our own call sites (the Unity
+    /// bridge and the Verse.Log hijack). Builds a <see cref="LogEntry"/> with an empty
+    /// <see cref="SourceLocation"/> (the caller's file/line is meaningless for these) and
+    /// the optional caller-supplied <paramref name="stackTrace"/>, then routes it through the pipeline.
+    /// </summary>
+    internal static void EmitCaptured(LogLevel level, string channel, string text, string? stackTrace = null, string? mod = null)
+    {
+        if (level < Logging.GlobalMinLevel) return;
+
+        System.Diagnostics.StackTrace? walk = (stackTrace == null && Logging.CaptureStackTraces)
+            ? new System.Diagnostics.StackTrace(1, true)
+            : null;
+        string? captured = stackTrace ?? (walk != null ? Capture.StackWalker.FormatTrace(walk) : null);
+        SourceLocation src = walk != null ? Capture.StackWalker.FirstCallerFrame(walk) : SourceLocation.Empty;
+
+        LogEntry e = new LogEntry
+        {
+            Timestamp = System.DateTime.UtcNow,
+            Level = level,
+            Channel = channel,
+            MessageTemplate = text ?? string.Empty,
+            RenderedMessage = text ?? string.Empty,
+            Source = src,
+            StackTrace = string.IsNullOrEmpty(captured) ? null : captured,
+            Mod = mod,
+        };
+        Logging.Emit(e);
+    }
+}

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutDir>..\Assemblies\</OutDir>
+        <RootNamespace>RimWorks.RimLogging</RootNamespace>
+        <AssemblyName>RimWorks.RimLogging</AssemblyName>
+        <Description>Public structured logging framework for RimWorld 1.6+ mods. Core pipeline, channels, sinks, filter DSL, and Verse.Log + Unity hijack.</Description>
+        <PackageId>RimWorks.RimLogging</PackageId>
+        <PackageTags>rimworld;logging;modding;framework</PackageTags>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <DocumentationFile>..\Assemblies\$(AssemblyName).xml</DocumentationFile>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="System.Text.Json" Version="8.0.5"/>
+        <PackageReference Include="Concord.Ref" Version="0.4.1" PrivateAssets="all"/>
+        <PackageReference Include="Concord.Analyzers" Version="0.4.1" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net48" Version="1.0.3" PrivateAssets="all">
+            <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+
+        <Reference Include="..\..\RimWorldWin64_Data\Managed\*.dll" Condition="Exists('..\..\RimWorldWin64_Data\Managed')">
+            <Private>False</Private>
+        </Reference>
+        <Reference Include="C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\*.dll" Condition="Exists('C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed')">
+            <Private>False</Private>
+        </Reference>
+        <Reference Include="/mnt/games/SteamLibrary/steamapps/common/RimWorld/RimWorldLinux_Data/Managed/*.dll" Condition="Exists('/mnt/games/SteamLibrary/steamapps/common/RimWorld/RimWorldLinux_Data/Managed')">
+            <Private>False</Private>
+        </Reference>
+        <Reference Include="/mnt/games/RimWorld/RimWorldLinux_Data/Managed/*.dll" Condition="Exists('/mnt/games/RimWorld/RimWorldLinux_Data/Managed')">
+            <Private>False</Private>
+        </Reference>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(HasLocalRimWorld)' == 'false'">
+        <PackageReference Include="Krafs.Rimworld.Ref" Version="1.6.*"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="Languages/**/*.xml" CopyToOutputDirectory="PreserveNewest" />
+        <None Include="..\README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+    <Target Name="CopyRimWorldRuntimeDeps" AfterTargets="Build" DependsOnTargets="ResolveAssemblyReferences">
+        <Copy SourceFiles="@(ReferenceCopyLocalPaths)"
+              DestinationFiles="@(ReferenceCopyLocalPaths->'$(OutDir)%(DestinationSubDirectory)%(Filename)%(Extension)')"
+              SkipUnchangedFiles="true" />
+    </Target>
+</Project>

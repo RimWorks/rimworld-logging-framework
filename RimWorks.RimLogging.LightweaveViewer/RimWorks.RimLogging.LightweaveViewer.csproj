@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutDir>..\LightweaveViewer\</OutDir>
+        <RootNamespace>RimWorks.RimLogging.LightweaveViewer</RootNamespace>
+        <AssemblyName>RimWorks.RimLogging.LightweaveViewer</AssemblyName>
+        <Description>Three-pane Lightweave-powered log viewer for RimLogging. Late-loaded companion assembly, active only when Cosmere.Lightweave is present.</Description>
+        <IsPackable>false</IsPackable>
+        <LightweaveAssembliesPath Condition="'$(LightweaveAssembliesPath)' == ''">..\..\..\RimworldCosmere\Lightweave\Framework\Assemblies</LightweaveAssembliesPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Concord.Ref" Version="0.4.1" PrivateAssets="all"/>
+        <PackageReference Include="Concord.Analyzers" Version="0.4.1" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net48" Version="1.0.3" PrivateAssets="all">
+            <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+
+        <Reference Include="RimWorks.RimLogging">
+            <HintPath>..\Assemblies\RimWorks.RimLogging.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
+        <Reference Include="Lightweave">
+            <HintPath>$(LightweaveAssembliesPath)\Lightweave.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
+
+        <Reference Include="..\..\RimWorldWin64_Data\Managed\*.dll" Condition="Exists('..\..\RimWorldWin64_Data\Managed')">
+            <Private>False</Private>
+        </Reference>
+        <Reference Include="C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\*.dll" Condition="Exists('C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed')">
+            <Private>False</Private>
+        </Reference>
+        <Reference Include="/mnt/games/SteamLibrary/steamapps/common/RimWorld/RimWorldLinux_Data/Managed/*.dll" Condition="Exists('/mnt/games/SteamLibrary/steamapps/common/RimWorld/RimWorldLinux_Data/Managed')">
+            <Private>False</Private>
+        </Reference>
+        <Reference Include="/mnt/games/RimWorld/RimWorldLinux_Data/Managed/*.dll" Condition="Exists('/mnt/games/RimWorld/RimWorldLinux_Data/Managed')">
+            <Private>False</Private>
+        </Reference>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(HasLocalRimWorld)' == 'false'">
+        <PackageReference Include="Krafs.Rimworld.Ref" Version="1.6.*"/>
+    </ItemGroup>
+</Project>

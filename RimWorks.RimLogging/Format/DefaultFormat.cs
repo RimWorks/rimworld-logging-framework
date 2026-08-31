@@ -1,0 +1,138 @@
+using System.Collections.Generic;
+
+namespace RimWorks.RimLogging.Format;
+
+/// <summary>Renders log entries against a token-based format template (tokens: ts, level, channel, mod, source, message, ctx, exc).</summary>
+public static class DefaultFormat
+{
+    /// <summary>The default format template applied when a channel specifies no override.</summary>
+    public const string Default = "[{ts}] [{level}] [{channel}] [{source}] {message}{ctx}{exc}";
+
+    /// <summary>Renders the full template for the given entry, substituting all recognized tokens.</summary>
+    /// <param name="template">The format template string.</param>
+    /// <param name="entry">The log entry supplying token values.</param>
+    /// <param name="stripRichText">When <c>true</c>, rich-text tags are stripped from the message token.</param>
+    /// <returns>The fully rendered line.</returns>
+    public static string Render(string template, LogEntry entry, bool stripRichText)
+    {
+        System.Text.StringBuilder sb = new System.Text.StringBuilder(template.Length + entry.RenderedMessage.Length + 64);
+        int cursor = 0;
+        foreach ((int open, int close, string token) in ScanTokens(template))
+        {
+            if (open > cursor) sb.Append(template, cursor, open - cursor);
+            string resolved = ResolveToken(token, entry, stripRichText);
+            if (resolved.Length == 0 && TryConsumeEmptyBracketGroup(template, open, close, sb, out int advance))
+            {
+                cursor = advance;
+                continue;
+            }
+            sb.Append(resolved);
+            cursor = close + 1;
+        }
+        if (cursor < template.Length) sb.Append(template, cursor, template.Length - cursor);
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// When a token resolves to the empty string AND it is wrapped in <c>[ ... ]</c> in the
+    /// template (the standard "decorative" wrapping for optional fields), eat the surrounding
+    /// brackets and any single trailing space so the output stays clean instead of leaving a
+    /// stray <c>[]</c> or <c>?:0</c> behind.
+    /// </summary>
+    private static bool TryConsumeEmptyBracketGroup(string template, int openBrace, int closeBrace, System.Text.StringBuilder sb, out int advance)
+    {
+        advance = 0;
+        if (openBrace == 0 || closeBrace + 1 >= template.Length) return false;
+        if (template[openBrace - 1] != '[' || template[closeBrace + 1] != ']') return false;
+        if (sb.Length == 0 || sb[sb.Length - 1] != '[') return false;
+        sb.Length -= 1;
+        int next = closeBrace + 2;
+        if (next < template.Length && template[next] == ' ') next += 1;
+        advance = next;
+        return true;
+    }
+
+    /// <summary>
+    /// Renders all format tokens that appear <em>before</em> the <c>{message}</c> token,
+    /// returning the prefix segment (including any literal text immediately preceding
+    /// <c>{message}</c>). When the template contains no <c>{message}</c> token, the full
+    /// rendered template is returned.
+    /// </summary>
+    /// <param name="template">The format template string.</param>
+    /// <param name="entry">The log entry supplying token values.</param>
+    /// <param name="stripRichText">When <c>true</c>, rich-text tags are stripped from token values.</param>
+    /// <returns>The rendered prefix up to (but excluding) the <c>{message}</c> token, or the full template if no such token exists.</returns>
+    public static string RenderPrefixOnly(string template, LogEntry entry, bool stripRichText)
+    {
+        int messageStart = IndexOfToken(template, "message");
+        string prefix = messageStart < 0 ? template : template.Substring(0, messageStart);
+        return Render(prefix, entry, stripRichText);
+    }
+
+    /// <summary>
+    /// Returns the index of the opening brace of the <c>{token}</c> occurrence in
+    /// <paramref name="template"/>, or -1 if absent. Tokenizes identically to
+    /// <see cref="Render"/> so only a whole-token match (e.g. <c>{message}</c>, not
+    /// <c>{messagebody}</c>) is reported.
+    /// </summary>
+    private static int IndexOfToken(string template, string token)
+    {
+        foreach ((int open, _, string t) in ScanTokens(template))
+            if (t == token) return open;
+        return -1;
+    }
+
+    /// <summary>
+    /// Single-pass enumerator over <c>{token}</c> placeholders in the template. Yields the open-brace
+    /// index, close-brace index, and the token text for every well-formed bracket group, in order.
+    /// Stops cleanly at the first unclosed <c>{</c> so callers can flush the remaining literal tail
+    /// without special-casing. <see cref="Render"/> and <see cref="IndexOfToken"/> share this scanner
+    /// so their tokenisation can never drift out of sync.
+    /// </summary>
+    private static IEnumerable<(int OpenIndex, int CloseIndex, string Token)> ScanTokens(string template)
+    {
+        int i = 0;
+        while (i < template.Length)
+        {
+            int open = template.IndexOf('{', i);
+            if (open < 0) yield break;
+            int close = template.IndexOf('}', open + 1);
+            if (close < 0) yield break;
+            yield return (open, close, template.Substring(open + 1, close - open - 1));
+            i = close + 1;
+        }
+    }
+
+    private static string ResolveToken(string token, LogEntry e, bool strip)
+    {
+        switch (token)
+        {
+            case "ts":      return e.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff", System.Globalization.CultureInfo.InvariantCulture);
+            case "level":   return e.Level.ToString().ToUpperInvariant();
+            case "channel": return e.Channel;
+            case "mod":     return e.Mod ?? string.Empty;
+            case "source":  return e.Source.IsCallerProvided ? e.Source.File + ":" + e.Source.Line : string.Empty;
+            case "message": return strip ? RichText.Strip(e.RenderedMessage) : e.RenderedMessage;
+            case "ctx":     return RenderUnconsumedContext(e);
+            case "exc":     return e.Exception != null ? "\n" + e.Exception.ToString() : string.Empty;
+            default:        return "{" + token + "}";
+        }
+    }
+
+    private static string RenderUnconsumedContext(LogEntry e)
+    {
+        if (e.Context == null || e.Context.Count == 0) return string.Empty;
+        MessageTemplate t = TemplateCache.Get(e.MessageTemplate);
+        bool any = false;
+        System.Text.StringBuilder sb = new System.Text.StringBuilder(" {");
+        foreach (KeyValuePair<string, object?> kv in e.Context)
+        {
+            if (t.Holes.Contains(kv.Key)) continue;
+            if (any) sb.Append(", ");
+            sb.Append(kv.Key).Append('=').Append(kv.Value);
+            any = true;
+        }
+        sb.Append('}');
+        return any ? sb.ToString() : string.Empty;
+    }
+}

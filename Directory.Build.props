@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
     <PropertyGroup>
-        <Authors>CryptikLemur</Authors>
-        <Company>CryptikLemur</Company>
-        <Copyright>Copyright (c) 2026 CryptikLemur</Copyright>
+        <Authors>RimWorks</Authors>
+        <Company>RimWorks</Company>
+        <Copyright>Copyright (c) 2026 RimWorks</Copyright>
         <PackageProjectUrl>https://github.com/RimWorks/rimworld-logging-framework</PackageProjectUrl>
         <RepositoryUrl>https://github.com/RimWorks/rimworld-logging-framework</RepositoryUrl>
         <RepositoryType>git</RepositoryType>

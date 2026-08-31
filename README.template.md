@@ -22,7 +22,7 @@ Pair it with [Lightweave](https://github.com/RimworldCosmere/Lightweave) to get 
 Add it to your project from NuGet:
 
 ```
-dotnet add package CryptikLemur.RimLogging
+dotnet add package RimWorks.RimLogging
 ```
 
 Then declare the Workshop item as a dependency in your `About.xml` so subscribers get the shared runtime DLL automatically.

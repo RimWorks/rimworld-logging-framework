@@ -1,38 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Defs>
-  <CryptikLemur.RimLogging.Sinks.SinkDef>
+  <RimWorks.RimLogging.Sinks.SinkDef>
     <defName>VerseLog</defName>
     <label>Verse Log</label>
     <description>Forwards entries to RimWorld's built-in Verse.Log.</description>
-    <sinkClass>CryptikLemur.RimLogging.Sinks.VerseLogSink, CryptikLemur.RimLogging</sinkClass>
+    <sinkClass>RimWorks.RimLogging.Sinks.VerseLogSink, RimWorks.RimLogging</sinkClass>
     <minLevel>Info</minLevel>
     <enabledByDefault>true</enabledByDefault>
-  </CryptikLemur.RimLogging.Sinks.SinkDef>
+  </RimWorks.RimLogging.Sinks.SinkDef>
 
-  <CryptikLemur.RimLogging.Sinks.SinkDef>
+  <RimWorks.RimLogging.Sinks.SinkDef>
     <defName>RollingText</defName>
     <label>Rolling Text File</label>
     <description>Appends plain-text log entries to a rolling file in the log directory.</description>
-    <sinkClass>CryptikLemur.RimLogging.Sinks.RollingTextFileSink, CryptikLemur.RimLogging</sinkClass>
+    <sinkClass>RimWorks.RimLogging.Sinks.RollingTextFileSink, RimWorks.RimLogging</sinkClass>
     <minLevel>Info</minLevel>
     <enabledByDefault>true</enabledByDefault>
-  </CryptikLemur.RimLogging.Sinks.SinkDef>
+  </RimWorks.RimLogging.Sinks.SinkDef>
 
-  <CryptikLemur.RimLogging.Sinks.SinkDef>
+  <RimWorks.RimLogging.Sinks.SinkDef>
     <defName>RollingJson</defName>
     <label>Rolling JSON File</label>
     <description>Appends structured NDJSON log entries to a rolling file in the log directory.</description>
-    <sinkClass>CryptikLemur.RimLogging.Sinks.RollingJsonFileSink, CryptikLemur.RimLogging</sinkClass>
+    <sinkClass>RimWorks.RimLogging.Sinks.RollingJsonFileSink, RimWorks.RimLogging</sinkClass>
     <minLevel>Debug</minLevel>
     <enabledByDefault>false</enabledByDefault>
-  </CryptikLemur.RimLogging.Sinks.SinkDef>
+  </RimWorks.RimLogging.Sinks.SinkDef>
 
-  <CryptikLemur.RimLogging.Sinks.SinkDef>
+  <RimWorks.RimLogging.Sinks.SinkDef>
     <defName>Memory</defName>
     <label>In-Memory Buffer</label>
     <description>Retains recent entries in a ring buffer so they can be bundled and uploaded as a bug report.</description>
-    <sinkClass>CryptikLemur.RimLogging.Sinks.MemoryLogSink, CryptikLemur.RimLogging</sinkClass>
+    <sinkClass>RimWorks.RimLogging.Sinks.MemoryLogSink, RimWorks.RimLogging</sinkClass>
     <minLevel>Info</minLevel>
     <enabledByDefault>true</enabledByDefault>
-  </CryptikLemur.RimLogging.Sinks.SinkDef>
+  </RimWorks.RimLogging.Sinks.SinkDef>
 </Defs>

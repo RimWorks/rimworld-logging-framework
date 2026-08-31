@@ -22,13 +22,13 @@ Or load it from XML so the bootstrap phase instantiates it:
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <Defs>
-    <CryptikLemur.RimLogging.Sinks.SinkDef>
+    <RimWorks.RimLogging.Sinks.SinkDef>
         <defName>MySink</defName>
         <label>My Sink</label>
         <sinkClass>MyMod.MySink, MyMod</sinkClass>
         <minLevel>Info</minLevel>
         <enabledByDefault>true</enabledByDefault>
-    </CryptikLemur.RimLogging.Sinks.SinkDef>
+    </RimWorks.RimLogging.Sinks.SinkDef>
 </Defs>
 ```
 

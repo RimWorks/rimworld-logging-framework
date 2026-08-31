@@ -1,7 +1,7 @@
 # RimLogging
 
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=cryptiklemur_rimworld-logging-framework&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=cryptiklemur_rimworld-logging-framework)
-[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=cryptiklemur_rimworld-logging-framework&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=cryptiklemur_rimworld-logging-framework)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=RimWorks_rimworld-logging-framework&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=RimWorks_rimworld-logging-framework)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=RimWorks_rimworld-logging-framework&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=RimWorks_rimworld-logging-framework)
 
 A public, structured logging framework for RimWorld 1.6+ mods. It replaces vanilla `Verse.Log` and `UnityEngine.Debug.Log` with one structured, filterable pipeline that every dependent mod shares.
 
@@ -19,26 +19,26 @@ As a Steam Workshop dependency (recommended for shipped mods): end users install
 ```xml
 <modDependencies>
     <li>
-        <packageId>CryptikLemur.RimLogging</packageId>
+        <packageId>RimWorks.RimLogging</packageId>
         <displayName>RimLogging</displayName>
         <steamWorkshopUrl>steam://url/CommunityFilePage/REPLACE_WITH_WORKSHOP_ID</steamWorkshopUrl>
     </li>
 </modDependencies>
 <loadAfter>
-    <li>CryptikLemur.RimLogging</li>
+    <li>RimWorks.RimLogging</li>
 </loadAfter>
 ```
 
 Or bundle it from NuGet. The dll (and its `System.Text.Json` runtime dependencies) are copied into your mod's `Assemblies/` at build time, so you don't need the Workshop dependency:
 
 ```
-dotnet add package CryptikLemur.RimLogging
+dotnet add package RimWorks.RimLogging
 ```
 
 ## Usage
 
 ```csharp
-using CryptikLemur.RimLogging;
+using RimWorks.RimLogging;
 
 // Templated message with positional args.
 Log.Info("colony {Name} founded at {Tile}", colony.Name, colony.Tile);

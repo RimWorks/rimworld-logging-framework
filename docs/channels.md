@@ -5,7 +5,7 @@ Channels are dotted, hierarchical names. Define them in XML to set defaults, or 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <Defs>
-    <CryptikLemur.RimLogging.Channels.ChannelDef>
+    <RimWorks.RimLogging.Channels.ChannelDef>
         <defName>Cosmere.Roshar.Surgebinding</defName>
         <label>Surgebinding</label>
         <description>Stormlight bonding, surge investiture, oath progression.</description>
@@ -16,11 +16,11 @@ Channels are dotted, hierarchical names. Define them in XML to set defaults, or 
             <li>RollingText</li>
         </destinations>
         <format>[{Channel}] {Message}</format>
-    </CryptikLemur.RimLogging.Channels.ChannelDef>
+    </RimWorks.RimLogging.Channels.ChannelDef>
 </Defs>
 ```
 
-> The XML element name is the fully namespace-qualified type, `CryptikLemur.RimLogging.Channels.ChannelDef`, not `RimLogging.ChannelDef`.
+> The XML element name is the fully namespace-qualified type, `RimWorks.RimLogging.Channels.ChannelDef`, not `RimLogging.ChannelDef`.
 
 `ChannelDef` fields:
 
