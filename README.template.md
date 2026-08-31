@@ -29,7 +29,7 @@ Then declare the Workshop item as a dependency in your `About.xml` so subscriber
 
 ## Links
 
-- Source, docs, and issues: https://github.com/cryptiklemur/rimworld-logging-framework
+- Source, docs, and issues: https://github.com/RimWorks/rimworld-logging-framework
 - Companion UI framework: https://github.com/RimworldCosmere/Lightweave
 
 Licensed under MIT.

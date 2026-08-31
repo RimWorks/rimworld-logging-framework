@@ -6,7 +6,7 @@
     "description": "Public structured logging framework for RimWorld 1.6+ mods.",
     "repository": {
         "type": "git",
-        "url": "https://github.com/cryptiklemur/rimworld-logging-framework"
+        "url": "https://github.com/RimWorks/rimworld-logging-framework"
     },
     "scripts": {
         "build": "make build",

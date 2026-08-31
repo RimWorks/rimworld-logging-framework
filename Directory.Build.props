@@ -4,8 +4,8 @@
         <Authors>CryptikLemur</Authors>
         <Company>CryptikLemur</Company>
         <Copyright>Copyright (c) 2026 CryptikLemur</Copyright>
-        <PackageProjectUrl>https://github.com/cryptiklemur/rimworld-logging-framework</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/cryptiklemur/rimworld-logging-framework</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/RimWorks/rimworld-logging-framework</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/RimWorks/rimworld-logging-framework</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
