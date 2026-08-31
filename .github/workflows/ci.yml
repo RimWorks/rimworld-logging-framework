@@ -24,10 +24,10 @@ jobs:
             10.0.x
 
       - name: dotnet restore
-        run: dotnet restore CryptikLemur.RimLogging.sln
+        run: dotnet restore RimWorks.RimLogging.sln
 
       - name: dotnet build
-        run: dotnet build CryptikLemur.RimLogging.sln -c Release --nologo --no-restore
+        run: dotnet build RimWorks.RimLogging.sln -c Release --nologo --no-restore
 
       - name: dotnet test
-        run: dotnet test CryptikLemur.RimLogging.sln -c Release --nologo --no-build --logger "console;verbosity=normal"
+        run: dotnet test RimWorks.RimLogging.sln -c Release --nologo --no-build --logger "console;verbosity=normal"

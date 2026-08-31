@@ -7,9 +7,9 @@
 .gitignore
 .steamignore
 
-CryptikLemur.RimLogging/
-CryptikLemur.RimLogging.Tests/
-CryptikLemur.RimLogging.LightweaveViewer/
+RimWorks.RimLogging/
+RimWorks.RimLogging.Tests/
+RimWorks.RimLogging.LightweaveViewer/
 
 bin/
 obj/
@@ -22,7 +22,7 @@ Makefile
 package.json
 package-lock.json
 release.config.mjs
-CryptikLemur.RimLogging.sln
+RimWorks.RimLogging.sln
 Directory.Build.props
 README.md
 
