@@ -6,7 +6,7 @@ namespace RimWorks.RimLogging.Tests.Viewer;
 
 public class ViewerLogSinkTests
 {
-    private const int RingCapacity = 1000;
+    private const int RingCapacity = 20000;
 
     private static LogEntry Entry(LogLevel level, string message)
     {

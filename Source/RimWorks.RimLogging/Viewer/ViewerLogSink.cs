@@ -4,10 +4,10 @@ using RimWorks.RimLogging.Sinks;
 
 namespace RimWorks.RimLogging.Viewer;
 
-/// <summary>In-memory ring buffer of recent entries, backing the log viewer. Holds the last 1000 entries.</summary>
+/// <summary>In-memory ring buffer of recent entries, backing the log viewer. Holds the last 20000 entries.</summary>
 public sealed class ViewerLogSink : ILogSink {
     private readonly object syncRoot = new object();
-    private readonly LogEntry[] ring = new LogEntry[1000];
+    private readonly LogEntry[] ring = new LogEntry[20000];
     private int writeIndex;
     private int count;
 

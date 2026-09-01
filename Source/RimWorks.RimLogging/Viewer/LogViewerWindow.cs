@@ -281,7 +281,7 @@ internal sealed class LogViewerWindow : EditWindow {
         x += 12f;
 
         float nameWidth = rect.xMax - x - CountColumnWidth;
-        if (nameWidth != lastChannelNameWidth) {
+        if (Mathf.Abs(nameWidth - lastChannelNameWidth) > 0.5f) {
             channelNameTruncation.Clear();
             lastChannelNameWidth = nameWidth;
         }
@@ -434,7 +434,7 @@ internal sealed class LogViewerWindow : EditWindow {
         messageX += RepeatColumnWidth;
         messageWidth -= RepeatColumnWidth;
         // the cache is keyed by string only, so it has to be dropped when the column resizes
-        if (messageWidth != lastMessageWidth) {
+        if (Mathf.Abs(messageWidth - lastMessageWidth) > 0.5f) {
             messageTruncation.Clear();
             lastMessageWidth = messageWidth;
         }

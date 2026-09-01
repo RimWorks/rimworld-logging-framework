@@ -29,7 +29,7 @@ internal sealed class ListTailing {
         }
 
         // only jump when rows actually arrived. moving every frame fought the drag instead.
-        if (following && contentHeight != lastContentHeight) {
+        if (following && Mathf.Abs(contentHeight - lastContentHeight) > 0.5f) {
             scrollY = TailScroll.MaxScroll(rect.height, contentHeight);
         }
         lastContentHeight = contentHeight;
