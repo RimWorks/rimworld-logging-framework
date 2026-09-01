@@ -63,22 +63,22 @@ internal sealed class SuggestField {
             highlight = 0;
         }
 
+        // A key handler used to return before the TextField below. That skipped a control id, and
+        // IMGUI ids are positional, so it shifted the id of every scroll view drawn after this.
         string afterKeys = HandleKeys(value);
-        if (afterKeys != value) {
-            current = afterKeys;
-            return afterKeys;
-        }
+        bool keysChanged = afterKeys != value;
 
         GUI.SetNextControlName(controlName);
-        string next = Widgets.TextField(rect, value);
-        if (next != value) {
+        string next = Widgets.TextField(rect, keysChanged ? afterKeys : value);
+        if (!keysChanged && next != value) {
             dismissed = false;
             highlight = 0;
         }
 
-        DrawPlaceholder(rect, next, placeholderKey);
-        current = next;
-        return next;
+        string result = keysChanged ? afterKeys : next;
+        DrawPlaceholder(rect, result, placeholderKey);
+        current = result;
+        return result;
     }
 
     /// <summary>Paints the dropdown and returns an accepted value, or <c>null</c> when nothing was picked.</summary>

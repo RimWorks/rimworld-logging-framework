@@ -4,10 +4,10 @@ using RimWorks.RimLogging.Sinks;
 
 namespace RimWorks.RimLogging.Viewer;
 
-/// <summary>In-memory ring buffer of recent entries, backing the log viewer. Holds the last 4096 entries.</summary>
+/// <summary>In-memory ring buffer of recent entries, backing the log viewer. Holds the last 1000 entries.</summary>
 public sealed class ViewerLogSink : ILogSink {
     private readonly object syncRoot = new object();
-    private readonly LogEntry[] ring = new LogEntry[4096];
+    private readonly LogEntry[] ring = new LogEntry[1000];
     private int writeIndex;
     private int count;
 
@@ -50,14 +50,30 @@ public sealed class ViewerLogSink : ILogSink {
             return;
         }
         lock (syncRoot) {
-            ring[writeIndex] = entry;
-            writeIndex = (writeIndex + 1) % ring.Length;
-            if (count < ring.Length) {
-                count++;
+            // collapse a repeat into the previous row instead of adding one, the way vanilla's
+            // LogMessageQueue does. a spamming mod would otherwise make the scrollbar unusable.
+            int last = (writeIndex - 1 + ring.Length) % ring.Length;
+            if (count > 0 && RepeatsPrevious(ring[last], entry)) {
+                ring[last].Repeats++;
+                Revision++;
             }
-            Revision++;
+            else {
+                ring[writeIndex] = entry;
+                writeIndex = (writeIndex + 1) % ring.Length;
+                if (count < ring.Length) {
+                    count++;
+                }
+                Revision++;
+            }
         }
         EntryAdded?.Invoke(entry);
+    }
+
+    private static bool RepeatsPrevious(LogEntry previous, LogEntry entry) {
+        return previous != null
+            && previous.Level == entry.Level
+            && string.Equals(previous.Channel, entry.Channel, StringComparison.Ordinal)
+            && string.Equals(previous.RenderedMessage, entry.RenderedMessage, StringComparison.Ordinal);
     }
 
     /// <inheritdoc/>

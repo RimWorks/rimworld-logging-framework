@@ -33,13 +33,25 @@ internal static class LogFilter {
         return result;
     }
 
+    // Tally per channel before touching paths. PathFor allocates a fresh array and each depth
+    // needs a string.Join, so doing it per entry costs thousands of allocations for a handful
+    // of distinct channels.
     private static Dictionary<string, NodeAccum> AccumulateNodes(IReadOnlyList<LogEntry> snapshot) {
-        Dictionary<string, NodeAccum> nodes = new Dictionary<string, NodeAccum>(System.StringComparer.Ordinal);
+        Dictionary<string, ChannelTally> perChannel = new Dictionary<string, ChannelTally>(System.StringComparer.Ordinal);
         for (int i = 0; i < snapshot.Count; i++) {
             LogEntry entry = snapshot[i];
             string channel = string.IsNullOrEmpty(entry.Channel) ? "(root)" : entry.Channel;
-            string[] path = ChannelClassifier.PathFor(channel);
-            bool isError = entry.Level >= LogLevel.Error;
+            perChannel.TryGetValue(channel, out ChannelTally tally);
+            tally.Count++;
+            tally.HasError |= entry.Level >= LogLevel.Error;
+            perChannel[channel] = tally;
+        }
+
+        Dictionary<string, NodeAccum> nodes = new Dictionary<string, NodeAccum>(System.StringComparer.Ordinal);
+        foreach (KeyValuePair<string, ChannelTally> channelTally in perChannel) {
+            string[] path = ChannelClassifier.PathFor(channelTally.Key);
+            int count = channelTally.Value.Count;
+            bool isError = channelTally.Value.HasError;
 
             for (int d = 1; d <= path.Length; d++) {
                 string id = string.Join("/", path, 0, d);
@@ -52,7 +64,7 @@ internal static class LogFilter {
                         HasError = false,
                     };
                 }
-                acc.Count++;
+                acc.Count += count;
                 if (isError) {
                     acc.HasError = true;
                 }
@@ -60,6 +72,11 @@ internal static class LogFilter {
             }
         }
         return nodes;
+    }
+
+    private struct ChannelTally {
+        public int Count;
+        public bool HasError;
     }
 
     private static HashSet<string> ComputeKeepIds(Dictionary<string, NodeAccum> nodes, string filterLower) {

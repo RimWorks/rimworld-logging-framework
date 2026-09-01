@@ -6,7 +6,7 @@ namespace RimWorks.RimLogging.Tests.Viewer;
 
 public class ViewerLogSinkTests
 {
-    private const int RingCapacity = 4096;
+    private const int RingCapacity = 1000;
 
     private static LogEntry Entry(LogLevel level, string message)
     {
@@ -97,5 +97,55 @@ public class ViewerLogSinkTests
 
         Assert.Single(sink.Snapshot());
         Assert.Equal("new", sink.Snapshot()[0].RenderedMessage);
+    }
+
+    [Fact]
+    public void Write_SameEntryTwiceInARow_CollapsesIntoOneRowWithACount()
+    {
+        ViewerLogSink sink = new ViewerLogSink();
+        for (int i = 0; i < 5; i++)
+        {
+            sink.Write(Entry(LogLevel.Info, "spam"));
+        }
+
+        IReadOnlyList<LogEntry> snapshot = sink.Snapshot();
+
+        Assert.Single(snapshot);
+        Assert.Equal(5, snapshot[0].Repeats);
+    }
+
+    [Fact]
+    public void Write_DifferentMessageBetweenRepeats_StartsANewRow()
+    {
+        ViewerLogSink sink = new ViewerLogSink();
+        sink.Write(Entry(LogLevel.Info, "spam"));
+        sink.Write(Entry(LogLevel.Info, "other"));
+        sink.Write(Entry(LogLevel.Info, "spam"));
+
+        IReadOnlyList<LogEntry> snapshot = sink.Snapshot();
+
+        Assert.Equal(3, snapshot.Count);
+        Assert.All(snapshot, e => Assert.Equal(1, e.Repeats));
+    }
+
+    [Fact]
+    public void Write_SameTextDifferentLevel_DoesNotCollapse()
+    {
+        ViewerLogSink sink = new ViewerLogSink();
+        sink.Write(Entry(LogLevel.Info, "same"));
+        sink.Write(Entry(LogLevel.Error, "same"));
+
+        Assert.Equal(2, sink.Snapshot().Count);
+    }
+
+    [Fact]
+    public void Write_RepeatsStillBumpRevisionSoTheViewerRefreshes()
+    {
+        ViewerLogSink sink = new ViewerLogSink();
+        sink.Write(Entry(LogLevel.Info, "spam"));
+        int afterFirst = sink.Revision;
+        sink.Write(Entry(LogLevel.Info, "spam"));
+
+        Assert.NotEqual(afterFirst, sink.Revision);
     }
 }

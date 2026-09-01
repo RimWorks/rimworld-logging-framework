@@ -53,11 +53,18 @@ internal static class LogDetailView {
         }
 
         Widgets.EndScrollView();
+        DrawCopyButton(rect, entry);
+    }
 
-        float copyX = rect.xMax - Pad - ScrollbarWidth - Pad - CopyButtonWidth;
-        Rect copy = new Rect(copyX, rect.y + Pad, CopyButtonWidth, 22f);
+    private static void DrawCopyButton(Rect rect, LogEntry? entry) {
+        // allocated even with nothing selected, so the control id count does not move with the
+        // selection. IMGUI derives ids from allocation order.
+        Rect copy = entry == null
+            ? new Rect(-4000f, -4000f, CopyButtonWidth, 22f)
+            : new Rect(rect.xMax - Pad - ScrollbarWidth - Pad - CopyButtonWidth, rect.y + Pad, CopyButtonWidth, 22f);
+
         Text.Font = GameFont.Tiny;
-        if (Widgets.ButtonText(copy, "CRL_LogViewer_Detail_CopyAll".Translate())) {
+        if (Widgets.ButtonText(copy, "CRL_LogViewer_Detail_CopyAll".Translate()) && entry != null) {
             GUIUtility.systemCopyBuffer = EntryText.Full(entry);
             Messages.Message("CRL_LogViewer_Copy".Translate(), MessageTypeDefOf.TaskCompletion, false);
         }

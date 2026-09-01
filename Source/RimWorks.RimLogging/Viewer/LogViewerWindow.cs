@@ -17,6 +17,7 @@ internal sealed class LogViewerWindow : EditWindow {
     private const float FilterStripHeight = 24f;
     private const float ErrorStripHeight = 16f;
     private const float ScrollbarWidth = 18f;
+    private const float RepeatColumnWidth = 26f;
     private const float IndentPerDepth = 12f;
     private const float CountColumnWidth = 46f;
     private const float TimestampWidth = 74f;
@@ -43,6 +44,14 @@ internal sealed class LogViewerWindow : EditWindow {
     private float detailPaneWidth = 356f;
 
     private bool tailing = true;
+    private bool listDragging;
+    private float lastContentHeight = -1f;
+    private float listContentHeight;
+    private float channelContentHeight;
+    private int listFirstRow;
+    private int listLastRow;
+    private int channelFirstRow;
+    private int channelLastRow;
     private bool selectNewestPending;
 
     private Splitter dragging = Splitter.None;
@@ -51,6 +60,16 @@ internal sealed class LogViewerWindow : EditWindow {
     private readonly SuggestField channelField = new SuggestField("rimlog-channel-filter");
     private readonly SuggestField dslField = new SuggestField("rimlog-dsl-filter");
     private List<string> channelNames = new List<string>();
+
+    // GenText.Truncate does no caching unless you hand it a dictionary. Without one it walks a
+    // long message down a character at a time, measuring the font on every step, every pass.
+    // Keep these as Dictionary<string, string>: the TaggedString overload caches the original
+    // instead of the truncated value, so a cache there silently stops truncating.
+    private readonly Dictionary<string, string> messageTruncation = new Dictionary<string, string>();
+    private readonly Dictionary<string, string> channelTruncation = new Dictionary<string, string>();
+    private readonly Dictionary<string, string> channelNameTruncation = new Dictionary<string, string>();
+    private float lastMessageWidth = -1f;
+    private float lastChannelNameWidth = -1f;
 
     private int cachedRevision = -1;
     private string cachedSignature = string.Empty;
@@ -88,7 +107,11 @@ internal sealed class LogViewerWindow : EditWindow {
         dslField.ReserveClicks();
 
         DropPopoutIfUserClosedIt();
-        RebuildIfStale();
+        // IMGUI runs several passes per frame and needs the same layout in each. entries arrive on
+        // a background thread, so refreshing mid-frame changes the view rect under the scroll view.
+        if (Event.current.type == EventType.Layout || cachedRevision < 0) {
+            RebuildIfStale();
+        }
 
         Text.Font = GameFont.Tiny;
         DrawToolbar(inRect);
@@ -96,6 +119,7 @@ internal sealed class LogViewerWindow : EditWindow {
 
         Rect body = inRect;
         body.yMin += ToolbarHeight;
+
 
         if (state.ChannelsOpen) {
             Rect channelPane = new Rect(body.x, body.y, channelPaneWidth, body.height);
@@ -216,10 +240,18 @@ internal sealed class LogViewerWindow : EditWindow {
         Rect listRect = rect;
         listRect.yMin = filterBox.yMax + 2f;
 
-        Rect view = new Rect(0f, 0f, listRect.width - ScrollbarWidth, channels.Count * RowHeight);
+        if (Event.current.type == EventType.Layout) {
+            channelContentHeight = channels.Count * RowHeight;
+        }
+        Rect view = new Rect(0f, 0f, listRect.width - ScrollbarWidth, channelContentHeight);
         Widgets.BeginScrollView(listRect, ref channelScroll, view);
 
-        for (int i = 0; i < channels.Count; i++) {
+        if (Event.current.type == EventType.Layout) {
+            (channelFirstRow, channelLastRow) = RowWindow.Visible(channelScroll.y, listRect.height, RowHeight, channels.Count);
+        }
+        int first = Mathf.Min(channelFirstRow, channels.Count);
+        int last = Mathf.Min(channelLastRow, channels.Count);
+        for (int i = first; i < last; i++) {
             DrawChannelRow(new Rect(0f, i * RowHeight, view.width, RowHeight), channels[i], i);
         }
 
@@ -242,7 +274,7 @@ internal sealed class LogViewerWindow : EditWindow {
             GUI.color = new Color(0.54f, 0.56f, 0.58f);
             Widgets.Label(twisty, channel.Expanded ? "-" : "+");
             GUI.color = Color.white;
-            if (Widgets.ButtonInvisible(twisty)) {
+            if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && Mouse.IsOver(twisty)) {
                 state.ToggleChannel(channel.Id, channel.Depth);
                 InvalidateCache();
                 Event.current.Use();
@@ -255,7 +287,11 @@ internal sealed class LogViewerWindow : EditWindow {
         x += 12f;
 
         float nameWidth = rect.xMax - x - CountColumnWidth;
-        Widgets.Label(new Rect(x, rect.y - 1f, nameWidth, RowHeight), channel.Name.Truncate(nameWidth));
+        if (nameWidth != lastChannelNameWidth) {
+            channelNameTruncation.Clear();
+            lastChannelNameWidth = nameWidth;
+        }
+        Widgets.Label(new Rect(x, rect.y - 1f, nameWidth, RowHeight), channel.Name.Truncate(nameWidth, channelNameTruncation));
 
         Text.Anchor = TextAnchor.MiddleRight;
         Text.Font = GameFont.Tiny;
@@ -265,9 +301,10 @@ internal sealed class LogViewerWindow : EditWindow {
         Text.Font = GameFont.Small;
         Text.Anchor = TextAnchor.UpperLeft;
 
-        if (Widgets.ButtonInvisible(rect)) {
+        if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && Mouse.IsOver(rect)) {
             state.ActiveChannel = channel.Id;
             InvalidateCache();
+            Event.current.Use();
         }
     }
 
@@ -290,10 +327,6 @@ internal sealed class LogViewerWindow : EditWindow {
                 DoSplitter(new Rect(listArea.xMax, rect.y, SplitterThickness, rect.height), Splitter.Detail);
                 break;
         }
-
-        // Window.InnerWindowOnGUI ends with a bare GUI.DragWindow(), which would eat the
-        // detail pane's drag-to-select, so stop being draggable while the pointer is in there
-        draggable = !Mouse.IsOver(detailArea);
 
         DrawFilterStrip(ref listArea);
         DrawList(listArea);
@@ -342,21 +375,54 @@ internal sealed class LogViewerWindow : EditWindow {
     private void DrawList(Rect rect) {
         Widgets.DrawBoxSolid(rect, new Color(1f, 1f, 1f, 0.02f));
 
-        float contentHeight = filtered.Count * RowHeight;
+        if (Event.current.type == EventType.Layout) {
+            listContentHeight = filtered.Count * RowHeight;
+        }
+        float contentHeight = listContentHeight;
         Rect view = new Rect(0f, 0f, rect.width - ScrollbarWidth, contentHeight);
-        if (tailing) {
+
+        if (Event.current.rawType == EventType.MouseUp) {
+            listDragging = false;
+        }
+        else if (Event.current.type == EventType.MouseDown && Mouse.IsOver(rect)) {
+            listDragging = true;
+        }
+
+        if (listDragging || (Event.current.type == EventType.ScrollWheel && Mouse.IsOver(rect))) {
+            tailing = false;
+        }
+
+        // only follow when new rows actually arrived. snapping every frame fought every drag,
+        // which is what made the scrollbar stutter.
+        if (tailing && contentHeight != lastContentHeight) {
             listScroll.y = TailScroll.MaxScroll(rect.height, contentHeight);
         }
+        lastContentHeight = contentHeight;
+
         Widgets.BeginScrollView(rect, ref listScroll, view);
 
-        for (int i = 0; i < filtered.Count; i++) {
+        // Pick the row range on Layout only. Each row allocates a control id, and IMGUI needs the
+        // same ids in every pass of a frame; recomputing mid-drag loses the scrollbar's hot control.
+        if (Event.current.type == EventType.Layout) {
+            (listFirstRow, listLastRow) = RowWindow.Visible(listScroll.y, rect.height, RowHeight, filtered.Count);
+        }
+        int first = Mathf.Min(listFirstRow, filtered.Count);
+        int last = Mathf.Min(listLastRow, filtered.Count);
+        for (int i = first; i < last; i++) {
             DrawLogRow(new Rect(0f, i * RowHeight, view.width, RowHeight), filtered[i], i);
         }
 
         Widgets.EndScrollView();
-        tailing = TailScroll.IsAtBottom(listScroll.y, rect.height, contentHeight);
 
-        if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && Mouse.IsOver(rect)) {
+        // only resume tailing once the drag ends, so holding the bar never re-snaps mid-drag
+        if (!listDragging) {
+            tailing = TailScroll.IsAtBottom(listScroll.y, rect.height, contentHeight);
+        }
+
+        // exclude the scrollbar strip: grabbing it must not clear the selection, which would
+        // collapse the detail pane and change the control id count mid-drag
+        Rect rowsOnly = new Rect(rect.x, rect.y, rect.width - ScrollbarWidth, rect.height);
+        if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && Mouse.IsOver(rowsOnly)) {
             state.Selected = null;
         }
     }
@@ -377,24 +443,39 @@ internal sealed class LogViewerWindow : EditWindow {
         GUI.color = LevelColors.ForChannel(entry.Channel);
         Widgets.Label(
             new Rect(rect.x + 4f + TimestampWidth, rect.y + 1f, ChannelColumnWidth, RowHeight),
-            entry.Channel.Truncate(ChannelColumnWidth));
+            entry.Channel.Truncate(ChannelColumnWidth, channelTruncation));
 
         Text.Font = GameFont.Small;
         GUI.color = LevelColors.For(entry.Level);
         float messageX = rect.x + 8f + TimestampWidth + ChannelColumnWidth;
         float messageWidth = rect.xMax - messageX - 4f;
-        Widgets.Label(new Rect(messageX, rect.y - 1f, messageWidth, RowHeight), entry.RenderedMessage.Truncate(messageWidth));
+        // Draw the repeat count separately. Composing a new string per frame missed
+        // GenText.Truncate's cache every time and grew it without bound.
+        if (entry.Repeats > 1) {
+            Text.Font = GameFont.Tiny;
+            GUI.color = new Color(0.54f, 0.56f, 0.58f);
+            Widgets.Label(new Rect(messageX, rect.y + 1f, RepeatColumnWidth, RowHeight), entry.Repeats.ToStringCached());
+            Text.Font = GameFont.Small;
+            GUI.color = LevelColors.For(entry.Level);
+        }
+        messageX += RepeatColumnWidth;
+        messageWidth -= RepeatColumnWidth;
+        // the cache is keyed by string only, so it has to be dropped when the column resizes
+        if (messageWidth != lastMessageWidth) {
+            messageTruncation.Clear();
+            lastMessageWidth = messageWidth;
+        }
+        Widgets.Label(new Rect(messageX, rect.y - 1f, messageWidth, RowHeight),
+            entry.RenderedMessage.Truncate(messageWidth, messageTruncation));
         GUI.color = Color.white;
 
-        if (Event.current.type == EventType.MouseDown && Event.current.button == 1 && Mouse.IsOver(rect)) {
+        // no ButtonInvisible here: it allocates a control id, and a per-row id count that moves
+        // with scrolling shifts every later slider id, which breaks scrollbar dragging
+        if (Event.current.type == EventType.MouseDown && Mouse.IsOver(rect)) {
             state.Selected = entry;
-            OpenRowMenu(entry);
-            Event.current.Use();
-            return;
-        }
-
-        if (Widgets.ButtonInvisible(rect)) {
-            state.Selected = entry;
+            if (Event.current.button == 1) {
+                OpenRowMenu(entry);
+            }
             Event.current.Use();
         }
     }
