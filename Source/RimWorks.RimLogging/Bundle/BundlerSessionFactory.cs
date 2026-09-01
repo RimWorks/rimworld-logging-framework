@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace RimWorks.RimLogging.Bundle;
 
@@ -19,8 +20,21 @@ public static class BundlerSessionFactory
         return Bundler.Build(
             entries,
             RimWorld.VersionControl.CurrentVersionString,
-            BuildInfo.Revision,
+            Revision(),
             ModListSnapshot.Capture()
         );
+    }
+
+    // comes from the build, so a release stamps it without touching tracked source
+    private static string Revision()
+    {
+        Assembly assembly = typeof(BundlerSessionFactory).Assembly;
+        string? version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+        if (string.IsNullOrEmpty(version))
+        {
+            return assembly.GetName().Version?.ToString() ?? "0.0.0";
+        }
+        int plus = version!.IndexOf('+');
+        return plus < 0 ? version : version.Substring(0, plus);
     }
 }
