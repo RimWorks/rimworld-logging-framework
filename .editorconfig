@@ -73,3 +73,8 @@ dotnet_diagnostic.S1075.severity = none
 # ClearInSink stays its own static method. Moving it into Scope trips S2696.
 [**/Pipeline/ReentryGuard.cs]
 dotnet_diagnostic.S3398.severity = none
+
+# reads vanilla's private EditWindow_Log.canAutoOpen so our toggle and its own button stay
+# one flag. a mirrored bool would drift the moment either side changed it.
+[**/Viewer/LogViewerBoot.cs]
+dotnet_diagnostic.S3011.severity = none

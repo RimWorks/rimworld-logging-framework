@@ -18,7 +18,7 @@ internal abstract class LogViewerAutoOpenPatch : UIRoot {
         ViewerLogSink? sink = LogViewerBoot.Sink;
         bool reclaim = LogViewerBoot.ConsumeReclaim();
 
-        if (AutoOpenDecision.ShouldReclaim(reclaim, sink != null, windowStack.IsOpen(typeof(EditWindow_Log)))) {
+        if (AutoOpenDecision.ShouldReclaim(reclaim, sink != null, windowStack.IsOpen<EditWindow_Log>())) {
             windowStack.TryRemove(typeof(EditWindow_Log));
             Open(windowStack, sink!);
             return Control.Cancel;
