@@ -25,4 +25,28 @@ public class AutoOpenDecisionTests
     {
         Assert.False(AutoOpenDecision.ShouldTakeOver(wantsToOpen: true, hasSink, hasWindowStack));
     }
+
+    [Fact]
+    public void ShouldReclaim_VanillaWonTheBootRace_TakesTheWindowBack()
+    {
+        Assert.True(AutoOpenDecision.ShouldReclaim(reclaimPending: true, hasSink: true, vanillaOpen: true));
+    }
+
+    [Fact]
+    public void ShouldReclaim_UserOpenedVanillaThemselves_LeavesItAlone()
+    {
+        Assert.False(AutoOpenDecision.ShouldReclaim(reclaimPending: false, hasSink: true, vanillaOpen: true));
+    }
+
+    [Fact]
+    public void ShouldReclaim_NoVanillaWindowOnScreen_DoesNothing()
+    {
+        Assert.False(AutoOpenDecision.ShouldReclaim(reclaimPending: true, hasSink: true, vanillaOpen: false));
+    }
+
+    [Fact]
+    public void ShouldReclaim_SinkNotRegistered_DoesNothing()
+    {
+        Assert.False(AutoOpenDecision.ShouldReclaim(reclaimPending: true, hasSink: false, vanillaOpen: true));
+    }
 }

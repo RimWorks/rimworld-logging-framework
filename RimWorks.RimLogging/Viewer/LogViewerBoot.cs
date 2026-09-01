@@ -8,6 +8,15 @@ namespace RimWorks.RimLogging.Viewer;
 internal static class LogViewerBoot {
     public static ViewerLogSink? Sink { get; private set; }
 
+    private static bool reclaimPending;
+
+    /// <summary>Returns true once after the sink registers, so the patch can check for a stolen window.</summary>
+    public static bool ConsumeReclaim() {
+        bool pending = reclaimPending;
+        reclaimPending = false;
+        return pending;
+    }
+
     public static void Init() {
         if (Sink != null) {
             return;
@@ -17,6 +26,7 @@ internal static class LogViewerBoot {
             ViewerLogSink sink = new ViewerLogSink();
             Logging.RegisterSink(sink);
             Sink = sink;
+            reclaimPending = true;
             Log.Info("Log viewer sink registered");
         }
         catch (Exception ex) {
