@@ -3,6 +3,8 @@
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=RimWorks_rimworld-logging-framework&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=RimWorks_rimworld-logging-framework)
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=RimWorks_rimworld-logging-framework&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=RimWorks_rimworld-logging-framework)
 
+<img src="https://raw.githubusercontent.com/RimWorks/rimworld-logging-framework/main/About/ModIcon.png" alt="RimLogging icon" width="96" align="right">
+
 A public, structured logging framework for RimWorld 1.6+ mods. It replaces vanilla `Verse.Log` and `UnityEngine.Debug.Log` with one structured, filterable pipeline that every dependent mod shares.
 
 - Hierarchical channels (XML defs or transient) with prefix-based resolution.
@@ -11,6 +13,8 @@ A public, structured logging framework for RimWorld 1.6+ mods. It replaces vanil
 - Multi-sink output (Verse writeback, rolling text/NDJSON files, in-memory) with a plugin sink API.
 - Lock-free MPSC queue with a background drain; synchronous bypass for `Error` / `Fatal`.
 - Three-pane in-game log viewer with a channel tree and an expression filter DSL. The detail pane docks to the bottom, docks to the right, or pops out into its own window.
+
+![RimLogging preview card](https://raw.githubusercontent.com/RimWorks/rimworld-logging-framework/main/About/Preview.png)
 
 ## Install
 
