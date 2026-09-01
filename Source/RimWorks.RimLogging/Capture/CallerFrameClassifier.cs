@@ -3,18 +3,11 @@ using System;
 namespace RimWorks.RimLogging.Capture;
 
 /// <summary>
-/// Pure predicate that decides whether a stack frame belongs to logging infrastructure
-/// (and should be skipped when attributing a captured Verse.Log call to its originating
-/// mod) or to a real caller (which should win channel attribution).
+/// Decides whether a stack frame is logging infrastructure to skip, or the real caller.
 /// </summary>
 /// <remarks>
-/// Runtime patchers bundle their detour engine and analysis libraries (MonoMod, Mono.Cecil,
-/// Iced, Microsoft.Cci, plus assorted System.* polyfills) under namespaces other than their
-/// own top-level one. A namespace-only skip therefore lets MonoMod frames through and, because
-/// the patcher mod is the one that ships those assemblies, every patched call gets misattributed
-/// to that mod. Skipping by assembly name (and by the MonoMod / patcher namespaces independently,
-/// for defence-in-depth) closes the gap. Concord weaves its wrappers through the same MonoMod
-/// stack, so <c>Concord.*</c> frames are skipped alongside the legacy Harmony ones.
+/// Skips by assembly name as well as namespace. Patchers ship MonoMod and Cecil under
+/// namespaces that are not their own, so a namespace-only skip blames the patcher mod.
 /// </remarks>
 internal static class CallerFrameClassifier
 {

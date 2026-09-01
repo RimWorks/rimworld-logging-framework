@@ -1,9 +1,8 @@
 namespace RimWorks.RimLogging.Settings;
 
 /// <summary>
-/// Canonical default values for <see cref="LoggingSettings"/>. Referenced from the field
-/// initializers, the <c>Scribe_Values.Look</c> defaults in <see cref="LoggingSettings.ExposeData"/>,
-/// and the Reset button in <c>LoggingSettingsWindow</c> so the three sites cannot drift apart.
+/// Canonical default values for . Referenced from the field initializers, the Scribe_Values.Look defaults
+/// in , and the Reset button in LoggingSettingsWindow so the three sites cannot drift apart.
 /// </summary>
 internal static class LoggingSettingsDefaults
 {

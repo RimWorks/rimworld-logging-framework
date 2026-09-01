@@ -26,11 +26,8 @@ public static class StackWalker
         new System.Collections.Concurrent.ConcurrentDictionary<string, string>();
 
     /// <summary>
-    /// Per-assembly hint used by <see cref="NormalizePath(string, System.Type)"/> to anchor
-    /// embedded source paths. <see cref="AssemblyName"/> matches a path segment in the source
-    /// path; <see cref="ModFolder"/> is parsed from <see cref="System.Reflection.Assembly.Location"/>
-    /// and prepended to the result so the user sees the in-game mod folder name rather than the
-    /// developer's project layout.
+    /// Anchors an embedded source path to a mod folder, so the user sees the in-game folder
+    /// name rather than the developer's project layout.
     /// </summary>
     private readonly struct AssemblyHint
     {
@@ -45,9 +42,8 @@ public static class StackWalker
     }
 
     /// <summary>
-    /// Walks the current stack and returns the first frame outside the
-    /// <c>RimWorks.RimLogging.</c> namespace, normalising its file path so the
-    /// resulting <see cref="SourceLocation"/> is stable across machines and layouts.
+    /// Walks the current stack and returns the first frame outside the RimWorks.RimLogging. namespace,
+    /// normalising its file path so the resulting  is stable across machines and layouts.
     /// </summary>
     /// <returns>
     /// A populated <see cref="SourceLocation"/> when a usable frame is found, or
@@ -78,9 +74,8 @@ public static class StackWalker
             // Skip framework infrastructure (RimLogging, Harmony stubs, MonoMod, dynamic methods).
             if (CallerFrameClassifier.IsInternalFrame(declaring, assembly)) continue;
             string? file = frame?.GetFileName();
-            // Bug fix: vanilla Verse/Unity frames have no PDB, so GetFileName() returns null.
-            // Previously we bailed here, which meant the real user-code frame underneath was
-            // never visited even when its PDB was loaded. Keep walking instead.
+            // vanilla frames have no PDB, so keep walking rather than giving up on the
+            // user-code frame underneath
             if (file == null) continue;
             string clean = NormalizePath(file, declaringType);
             return new SourceLocation(clean, frame!.GetFileLineNumber(), method?.Name);
@@ -111,10 +106,8 @@ public static class StackWalker
     }
 
     /// <summary>
-    /// Formats a <see cref="System.Diagnostics.StackTrace"/> into a multi-line
-    /// string of <c>at Type.Method (file:line)</c> entries for every frame
-    /// outside the <c>RimWorks.RimLogging.</c> namespace. Paths are
-    /// normalised the same way <see cref="FirstCallerFrame"/> normalises them.
+    /// Formats a  into a multi-line string of at Type.Method (file:line) entries for every frame outside the
+    /// RimWorks.RimLogging. namespace. Paths are normalised the same way  normalises them.
     /// </summary>
     /// <param name="st">A pre-captured stack trace to format.</param>
     /// <returns>A formatted trace string; empty when no qualifying frames exist.</returns>
@@ -148,12 +141,8 @@ public static class StackWalker
     }
 
     /// <summary>
-    /// Normalises an absolute source-file path into a short, stable form. When
-    /// <paramref name="declaringType"/> is supplied, the assembly's simple name is
-    /// used as a stable anchor segment in the path and the mod folder (parsed from
-    /// the assembly's load location) is used as the display prefix. Falls back to
-    /// stripping common RimWorld layout prefixes via regex, collapsing duplicated
-    /// sibling directories, and removing the trailing <c>.cs</c> extension.
+    /// Shortens an absolute source path. With a declaring type it anchors on the assembly name
+    /// and prefixes the mod folder; otherwise it strips known RimWorld layout prefixes.
     /// </summary>
     /// <param name="file">Raw file path from <c>StackFrame.GetFileName()</c>.</param>
     /// <param name="declaringType">
@@ -172,15 +161,12 @@ public static class StackWalker
 
 
     /// <summary>
-    /// Computes the normalised path for a given input. Tries assembly-anchored resolution
-    /// first (using the declaring type's assembly to find a stable anchor segment in the
-    /// source path), then falls back to the legacy regex-based prefix stripping.
+    /// Normalises a path, anchoring on the declaring type's assembly name when it can and
+    /// falling back to regex prefix stripping when it cannot.
     /// </summary>
     /// <summary>
-    /// Computes the normalised path along with a "stable" flag indicating whether the result
-    /// can be safely cached. A hint is unstable when its <see cref="AssemblyHint.ModFolder"/>
-    /// is still null but the folder provider exists -- meaning the folder may resolve on a
-    /// subsequent call once more mods have loaded.
+    /// Normalises the path and reports whether it is safe to cache. Unstable while the mod
+    /// folder is unresolved but a provider exists, since a later call may resolve it.
     /// </summary>
     private static (string Path, bool Stable) ComputeNormalizedPath(string file, System.Type? declaringType)
     {
@@ -198,10 +184,8 @@ public static class StackWalker
             if (anchored != null) return (anchored, IsHintStable(hint));
         }
 
-        // Legacy fallback: no asm anchored, so use the /Mods/ regex prefix-strip. After stripping
-        // we apply the same Source/ pattern normalisation as the asm-anchored branch so paths like
-        // /Mods/Dubs-Performance-Analyzer/Source/Profiling/X.cs collapse to "Profiling/X" instead
-        // of "Dubs-Performance-Analyzer/Source/Profiling/X".
+        // no assembly anchor, so strip the /Mods/ prefix by regex and normalise Source/ the
+        // same way, giving "Profiling/X" rather than "Dubs-Performance-Analyzer/Source/Profiling/X"
         string clean = _pathStrip.Replace(file, string.Empty);
         clean = _dupDir.Replace(clean, "$1\\");
         clean = clean.TrimStart('\\', '/');
@@ -222,22 +206,15 @@ public static class StackWalker
         if (hint.AssemblyName == null) return null;
         string? rel = TryAnchorByAssembly(file, hint.AssemblyName);
         if (rel == null) return null;
-        // Show only the path relative to the asm anchor (no modFolder/asm prefix). The mod is
-        // already identified by the channel column, so duplicating it here is noise. Also drop a
-        // leading "Source/" segment -- a common project layout (Dubs, Lightweave subprojects, etc.)
-        // -- because it's purely a developer-side convention with no signal for the reader.
+        // relative to the anchor only: the channel column already names the mod, and a leading
+        // "Source/" is a developer convention with nothing in it for the reader
         rel = StripLeadingSourceDir(rel);
         return ToOsSeparators(StripCsExtension(rel));
     }
 
     /// <summary>
-    /// Normalises a path that's already relative to a project / mod root. Strips developer-side
-    /// "Source/" conventions so the rendered path shows only the meaningful code location:
-    ///   - "Source/Foo/Bar.cs"            -> "Foo/Bar.cs"           (Source/ as the leading segment)
-    ///   - "Sub/Source/Foo/Bar.cs"        -> "Foo/Bar.cs"           (Source/ as the second segment;
-    ///                                                              "Sub" is a sub-project container
-    ///                                                              like Lightweave's "Framework" or
-    ///                                                              Dubs' "Dubs-Performance-Analyzer")
+    /// Drops a leading or second-segment "Source/" so paths read as "Foo/Bar.cs".
+    /// The second-segment case covers sub-project containers like "Framework/Source/...".
     /// </summary>
     private static string StripLeadingSourceDir(string rel)
     {
@@ -246,10 +223,8 @@ public static class StackWalker
         if (stripped != null) return stripped;
         stripped = TryStripSourcePattern(rel, '\\');
         if (stripped != null) return stripped;
-        // Collapse a leading "<X>/<X>/" duplication (common when the asm anchor lands on the
-        // outer mod folder of a layout that nests the same name inside, e.g. LightweaveRimBridge
-        // /LightweaveRimBridge/Bridge.cs). Without this collapse the rendered path repeats the
-        // mod name redundantly.
+        // collapse a repeated "<X>/<X>/", which happens when the anchor lands on an outer mod
+        // folder that nests the same name inside
         stripped = TryStripDuplicatePrefix(rel, '/');
         if (stripped != null) return stripped;
         stripped = TryStripDuplicatePrefix(rel, '\\');
@@ -293,15 +268,12 @@ public static class StackWalker
     }
 
     /// <summary>
-    /// Searches <paramref name="file"/> for the first occurrence of a path segment whose
-    /// name equals <paramref name="asmName"/> (matching either separator style) and returns
-    /// the substring after that segment, or <c>null</c> if no such anchor exists.
+    /// Searches  for the first occurrence of a path segment whose name equals  (matching either separator
+    /// style) and returns the substring after that segment, or null if no such anchor exists.
     /// </summary>
     private static string? TryAnchorByAssembly(string file, string asmName)
     {
-        // A common .NET project convention: project folder named "Foo.Library" or "Foo.Core"
-        // produces assembly "Foo". Accept both exact segments (.../Foo/...) and prefix segments
-        // (.../Foo.Library/...) so the runtime asm name still anchors the embedded source path.
+        // a "Foo.Library" folder builds assembly "Foo", so accept prefix segments too
         string? rel = TryAnchorSegment(file, asmName, '/');
         rel ??= TryAnchorSegment(file, asmName, '\\');
         return rel;
@@ -332,16 +304,14 @@ public static class StackWalker
     }
 
     /// <summary>
-    /// Builds an <see cref="AssemblyHint"/> from a runtime <see cref="System.Reflection.Assembly"/>:
-    /// the assembly's simple name (used as the source-path anchor) and, when the assembly is loaded
-    /// from a path under a <c>Mods/</c> directory, the mod folder name (used as the display prefix).
+    /// Builds a hint from an assembly: its simple name anchors the source path, and the mod
+    /// folder becomes the display prefix when it loaded from under <c>Mods/</c>.
     /// </summary>
     private static AssemblyHint ComputeAssemblyHint(System.Reflection.Assembly asm)
     {
         string? asmName = asm.GetName().Name;
-        // Prefer the Verse-supplied folder: it's the real /Mods/<folder>/ directory name and
-        // is stable for RimWorld-loaded assemblies even when Assembly.Location is empty (which
-        // happens when mods are loaded from byte[] or when running under degraded conditions).
+        // prefer the Verse-supplied folder: it survives an empty Assembly.Location, which
+        // happens when a mod is loaded from bytes
         string? modFolder = ModNameCache.FolderForAssembly(asm);
         if (modFolder == null)
         {
@@ -353,10 +323,8 @@ public static class StackWalker
 
 
     /// <summary>
-    /// Returns the cached <see cref="AssemblyHint"/> for <paramref name="asm"/>, recomputing
-    /// when the cached hint has no resolved <see cref="AssemblyHint.ModFolder"/>. This avoids
-    /// permanently caching an under-resolved hint that was computed before
-    /// <see cref="ModNameCache.FolderMap"/> finished populating (typical during early mod load).
+    /// Cached hint for the assembly, recomputed while the mod folder is unresolved so an
+    /// early-load miss does not get cached forever.
     /// </summary>
     private static AssemblyHint GetHint(System.Reflection.Assembly asm)
     {
@@ -381,10 +349,8 @@ public static class StackWalker
     }
 
     /// <summary>
-    /// Parses the segment immediately after <c>/Mods/</c> from an assembly location path
-    /// (e.g. <c>.../RimWorld/Mods/RimObs/Assemblies/RimObs.Library.dll</c> -> <c>RimObs</c>).
-    /// Returns <c>null</c> when the path does not live under a <c>Mods/</c> directory, which is
-    /// the common case for unit tests and tooling assemblies.
+    /// Returns the segment after <c>/Mods/</c>, so ".../Mods/RimObs/Assemblies/x.dll" gives
+    /// "RimObs". Null outside a Mods directory, which is normal for tests and tooling.
     /// </summary>
     private static string? ParseModFolder(string? path)
     {

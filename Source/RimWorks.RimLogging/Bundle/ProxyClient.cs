@@ -1,10 +1,8 @@
 namespace RimWorks.RimLogging.Bundle;
 
 /// <summary>
-/// Uploads a <see cref="BundlePayload"/> to the bundle proxy endpoint over HTTP and interprets the response.
-/// The proxy is expected to return JSON containing a <c>url</c> field pointing at the created gist.
-/// An optional user-supplied GitHub PAT is relayed via the <c>X-Gist-Token</c> header (never in the body,
-/// since the body is stored verbatim as the gist content) so the gist can be created under the user's account.
+/// Uploads a bundle to the proxy and reads the <c>url</c> field back out. A user's GitHub PAT
+/// goes in the <c>X-Gist-Token</c> header, never the body, which is stored verbatim as the gist.
 /// </summary>
 public sealed class ProxyClient
 {
@@ -28,9 +26,8 @@ public sealed class ProxyClient
     }
 
     /// <summary>
-    /// Serializes and POSTs the payload as JSON to the proxy. On a success status code, the response's <c>url</c>
-    /// field is returned as the gist URL. Non-success status codes, malformed JSON, a missing <c>url</c> field,
-    /// and transport exceptions are all surfaced as a failed <see cref="ProxyResult"/> rather than thrown.
+    /// POSTs the payload and returns the gist URL from the response. Bad status, bad JSON, a
+    /// missing url and transport errors all come back as a failed result instead of throwing.
     /// </summary>
     /// <param name="payload">The bundle to upload.</param>
     /// <returns>A <see cref="ProxyResult"/> describing success with the gist URL, or failure with an error message.</returns>

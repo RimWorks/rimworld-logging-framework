@@ -74,9 +74,8 @@ public static class LoggingSettingsWindow
     }
 
     /// <summary>
-    /// Bundles the current in-memory log buffer and uploads it via the bundle proxy, relaying the user's
-    /// GitHub PAT when one is set. Runs asynchronously and reports the resulting gist URL or error to the
-    /// player; the result message is marshaled back to the main thread before being shown.
+    /// Uploads the current log buffer through the proxy, relaying the user's PAT if set. Runs
+    /// async and marshals the resulting URL or error back to the main thread to show it.
     /// </summary>
     /// <param name="s">The settings supplying the proxy URL and optional GitHub token.</param>
     private static async Task StartUpload(LoggingSettings s)

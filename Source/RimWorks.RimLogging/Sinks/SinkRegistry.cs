@@ -4,18 +4,13 @@ using RimWorks.RimLogging.Pipeline;
 namespace RimWorks.RimLogging.Sinks;
 
 /// <summary>
-/// Central registry that maintains the active sink list and fans out log entries to all registered
-/// sinks. Every dispatched entry is also appended to a history buffer; on registration each sink is
-/// replayed the buffered history, so a sink that registers late (e.g. the log viewer) still sees the
-/// entries emitted before it existed. The buffer is unbounded until the first replay, then capped.
+/// Holds the active sinks and fans entries out to them. New sinks are replayed a history buffer,
+/// so one that registers late still sees entries emitted before it existed.
 /// </summary>
 internal static class SinkRegistry
 {
     /// <summary>
-    /// Maximum entries the history buffer retains once a sink has triggered the first replay.
-    /// Until that first replay the buffer is unbounded, so a late-registering sink (e.g. the
-    /// log viewer) receives the complete pre-registration history. Mutable so tests can exercise
-    /// the cap cheaply.
+    /// History cap after the first replay. Unbounded until then, so a late sink gets everything.
     /// </summary>
     internal static int PostReplayCap { get; set; } = 10000;
 
@@ -64,6 +59,9 @@ internal static class SinkRegistry
         {
             for (int i = 0; i < snap.Length; i++)
             {
+                // MinLevel is documented on ILogSink as a per-sink gate, so it has to be
+                // honoured here; a sink cannot filter what it was never told about.
+                if (entry.Level < snap[i].MinLevel) continue;
                 try { snap[i].Write(entry); }
                 catch { /* swallow: a misbehaving sink must not break dispatch to the others */ }
             }

@@ -7,11 +7,8 @@ using Xunit;
 namespace RimWorks.RimLogging.Tests.Pipeline;
 
 /// <summary>
-/// Drives the full public pipeline (Log.X -> EmitInternal -> Logging.Emit ->
-/// BackgroundDrain or sync bypass -> SinkRegistry -> sink.Write) and asserts
-/// that an end-to-end caller sees template rendering, structured context
-/// capture, async dispatch, and Error-level sync bypass behaving together.
-/// Per-test isolation matches LoggingLifecycleTests.
+/// Drives the whole pipeline from Log.X to sink.Write, checking that rendering, context
+/// capture, async dispatch and the Error-level sync bypass all work together.
 /// </summary>
 public class PipelineEndToEndTests : IDisposable
 {
@@ -45,7 +42,7 @@ public class PipelineEndToEndTests : IDisposable
         ThreadCaptureSink signalSink = new ThreadCaptureSink(_ => signal.Set());
         SinkRegistry.Register(signalSink);
 
-        Log.Info("e2e", "user {Name} logged in from {Host}", new object?[] { "alice", "ws-1" });
+        Log.InfoTo("e2e", "user {Name} logged in from {Host}", new object?[] { "alice", "ws-1" });
 
         Assert.True(signal.Wait(5000), "async drain did not dispatch within 5 s");
 
@@ -69,7 +66,7 @@ public class PipelineEndToEndTests : IDisposable
         ThreadCaptureSink signalSink = new ThreadCaptureSink(_ => signal.Set());
         SinkRegistry.Register(signalSink);
 
-        Log.Info("e2e", "user action", new { UserId = 42, Role = "admin" });
+        Log.InfoTo("e2e", "user action", new { UserId = 42, Role = "admin" });
 
         Assert.True(signal.Wait(5000), "async drain did not dispatch within 5 s");
 
@@ -93,7 +90,7 @@ public class PipelineEndToEndTests : IDisposable
         MemoryLogSink memory = new MemoryLogSink();
         SinkRegistry.Register(memory);
 
-        Log.Error("e2e", "boom {Code}", new object?[] { 500 });
+        Log.ErrorTo("e2e", "boom {Code}", new object?[] { 500 });
 
         Assert.Equal(callingThreadId, dispatchedThreadId);
 
@@ -115,8 +112,8 @@ public class PipelineEndToEndTests : IDisposable
         ThreadCaptureSink signalSink = new ThreadCaptureSink(_ => signal.Set());
         SinkRegistry.Register(signalSink);
 
-        Log.Info("e2e", "below threshold");
-        Log.Warn("e2e", "at threshold");
+        Log.InfoTo("e2e", "below threshold");
+        Log.WarnTo("e2e", "at threshold");
 
         Assert.True(signal.Wait(5000), "async drain did not dispatch within 5 s");
 
@@ -138,7 +135,7 @@ public class PipelineEndToEndTests : IDisposable
         ThreadCaptureSink signalSink = new ThreadCaptureSink(_ => signal.Set());
         SinkRegistry.Register(signalSink);
 
-        Log.Info("e2e", "fanout");
+        Log.InfoTo("e2e", "fanout");
 
         Assert.True(signal.Wait(5000), "async drain did not dispatch within 5 s");
 

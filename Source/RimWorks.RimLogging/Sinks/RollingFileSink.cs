@@ -3,9 +3,8 @@ using System;
 namespace RimWorks.RimLogging.Sinks;
 
 /// <summary>
-/// Shared file-lifecycle skeleton for the rolling file sinks: opens a per-session
-/// append stream, applies retention over prior files, and serialises writes. Concrete
-/// sinks supply only their <see cref="Name"/> and the per-entry line via <see cref="FormatLine"/>.
+/// Shared file lifecycle for the rolling sinks: per-session stream, retention, serialised
+/// writes. Subclasses supply only <see cref="Name"/> and <see cref="FormatLine"/>.
 /// </summary>
 public abstract class RollingFileSink : ILogSink
 {

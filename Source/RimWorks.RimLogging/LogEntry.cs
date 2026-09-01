@@ -5,10 +5,8 @@ using RimWorks.RimLogging.Capture;
 namespace RimWorks.RimLogging;
 
 /// <summary>
-/// Immutable payload delivered to every sink. Carries both the unrendered message
-/// template and the fully-rendered string so structured sinks can extract typed
-/// fields from <see cref="Context"/> while text sinks can write
-/// <see cref="RenderedMessage"/> directly.
+/// Immutable payload delivered to every sink. Carries the template and the rendered string,
+/// so structured sinks can read <see cref="Context"/> and text sinks just write the message.
 /// </summary>
 public sealed class LogEntry
 {
@@ -33,9 +31,8 @@ public sealed class LogEntry
     }
 
     /// <summary>
-    /// Gets the unrendered message template, e.g. <c>"died at {Hp}hp"</c>.
-    /// Structured sinks use this together with <see cref="Context"/> to extract
-    /// typed fields. <c>null</c> assignments are normalized to <see cref="string.Empty"/>.
+    /// Gets the unrendered message template, e.g. "died at {Hp}hp". Structured sinks use this together with  to
+    /// extract typed fields. null assignments are normalized to .
     /// </summary>
     public string MessageTemplate
     {
@@ -44,9 +41,8 @@ public sealed class LogEntry
     }
 
     /// <summary>
-    /// Gets the fully-rendered message string, e.g. <c>"died at 5hp"</c>.
-    /// Text sinks write this value directly. <c>null</c> assignments are normalized
-    /// to <see cref="string.Empty"/>.
+    /// Gets the fully-rendered message string, e.g. "died at 5hp". Text sinks write this value directly. null
+    /// assignments are normalized to .
     /// </summary>
     public string RenderedMessage
     {
@@ -64,10 +60,8 @@ public sealed class LogEntry
     public SourceLocation Source { get; init; }
 
     /// <summary>
-    /// Gets the stack trace string, or <c>null</c>. Populated eagerly on the
-    /// sync-bypass path at <see cref="LogLevel.Error"/> and
-    /// <see cref="LogLevel.Fatal"/> so the stack is captured before the call
-    /// stack unwinds.
+    /// Gets the stack trace string, or null. Populated eagerly on the sync-bypass path at  and so the stack is
+    /// captured before the call stack unwinds.
     /// </summary>
     public string? StackTrace { get; init; }
 

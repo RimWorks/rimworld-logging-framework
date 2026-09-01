@@ -65,10 +65,7 @@ public class EmitCapturedTests : IDisposable
         Assert.Equal(string.Empty, entry.MessageTemplate);
     }
 
-    // Regression: captured Verse.Log entries previously routed through Log.Info/Warn/Error,
-    // whose [CallerFilePath]/[CallerLineNumber] pinned the source to VerseLogPatches.cs for
-    // every modded log line. The hijack now uses the stackTrace-less EmitCaptured overload,
-    // which must leave the source empty (the real origin lives in the channel, not a file).
+    // regression: captured entries all showed VerseLogPatches.cs as their source
     [Fact]
     public void EmitCaptured_NoStackTrace_CaptureDisabled_LeavesSourceEmptyAndNoStackTrace()
     {

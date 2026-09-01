@@ -1,9 +1,8 @@
 namespace RimWorks.RimLogging.Sinks;
 
 /// <summary>
-/// RimWorld Def that describes a log sink loaded from XML.
-/// Each def names an <see cref="ILogSink"/> implementation that the bootstrap
-/// phase instantiates and registers during game startup.
+/// RimWorld Def that describes a log sink loaded from XML. Each def names an  implementation that the
+/// bootstrap phase instantiates and registers during game startup.
 /// </summary>
 public class SinkDef : Verse.Def
 {

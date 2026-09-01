@@ -3,12 +3,8 @@ using RimWorks.RimLogging.Settings;
 namespace RimWorks.RimLogging.Bootstrap;
 
 /// <summary>
-/// Performs early framework bootstrap: starts the logging pipeline, wires the
-/// shutdown-flush and degraded-mode hooks, applies the configured global minimum
-/// level, and installs the <c>Verse.Log</c>/Unity hijack. Invoked from
-/// <see cref="LoggingMod"/> during mod loading (in mod-list order), well before
-/// any <see cref="Verse.StaticConstructorOnStartup"/>, so the hijack is live
-/// before other mods emit their load-time logs.
+/// Starts the pipeline and installs the Verse.Log hijack. Runs from <see cref="LoggingMod"/>'s
+/// constructor, before any static constructor, so the hijack catches other mods' load-time logs.
 /// </summary>
 internal static class EarlyInit
 {

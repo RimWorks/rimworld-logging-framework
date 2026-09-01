@@ -5,10 +5,8 @@ using System.Reflection;
 namespace RimWorks.RimLogging.Capture;
 
 /// <summary>
-/// Caches the assembly-simple-name to mod-name (About.xml <c>&lt;name&gt;</c>) map. Bootstrap
-/// installs the Verse-aware <see cref="Provider"/>; the map is built once on first non-empty
-/// result. The emit pipeline uses it to attribute log entries to their originating mod without
-/// a per-call stack walk.
+/// Caches assembly name to mod name, built once from <see cref="Provider"/>. Lets the emit
+/// pipeline attribute entries to a mod without walking the stack each call.
 /// </summary>
 internal static class ModNameCache
 {
@@ -21,18 +19,14 @@ internal static class ModNameCache
     internal static Func<IReadOnlyDictionary<string, string>>? Provider { get; set; }
 
     /// <summary>
-    /// Provider hook for the asm-name to mod-folder-name map (the directory name under <c>/Mods/</c>).
-    /// Folder name is preferred over the mod display name when rendering normalised source paths
-    /// because it is stable and matches what shows up in the file system.
+    /// Supplies assembly name to mod folder. The folder beats the display name for paths,
+    /// since it is stable and matches the file system.
     /// </summary>
     internal static Func<IReadOnlyDictionary<string, string>>? FolderProvider { get; set; }
 
     /// <summary>
-    /// Diagnostic hook invoked when <see cref="Provider"/> or <see cref="FolderProvider"/> throws.
-    /// Bootstrap wires this to Verse.Log.Warning so a broken provider surfaces a message instead
-    /// of silently degrading to an empty map. Verse-free so the cache stays unit-testable. Mirrors
-    /// <see cref="AssemblyChannelCache.OnResolverError"/> so both static resolver caches surface
-    /// failures the same way.
+    /// Called when a provider throws, so a broken one warns instead of silently emptying the map.
+    /// Mirrors <see cref="AssemblyChannelCache.OnResolverError"/>.
     /// </summary>
     internal static Action<Exception>? OnProviderError { get; set; }
 
@@ -40,9 +34,8 @@ internal static class ModNameCache
     private static IReadOnlyDictionary<string, string>? _cachedFolders;
 
     /// <summary>
-    /// Returns the assembly-name to mod-name map, building it via <see cref="Provider"/> and
-    /// caching the first non-empty result. Empty results are not cached, so a provider invoked
-    /// before mods finish loading is retried on the next call.
+    /// Builds the map via <see cref="Provider"/>, caching the first non-empty result. An empty
+    /// one is not cached, so a call made before mods finish loading is retried.
     /// </summary>
     internal static IReadOnlyDictionary<string, string> Map()
     {

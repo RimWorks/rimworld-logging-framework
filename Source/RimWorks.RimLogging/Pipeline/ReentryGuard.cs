@@ -3,9 +3,8 @@ using System;
 namespace RimWorks.RimLogging.Pipeline;
 
 /// <summary>
-/// Guards against re-entrant logging from within a sink call. When a sink writes a log entry
-/// and that write itself tries to log (e.g. an exception handler inside the sink), the guard
-/// detects the nested call so the pipeline can short-circuit rather than recurse infinitely.
+/// Detects logging that happens inside a sink write, so the pipeline can short-circuit
+/// instead of recursing forever when a sink's own error handler logs.
 /// </summary>
 internal static class ReentryGuard
 {

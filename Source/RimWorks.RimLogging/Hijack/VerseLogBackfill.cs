@@ -3,18 +3,14 @@ using RimWorks.RimLogging.Capture;
 namespace RimWorks.RimLogging.Hijack;
 
 /// <summary>
-/// Imports messages RimWorld buffered before our hijack went live. Engine, Unity and
-/// early mod-load logging all land in <see cref="Verse.Log.Messages"/> from process start,
-/// but our Harmony prefix only captures from the moment it is applied. Everything before
-/// that point would otherwise be missing from our sinks while still present in the vanilla
-/// debug window. Draining the buffer once, immediately before patching, recovers it.
+/// Drains <see cref="Verse.Log.Messages"/> once before patching, so entries logged from
+/// process start to hijack install are not missing from our sinks.
 /// </summary>
 internal static class VerseLogBackfill
 {
     /// <summary>
-    /// Emits every entry currently in <see cref="Verse.Log.Messages"/> through the pipeline
-    /// on the <c>Vanilla</c> channel. Must be called before the Harmony prefix is applied so
-    /// the buffered set and the live-captured set do not overlap.
+    /// Emits every entry currently in  through the pipeline on the Vanilla channel. Must be called before the
+    /// Harmony prefix is applied so the buffered set and the live-captured set do not overlap.
     /// </summary>
     internal static void Drain()
     {

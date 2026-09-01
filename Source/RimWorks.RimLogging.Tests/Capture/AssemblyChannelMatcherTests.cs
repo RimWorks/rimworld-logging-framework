@@ -1,11 +1,4 @@
-// Regression coverage for the assembly->channel resolution that previously
-// returned "Mod.Unknown" for every modded Verse.Log call: the Verse-bound
-// resolver was never wired into AssemblyChannelCache.ResolverHook, and its
-// matching loop lived in Hijack/ (excluded from this test project, hence
-// untested). The loop is now AssemblyChannelMatcher.Match in Capture/, and the
-// Verse shell (Hijack/AssemblyChannelResolver) only projects RunningMods into
-// it. The wiring itself (HijackBootstrap.Install) stays integration-only because
-// it depends on Harmony + Verse, but the resolution logic is covered here.
+// regression: every modded Verse.Log call resolved to "Mod.Unknown"
 
 using System.Collections.Generic;
 using System.Reflection;

@@ -35,7 +35,7 @@ public class LogWarnTests : LogSinkFixtureBase
     {
         Exception ex = new InvalidOperationException("warn-ex-channel-test");
 
-        Log.Warn("warn-chan", ex, "warn-exception-channel-message");
+        Log.WarnTo("warn-chan", ex, "warn-exception-channel-message");
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
@@ -58,7 +58,7 @@ public class LogWarnTests : LogSinkFixtureBase
     [Fact]
     public void Warn_ExplicitChannel_RoutesChannelUnchanged()
     {
-        Log.Warn("warn-audit", "explicit-channel-warn-sentinel");
+        Log.WarnTo("warn-audit", "explicit-channel-warn-sentinel");
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);

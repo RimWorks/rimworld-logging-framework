@@ -4,13 +4,11 @@ using System.Threading;
 namespace RimWorks.RimLogging.Pipeline;
 
 /// <summary>
-/// Drains <see cref="MpscQueue{T}"/> entries on a single, dedicated background
-/// thread (<c>RimLogging-Drain</c>) and dispatches each entry to a caller-supplied
-/// <see cref="Action{T}"/> callback.
+/// Drains  entries on a single, dedicated background thread (RimLogging-Drain) and dispatches each entry to
+/// a caller-supplied callback.
 /// </summary>
 /// <remarks>
-/// Back-off strategy: spin for the first 64 empty polls, then
-/// <see cref="Thread.Sleep(int)"/> 1 ms up to poll 256, then sleep 5 ms
+/// Back-off strategy: spin for the first 64 empty polls, then 1 ms up to poll 256, then sleep 5 ms
 /// thereafter. Any successful dequeue resets the counter to zero.
 /// </remarks>
 internal sealed class BackgroundDrain : IDisposable

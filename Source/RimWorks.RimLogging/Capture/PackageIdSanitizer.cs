@@ -9,10 +9,8 @@ namespace RimWorks.RimLogging.Capture;
 public static class PackageIdSanitizer
 {
     /// <summary>
-    /// Returns a sanitized channel-name segment derived from <paramref name="packageId"/>.
-    /// Letters, digits, underscores, and dots are kept; all other characters are dropped.
-    /// Consecutive dots are collapsed to one, leading and trailing dots are removed.
-    /// Returns <c>"Unknown"</c> when the result would be empty.
+    /// Keeps letters, digits, underscores and dots, collapses repeated dots, and trims dots
+    /// off both ends. Returns <c>"Unknown"</c> if nothing is left.
     /// </summary>
     /// <param name="packageId">The raw mod packageId, e.g. <c>"com.cryptiklemur.rimobs"</c>.</param>
     /// <returns>A sanitized segment string, or <c>"Unknown"</c> when no valid characters remain.</returns>

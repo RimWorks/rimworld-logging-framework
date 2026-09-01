@@ -8,10 +8,8 @@ namespace RimWorks.RimLogging.Hijack;
 internal static class VerseLogPatchHelpers
 {
     /// <summary>
-    /// Walks the call stack (skipping Harmony invoker frames and our own pipeline frames) to find
-    /// the first external assembly, then returns its channel name via <see cref="AssemblyChannelCache.Resolve"/>
-    /// together with its mod name via <see cref="ModNameCache.ForAssembly"/>. Falls back to
-    /// <c>("Vanilla", null)</c> when no external frame is found.
+    /// Walks the stack past patcher and pipeline frames to the first external assembly, and
+    /// returns its channel and mod name. Falls back to <c>("Vanilla", null)</c>.
     /// </summary>
     internal static (string Channel, string? Mod) ResolveCaller()
     {

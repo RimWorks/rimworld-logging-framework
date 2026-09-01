@@ -24,9 +24,7 @@ public class BackgroundDrainTests
     [Fact]
     public void Enqueue_DispatchFiresPromptly()
     {
-        // Asserts the drain thread wakes and dispatches an enqueued entry. Uses a generous
-        // upper bound so the test doesn't flake on loaded CI runners; the original 50ms ceiling
-        // was a flaky measurement of scheduler responsiveness, not the contract under test.
+        // generous bound on purpose: a tight one measured CI scheduler load, not the contract
         MpscQueue<LogEntry> queue = new MpscQueue<LogEntry>(16);
         ManualResetEventSlim fired = new ManualResetEventSlim(false);
 

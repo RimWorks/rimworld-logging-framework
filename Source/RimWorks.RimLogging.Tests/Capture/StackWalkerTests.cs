@@ -58,10 +58,7 @@ public class StackWalkerTests
         Assert.Equal($"MyMod{System.IO.Path.DirectorySeparatorChar}file", result);
     }
 
-    // Regression: NormalizePath used to call Replace(".cs", "") which strips the substring
-    // anywhere in the path, not just the trailing extension. A file whose name contains ".cs"
-    // mid-string (e.g. a Razor-style "View.cshtml.cs") was mangled to "Viewhtml". Only the
-    // trailing ".cs" extension must be removed.
+    // regression: Replace(".cs", "") mangled "View.cshtml.cs" into "Viewhtml"
     [Fact]
     public void NormalizePath_DotCsMidString_OnlyStripsTrailingExtension()
     {
@@ -81,14 +78,7 @@ public class StackWalkerTests
         Assert.True(loc.IsCallerProvided);
     }
 
-    // Regression: prior FirstCallerFrame bailed on the first non-RimLogging frame whose
-    // GetFileName() returned null. In production this meant any vanilla Verse/Unity frame
-    // (or the Harmony-emitted dynamic stub) sitting between the framework and the real
-    // caller wiped out the Source field. Reflection.Invoke injects similar PDB-less frames
-    // (System.RuntimeMethodHandle / RuntimeMethodInfo.UnsafeInvokeInternal) into the
-    // stack, so this drives the same scenario: the call chain has frames-without-files
-    // between the framework-internal helper and the real test caller. The fix is for
-    // FirstCallerFrame to walk past those instead of returning Empty.
+    // regression: a frame with no file name between us and the caller wiped out Source
     [Fact]
     public void FirstCallerFrame_SkipsReflectionInvokeFramesWithoutFileInfo_AndReturnsRealCaller()
     {
@@ -163,9 +153,7 @@ public class StackWalkerTests
     [Fact]
     public void NormalizePath_RepeatCalls_ReturnSameCachedString()
     {
-        // The path cache should be transparent: same input -> same output, byte-identical.
-        // We use a path that exercises the regex fallback so it doesn't conflict with the
-        // assembly-anchored cache entry from other tests.
+        // uses the regex fallback so it cannot collide with another test's cache entry
         string input = "/home/x/RimWorld/Mods/CacheTestMod/Foo.cs";
 
         string first = StackWalker.NormalizePath(input);
@@ -179,10 +167,7 @@ public class StackWalkerTests
     [Fact]
     public void NormalizePath_NoType_ScansLoadedAssembliesAndAnchorsByName()
     {
-        // The test assembly is loaded in the AppDomain, so a path containing its simple name
-        // as a segment is resolvable even without an explicit Type. This is the path used when
-        // [CallerFilePath] supplies the file but no caller Type is available. Output is still
-        // the asm-relative path -- no asm prefix.
+        // no Type given, so this resolves by finding the loaded assembly's name in the path
         System.Reflection.Assembly asm = typeof(StackWalkerTests).Assembly;
         string asmName = asm.GetName().Name!;
         string file = $"/home/dev/external/{asmName}/Scanned/Sample.cs";
@@ -196,9 +181,7 @@ public class StackWalkerTests
     [Fact]
     public void NormalizePath_AssemblyAnchored_AcceptsPrefixSegment_UnixPath()
     {
-        // Repro of the RimObs case: project folder "RimObs.Library" produces assembly "RimObs".
-        // The exact segment "/RimObs/" isn't in the source path but "/RimObs.Library/" is, and
-        // we should anchor on it so the embedded source path collapses correctly.
+        // project "RimObs.Library" builds assembly "RimObs", so anchor on the prefix segment
         System.Reflection.Assembly asm = typeof(StackWalkerTests).Assembly;
         string asmName = asm.GetName().Name!;
         string file = $"/home/dev/proj/{asmName}.Library/Bootstrap/Sample.cs";
@@ -225,9 +208,7 @@ public class StackWalkerTests
     [Fact]
     public void NormalizePath_AssemblyAnchored_StripsLeadingSourceSegment_UnixPath()
     {
-        // Common project layout (Dubs Performance Analyzer, Lightweave subprojects, etc.):
-        // sources live under <projectRoot>/Source/<rest>. The "Source" segment is a developer
-        // convention with no reader value, so it should be stripped from the rendered path.
+        // "<root>/Source/<rest>" is a common layout, and Source/ carries nothing for the reader
         System.Reflection.Assembly asm = typeof(StackWalkerTests).Assembly;
         string asmName = asm.GetName().Name!;
         string file = $"/home/dev/proj/{asmName}/Source/Profiling/Utility/Foo.cs";
@@ -254,9 +235,7 @@ public class StackWalkerTests
     [Fact]
     public void NormalizePath_AssemblyAnchored_StripsSubProjectAndSourcePair_UnixPath()
     {
-        // Lightweave-style layout: a top-level mod asm "Lightweave" anchors on /Lightweave/,
-        // giving rel "Framework/Source/Fonts/FontLoader.cs". The "Framework/Source/" pair is
-        // a sub-project + dev convention with no signal for the reader, so we strip both.
+        // anchoring gives "Framework/Source/Fonts/FontLoader.cs", and both leading segments go
         System.Reflection.Assembly asm = typeof(StackWalkerTests).Assembly;
         string asmName = asm.GetName().Name!;
         string file = $"/home/dev/proj/{asmName}/Framework/Source/Fonts/FontLoader.cs";
@@ -269,9 +248,7 @@ public class StackWalkerTests
     [Fact]
     public void NormalizePath_LegacyRegex_StripsSubProjectAndSourcePair()
     {
-        // Dubs-Performance-Analyzer-style layout falling through the legacy regex path: after
-        // stripping /Mods/, the first segment is the mod folder and the next is "Source". Both
-        // should disappear so the rendered path is the actual code location.
+        // regex path: after /Mods/ the mod folder and "Source" both drop off
         string result = StackWalker.NormalizePath(
             "/home/x/RimWorld/Mods/Dubs-Performance-Analyzer/Source/Profiling/Utility/ThreadSafeLogger.cs");
 

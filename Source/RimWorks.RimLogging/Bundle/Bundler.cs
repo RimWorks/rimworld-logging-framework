@@ -11,9 +11,8 @@ namespace RimWorks.RimLogging.Bundle;
 public static class Bundler
 {
     /// <summary>
-    /// Constructs a bundle payload from the given log entries and environment metadata. Each entry's timestamp
-    /// is formatted as ISO-8601, its message is stripped of rich-text markup, and its source location is
-    /// included as <c>file:line</c> only when caller-provided.
+    /// Builds the bundle payload. Timestamps go out as ISO-8601, messages lose their rich-text
+    /// markup, and source is included as <c>file:line</c> only when the caller supplied it.
     /// </summary>
     /// <param name="entries">The log entries to include.</param>
     /// <param name="rimWorldVersion">The RimWorld game version to record.</param>
@@ -50,9 +49,8 @@ public static class Bundler
     }
 
     /// <summary>
-    /// Maps a <see cref="LogLevel"/> to the canonical level name accepted by the bundle upload worker.
-    /// The worker's accepted set is <c>Trace, Debug, Info, Warning, Error, Critical</c>, so <c>Warn</c>
-    /// and <c>Fatal</c> must be translated.
+    /// Maps a  to the canonical level name accepted by the bundle upload worker. The worker's accepted set is
+    /// Trace, Debug, Info, Warning, Error, Critical, so Warn and Fatal must be translated.
     /// </summary>
     private static string SerializeLevel(LogLevel level) => level switch
     {

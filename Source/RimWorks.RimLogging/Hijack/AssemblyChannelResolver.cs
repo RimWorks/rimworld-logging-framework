@@ -7,10 +7,8 @@ namespace RimWorks.RimLogging.Hijack;
 internal static class AssemblyChannelResolver
 {
     /// <summary>
-    /// Verse-aware resolver wired into <see cref="AssemblyChannelCache.ResolverHook"/>
-    /// by <see cref="HijackBootstrap.Install"/>. Projects
-    /// <see cref="Verse.LoadedModManager.RunningMods"/> into packageId/assembly pairs
-    /// and delegates the actual matching to <see cref="AssemblyChannelMatcher.Match"/>.
+    /// Verse-aware resolver wired into by . Projects into packageId/assembly pairs and delegates the actual
+    /// matching to .
     /// </summary>
     internal static string Resolve(Assembly asm)
     {

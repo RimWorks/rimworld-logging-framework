@@ -5,9 +5,8 @@ using UnityEngine;
 namespace RimWorks.RimLogging.Hijack;
 
 /// <summary>
-/// Subscribes to Unity's threaded log callback so messages emitted via
-/// <c>UnityEngine.Debug.Log</c> route into the framework. The framework
-/// catches what slips past the Verse.Log Harmony patches.
+/// Subscribes to Unity's threaded log callback so messages emitted via UnityEngine.Debug.Log route into the
+/// framework. The framework catches what slips past the Verse.Log Harmony patches.
 /// </summary>
 internal static class UnityLogBridge
 {

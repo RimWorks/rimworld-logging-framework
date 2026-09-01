@@ -77,9 +77,7 @@ public class DefaultFormatTests
     [Fact]
     public void Render_SourceToken_NotCallerProvided_ReturnsEmpty()
     {
-        // When SourceLocation is unknown the source token resolves to the empty string
-        // (rather than the placeholder "?:0"), so an undecorated {source} token contributes
-        // nothing to the output.
+        // an unknown source renders empty, not "?:0"
         LogEntry entry = MakeEntry(source: SourceLocation.Empty);
 
         string result = DefaultFormat.Render("{source}", entry, stripRichText: false);
@@ -90,9 +88,7 @@ public class DefaultFormatTests
     [Fact]
     public void Render_SourceTokenWrappedInBrackets_NotCallerProvided_DropsBracketsAndTrailingSpace()
     {
-        // The default template wraps {source} as "[{source}] " before {message}. When the
-        // source is unknown we want the whole "[{source}] " group elided so the rendered line
-        // doesn't carry an empty "[] " or a "[?:0]" placeholder.
+        // the whole "[{source}] " group goes, so no empty "[] " is left behind
         LogEntry entry = MakeEntry(source: SourceLocation.Empty);
 
         string result = DefaultFormat.Render("[{source}] {message}", entry, stripRichText: false);

@@ -1,11 +1,8 @@
 namespace RimWorks.RimLogging.Bootstrap;
 
 /// <summary>
-/// Second-phase bootstrap that runs once defs are loaded. Core logging and the Verse.Log hijack
-/// are already live from <see cref="Settings.LoggingMod"/>'s constructor; this only wires the
-/// def-backed configuration (channels and sinks) that cannot be read at mod-construction time,
-/// plus the log viewer's in-memory sink.
-/// Entries captured before the sinks register are replayed to them via the history buffer.
+/// Second-phase bootstrap, once defs exist. Wires the def-backed channels and sinks that
+/// could not be read at mod-construction time. Earlier entries replay from the history buffer.
 /// </summary>
 [Verse.StaticConstructorOnStartup]
 internal static class StaticInit

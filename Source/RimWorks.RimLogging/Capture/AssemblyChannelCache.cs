@@ -12,24 +12,20 @@ internal static class AssemblyChannelCache
     internal const string Unknown = "Mod.Unknown";
 
     /// <summary>
-    /// Resolver hook. Bootstrap installs the Verse-aware implementation;
-    /// tests may set this directly to assert behavior. When null, the cache
-    /// returns <see cref="Unknown"/> for non-vanilla assemblies.
+    /// Resolver hook. Bootstrap installs the Verse-aware implementation; tests may set this directly to assert
+    /// behavior. When null, the cache returns  for non-vanilla assemblies.
     /// </summary>
     internal static Func<Assembly, string>? ResolverHook { get; set; }
 
     /// <summary>
-    /// Diagnostic hook invoked when <see cref="ResolverHook"/> throws. Bootstrap wires this to
-    /// Verse.Log.Warning so a broken resolver surfaces a message instead of silently degrading to
-    /// <see cref="Unknown"/>. Verse-free so the cache stays unit-testable.
+    /// Diagnostic hook invoked when  throws. Bootstrap wires this to Verse.Log.Warning so a broken resolver
+    /// surfaces a message instead of silently degrading to . Verse-free so the cache stays unit-testable.
     /// </summary>
     internal static Action<Assembly, Exception>? OnResolverError { get; set; }
 
     /// <summary>
-    /// Returns the channel name for the given assembly, caching only real resolutions.
-    /// The <see cref="Unknown"/> fallback returned before the <see cref="ResolverHook"/> is
-    /// wired (or when it throws) is not cached, so an assembly first seen during early boot is
-    /// re-resolved once the hook is installed instead of being pinned to <see cref="Unknown"/>.
+    /// Channel name for an assembly. Only real resolutions are cached, so one first seen before
+    /// the resolver was wired gets another chance instead of being pinned to <see cref="Unknown"/>.
     /// </summary>
     internal static string Resolve(Assembly asm)
     {

@@ -87,9 +87,7 @@ public class FilterExpressionRoundTripTests
             Assert.Equal(original.Match(entry), reparsed.Match(entry));
     }
 
-    // Task 6.7: Representative expression evaluation matrix
-    // Levels:   Trace(0), Debug(1), Info(2), Warn(3), Error(4)
-    // Channels: default, Cosmere.Roshar, Cosmere.Roshar.Surgebinding, Unity, Mod.foo
+    // evaluation matrix over levels Trace..Error and a few representative channels
 
     // Expression: "level >= Warn"
     [Theory]

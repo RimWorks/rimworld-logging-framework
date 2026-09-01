@@ -4,9 +4,8 @@ using System.Reflection;
 namespace RimWorks.RimLogging.Hijack;
 
 /// <summary>
-/// Verse-aware provider that projects <see cref="Verse.LoadedModManager.RunningMods"/> into an
-/// assembly-simple-name to mod-name (About.xml <c>&lt;name&gt;</c>) map. Wired into
-/// <see cref="Capture.ModNameCache.Provider"/> by <see cref="HijackBootstrap.Install"/>.
+/// Verse-aware provider that projects  into an assembly-simple-name to mod-name (About.xml &lt;name&gt;)
+/// map. Wired into by .
 /// </summary>
 internal static class ModNameMapProvider
 {
@@ -27,10 +26,8 @@ internal static class ModNameMapProvider
     }
 
     /// <summary>
-    /// Builds the asm-name to mod-folder-name map. The folder name is parsed from
-    /// <see cref="Verse.ModContentPack.RootDir"/>, which is stable across loads and matches
-    /// the directory the user actually sees under <c>/Mods/</c> -- preferable to the mod's
-    /// human-display <c>Name</c> when normalising source-file paths.
+    /// Maps assembly name to mod folder, taken from <see cref="Verse.ModContentPack.RootDir"/>.
+    /// The folder is stable across loads and matches what the user sees, unlike the display name.
     /// </summary>
     internal static IReadOnlyDictionary<string, string> BuildFolders()
     {

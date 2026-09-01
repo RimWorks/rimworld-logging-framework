@@ -35,7 +35,7 @@ public class LogErrorTests : LogSinkFixtureBase
     {
         Exception ex = new InvalidOperationException("error-ex-channel-test");
 
-        Log.Error("error-chan", ex, "error-exception-channel-message");
+        Log.ErrorTo("error-chan", ex, "error-exception-channel-message");
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
@@ -73,7 +73,7 @@ public class LogErrorTests : LogSinkFixtureBase
     [Fact]
     public void Error_ExplicitChannel_RoutesChannelUnchanged()
     {
-        Log.Error("error-audit", "explicit-channel-error-sentinel");
+        Log.ErrorTo("error-audit", "explicit-channel-error-sentinel");
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);

@@ -4,10 +4,8 @@ using System.Reflection;
 namespace RimWorks.RimLogging.Capture;
 
 /// <summary>
-/// Pure assembly-to-channel matcher. Given the running mods (packageId plus their
-/// loaded assemblies) it returns <c>"Mod.&lt;sanitized-packageId&gt;"</c> for the mod
-/// that owns the target assembly, or <see cref="AssemblyChannelCache.Unknown"/>
-/// when no mod claims it. Verse-free so it can be unit-tested directly.
+/// Maps an assembly to <c>"Mod.&lt;sanitized-packageId&gt;"</c> for whichever loaded mod owns it,
+/// or <see cref="AssemblyChannelCache.Unknown"/>. Verse-free so it tests directly.
 /// </summary>
 internal static class AssemblyChannelMatcher
 {

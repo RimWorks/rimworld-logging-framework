@@ -34,10 +34,8 @@ public static class DefaultFormat
     }
 
     /// <summary>
-    /// When a token resolves to the empty string AND it is wrapped in <c>[ ... ]</c> in the
-    /// template (the standard "decorative" wrapping for optional fields), eat the surrounding
-    /// brackets and any single trailing space so the output stays clean instead of leaving a
-    /// stray <c>[]</c> or <c>?:0</c> behind.
+    /// Eats the <c>[ ]</c> around an empty token, plus one trailing space, so an optional
+    /// field leaves nothing behind instead of a stray <c>[]</c>.
     /// </summary>
     private static bool TryConsumeEmptyBracketGroup(string template, int openBrace, int closeBrace, System.Text.StringBuilder sb, out int advance)
     {
@@ -53,10 +51,8 @@ public static class DefaultFormat
     }
 
     /// <summary>
-    /// Renders all format tokens that appear <em>before</em> the <c>{message}</c> token,
-    /// returning the prefix segment (including any literal text immediately preceding
-    /// <c>{message}</c>). When the template contains no <c>{message}</c> token, the full
-    /// rendered template is returned.
+    /// Renders everything before <c>{message}</c>, including the literal text just before it.
+    /// Returns the whole rendered template when there is no <c>{message}</c>.
     /// </summary>
     /// <param name="template">The format template string.</param>
     /// <param name="entry">The log entry supplying token values.</param>
@@ -83,11 +79,8 @@ public static class DefaultFormat
     }
 
     /// <summary>
-    /// Single-pass enumerator over <c>{token}</c> placeholders in the template. Yields the open-brace
-    /// index, close-brace index, and the token text for every well-formed bracket group, in order.
-    /// Stops cleanly at the first unclosed <c>{</c> so callers can flush the remaining literal tail
-    /// without special-casing. <see cref="Render"/> and <see cref="IndexOfToken"/> share this scanner
-    /// so their tokenisation can never drift out of sync.
+    /// Yields every well-formed <c>{token}</c> in order, stopping at the first unclosed brace.
+    /// <see cref="Render"/> and <see cref="IndexOfToken"/> share it so they cannot drift apart.
     /// </summary>
     private static IEnumerable<(int OpenIndex, int CloseIndex, string Token)> ScanTokens(string template)
     {

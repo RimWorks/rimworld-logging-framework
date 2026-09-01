@@ -33,9 +33,8 @@ internal static class LogFilter {
         return result;
     }
 
-    // Tally per channel before touching paths. PathFor allocates a fresh array and each depth
-    // needs a string.Join, so doing it per entry costs thousands of allocations for a handful
-    // of distinct channels.
+    // Tally per channel before touching paths. PathFor allocates and each depth needs a
+    // string.Join, so per-entry costs thousands of allocations for a handful of channels.
     private static Dictionary<string, NodeAccum> AccumulateNodes(IReadOnlyList<LogEntry> snapshot) {
         Dictionary<string, ChannelTally> perChannel = new Dictionary<string, ChannelTally>(System.StringComparer.Ordinal);
         for (int i = 0; i < snapshot.Count; i++) {

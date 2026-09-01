@@ -35,7 +35,7 @@ public class LogFatalTests : LogSinkFixtureBase
     {
         Exception ex = new InvalidOperationException("fatal-ex-channel-test");
 
-        Log.Fatal("fatal-chan", ex, "fatal-exception-channel-message");
+        Log.FatalTo("fatal-chan", ex, "fatal-exception-channel-message");
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
@@ -47,7 +47,7 @@ public class LogFatalTests : LogSinkFixtureBase
     [Fact]
     public void Fatal_ExplicitChannel_RoutesChannelUnchanged()
     {
-        Log.Fatal("fatal-audit", "explicit-channel-fatal-sentinel");
+        Log.FatalTo("fatal-audit", "explicit-channel-fatal-sentinel");
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);

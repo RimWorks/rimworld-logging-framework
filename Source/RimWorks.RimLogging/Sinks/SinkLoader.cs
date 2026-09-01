@@ -7,9 +7,8 @@ namespace RimWorks.RimLogging.Sinks;
 internal static class SinkLoader
 {
     /// <summary>
-    /// Reads the destination directory and retention count from global settings, then
-    /// loads every <see cref="SinkDef"/> in the DefDatabase. This is the single point
-    /// that couples sink loading to <see cref="Settings.LoggingMod.Settings"/>.
+    /// Reads the destination directory and retention count from global settings, then loads every  in the
+    /// DefDatabase. This is the single point that couples sink loading to .
     /// </summary>
     internal static void LoadDefaults()
     {
@@ -18,10 +17,8 @@ internal static class SinkLoader
     }
 
     /// <summary>
-    /// Instantiates each enabled sink from <paramref name="defs"/> and registers it with
-    /// Logging. File sinks are constructed with the supplied <paramref name="logDirectory"/>
-    /// and <paramref name="retentionCount"/>; the minimum level comes from the def. Unknown
-    /// types or constructor failures are logged via Verse.Log.Warning and skipped.
+    /// Builds and registers every enabled sink. Unknown types and constructor failures are
+    /// warned about and skipped rather than aborting the rest.
     /// </summary>
     /// <param name="defs">The sink defs to load.</param>
     /// <param name="logDirectory">Destination directory for file sinks.</param>
@@ -38,10 +35,8 @@ internal static class SinkLoader
     }
 
     /// <summary>
-    /// Builds the per-sink-type constructor table. File sinks close over the supplied
-    /// directory and retention count; the minimum level is supplied per def. Types not
-    /// present here fall through to the parameterless-constructor path in
-    /// <see cref="SinkPlan.TryCreate"/>.
+    /// Per-type constructor table. Anything absent falls through to the parameterless path
+    /// in <see cref="SinkPlan.TryCreate"/>.
     /// </summary>
     private static Dictionary<Type, Func<LogLevel, ILogSink?>> BuildFactories(string logDirectory, int retentionCount) => new()
     {

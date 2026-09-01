@@ -9,10 +9,8 @@ namespace RimWorks.RimLogging.Filtering;
 public static class WildcardMatcher
 {
     /// <summary>
-    /// Tests whether <paramref name="input"/> matches <paramref name="pattern"/>. A trailing
-    /// <c>.*</c> matches the prefix itself or any dot-delimited descendant; other <c>*</c>
-    /// characters match any sequence of characters; a pattern with no <c>*</c> requires an exact
-    /// ordinal match.
+    /// Matches a channel against a pattern. A trailing <c>.*</c> also matches the prefix itself,
+    /// any other <c>*</c> matches any run of characters, and no <c>*</c> means exact.
     /// </summary>
     /// <param name="pattern">The wildcard pattern.</param>
     /// <param name="input">The channel name to test.</param>

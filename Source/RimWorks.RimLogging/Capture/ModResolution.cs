@@ -4,11 +4,8 @@ using System.Collections.Generic;
 namespace RimWorks.RimLogging.Capture;
 
 /// <summary>
-/// Pure resolver that shortens a raw source-file path and attributes it to its mod. The path
-/// is trimmed to everything after the LAST segment whose name matches a known assembly simple
-/// name; that segment's mod name (the About.xml <c>&lt;name&gt;</c>) becomes the mod label. The
-/// mod folder itself is dropped because the channel already identifies the mod. When no segment
-/// matches a known assembly, falls back to <see cref="StackWalker.NormalizePath"/> with no mod.
+/// Trims a source path to everything after the last segment matching a known assembly name,
+/// and labels it with that mod. Falls back to <see cref="StackWalker.NormalizePath"/>.
 /// </summary>
 internal static class ModResolution
 {

@@ -4,13 +4,8 @@ using System.Collections.Generic;
 namespace RimWorks.RimLogging.Sinks;
 
 /// <summary>
-/// Verse-free sink resolution + planning. Decides which <see cref="SinkSpec"/>s
-/// become <see cref="ILogSink"/>s: applies the enabled-by-default gate, resolves
-/// the type, dispatches through the supplied factory map, then prefers a
-/// <c>(LogLevel)</c> constructor (so the def-supplied min level is honored)
-/// before falling back to a parameterless constructor. Diagnostics are emitted
-/// via the supplied warn callback so the helper can be unit-tested without the
-/// Verse runtime.
+/// Turns <see cref="SinkSpec"/>s into sinks. Verse-free, so it tests without the game.
+/// Prefers a <c>(LogLevel)</c> constructor so the def-supplied min level is honored.
 /// </summary>
 internal static class SinkPlan
 {

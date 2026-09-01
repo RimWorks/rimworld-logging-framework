@@ -7,10 +7,8 @@ namespace RimWorks.RimLogging.Channels;
 public static class ChannelResolution
 {
     /// <summary>
-    /// Resolves <paramref name="channelName"/> to a registered key. Tries exact match,
-    /// then strips trailing dotted segments looking for an ancestor; if none match, returns
-    /// <c>"default"</c> when (and only when) <c>"default"</c> is itself one of the registered
-    /// keys. Returns <c>null</c> otherwise.
+    /// Resolves a channel to a registered key: exact match, then each dotted ancestor.
+    /// Falls back to <c>"default"</c> only if that is itself registered, else null.
     /// </summary>
     public static string? ResolveOwnerKey(string channelName, IEnumerable<string> registeredKeys)
     {

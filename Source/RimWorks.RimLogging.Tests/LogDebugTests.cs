@@ -35,7 +35,7 @@ public class LogDebugTests : LogSinkFixtureBase
     {
         Exception ex = new InvalidOperationException("debug-ex-channel-test");
 
-        Log.Debug("debug-chan", ex, "debug-exception-channel-message");
+        Log.DebugTo("debug-chan", ex, "debug-exception-channel-message");
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
@@ -58,7 +58,7 @@ public class LogDebugTests : LogSinkFixtureBase
     [Fact]
     public void Debug_ExplicitChannel_RoutesChannelUnchanged()
     {
-        Log.Debug("debug-audit", "explicit-channel-debug-sentinel");
+        Log.DebugTo("debug-audit", "explicit-channel-debug-sentinel");
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);

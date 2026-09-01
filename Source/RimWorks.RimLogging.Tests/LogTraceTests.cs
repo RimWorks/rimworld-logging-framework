@@ -35,7 +35,7 @@ public class LogTraceTests : LogSinkFixtureBase
     {
         Exception ex = new InvalidOperationException("trace-ex-channel-test");
 
-        Log.Trace("trace-chan", ex, "trace-exception-channel-message");
+        Log.TraceTo("trace-chan", ex, "trace-exception-channel-message");
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
@@ -58,7 +58,7 @@ public class LogTraceTests : LogSinkFixtureBase
     [Fact]
     public void Trace_ExplicitChannel_RoutesChannelUnchanged()
     {
-        Log.Trace("trace-audit", "explicit-channel-trace-sentinel");
+        Log.TraceTo("trace-audit", "explicit-channel-trace-sentinel");
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);

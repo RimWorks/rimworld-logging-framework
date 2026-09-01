@@ -4,9 +4,8 @@ using RimWorks.RimLogging.Sinks;
 namespace RimWorks.RimLogging.Bundle;
 
 /// <summary>
-/// Verse-free helpers backing the settings-window "Upload bundle" action: locating the in-memory
-/// log buffer to bundle and turning an upload outcome into a user-facing message. Kept free of any
-/// RimWorld dependency so the decision logic is unit-testable.
+/// Backs the settings window's "Upload bundle" action: finds the buffer and turns the result
+/// into a message. Verse-free so the decision logic tests without the game.
 /// </summary>
 public static class BundleUploadCoordinator
 {

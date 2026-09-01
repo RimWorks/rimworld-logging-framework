@@ -4,9 +4,8 @@ using RimWorks.RimLogging.Sinks;
 
 namespace RimWorks.RimLogging.Tests;
 
-// Shared fixture for tests that emit through the Log API and read entries back from a
-// MemoryLogSink. Isolates each test: clears any registered sinks, registers a fresh in-memory
-// sink, lowers the global gate to Trace, and restores the prior gate on dispose.
+// Fixture for tests that emit through Log and read back from a MemoryLogSink. Clears sinks,
+// drops the global gate to Trace, and restores it on dispose.
 public abstract class LogSinkFixtureBase : IDisposable
 {
     private readonly LogLevel _savedMin;

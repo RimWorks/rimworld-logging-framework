@@ -8,9 +8,7 @@ namespace RimWorks.RimLogging.Tests;
 
 public class LogInfoTests : LogSinkFixtureBase
 {
-    // Overload 1: params. Must pass an explicit array to avoid overload 4 winning.
-    // Log.Info("template", "alice") resolves to overload 4 (channel, template) in C#.
-    // To exercise overload 1 (default channel + params), pass no args or pass args as array.
+    // pass args as an explicit array, or the (channel, template) overload wins
     [Fact]
     public void Info_DefaultChannelTemplateArgs_PopulatesEntry()
     {
@@ -47,7 +45,7 @@ public class LogInfoTests : LogSinkFixtureBase
     {
         // Overload 3: (string message, object context, ...)
         // Requires the second arg to not be string/object?[] to pick this overload.
-        Log.Info("msg-test-B", new { a = 1, b = "x" });
+        Log.InfoWith("msg-test-B", new { a = 1, b = "x" });
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
@@ -62,7 +60,7 @@ public class LogInfoTests : LogSinkFixtureBase
     public void Info_ExplicitChannel_RoutesChannelUnchanged()
     {
         // Overload 4: (string channel, string template, object?[]? args = null, ...)
-        Log.Info("audit", "hello {Who} test-C", new object?[] { "world" });
+        Log.InfoTo("audit", "hello {Who} test-C", new object?[] { "world" });
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
@@ -73,10 +71,8 @@ public class LogInfoTests : LogSinkFixtureBase
     [Fact]
     public void Info_CallerInfo_PopulatesSourceLocation()
     {
-        // Overload 2 requires explicit named args to bypass overload-1 (params) which wins
-        // when an object?[] is passed without named line/file args. Provide explicit values
-        // to verify EmitInternal routes them into SourceLocation correctly.
-        Log.Info("caller-test-D template {X}", new object?[] { 42 }, line: 77, file: "/proj/Foo.cs");
+        // named args are needed here, or the params overload wins
+        Log.InfoAt("caller-test-D template {X}", new object?[] { 42 }, line: 77, file: "/proj/Foo.cs");
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
@@ -138,7 +134,7 @@ public class LogInfoTests : LogSinkFixtureBase
     {
         // Overload 4 with extra args array: MessageTemplate.Render drops extras.
         Exception? thrown = Record.Exception(() =>
-            Log.Info("default", "hello {Name} test-I", new object?[] { "alice", "extra" }));
+            Log.InfoTo("default", "hello {Name} test-I", new object?[] { "alice", "extra" }));
 
         Assert.Null(thrown);
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
@@ -151,7 +147,7 @@ public class LogInfoTests : LogSinkFixtureBase
     {
         // Overload 4 with fewer args than holes: unmatched holes are left as-is.
         Exception? thrown = Record.Exception(() =>
-            Log.Info("default", "hi {A} {B} test-J", new object?[] { "only-a" }));
+            Log.InfoTo("default", "hi {A} {B} test-J", new object?[] { "only-a" }));
 
         Assert.Null(thrown);
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
@@ -181,7 +177,7 @@ public class LogInfoTests : LogSinkFixtureBase
     public void Info_ExplicitChannelWithContext_CapturesPropsAndChannel()
     {
         // Overload 5: (string channel, string message, object context, ...)
-        Log.Info("diagnostics", "structured-test-M", new { x = 99 });
+        Log.InfoTo("diagnostics", "structured-test-M", new { x = 99 });
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
@@ -208,7 +204,7 @@ public class LogInfoTests : LogSinkFixtureBase
     {
         Exception ex = new InvalidOperationException("info-ex-channel-test");
 
-        Log.Info("info-chan", ex, "info-exception-channel-message");
+        Log.InfoTo("info-chan", ex, "info-exception-channel-message");
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);

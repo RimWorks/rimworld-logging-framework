@@ -22,11 +22,7 @@ public class CallerFrameClassifierTests
     [Fact]
     public void IsInternalFrame_HarmonyAssemblyButNonHarmonyLibNamespace_IsSkipped()
     {
-        // Regression: 0Harmony.dll bundles MonoMod / Mono.Cecil / Iced / Microsoft.Cci /
-        // System.* polyfill types whose namespaces do NOT start with "HarmonyLib.". Before
-        // the assembly-name skip, ResolveCallerChannel picked up these frames during patched
-        // dispatch and resolved every patched call to the brrainz.harmony mod (which loads
-        // 0Harmony.dll), misattributing logs from every other mod.
+        // regression: 0Harmony bundles MonoMod and Cecil, so every patched call blamed brrainz.harmony
         Assert.True(CallerFrameClassifier.IsInternalFrame("MonoMod.Core.Platforms.PlatformTriple", "0Harmony"));
         Assert.True(CallerFrameClassifier.IsInternalFrame("MonoMod.Cil.ILContext", "0Harmony"));
         Assert.True(CallerFrameClassifier.IsInternalFrame("Mono.Cecil.MethodDefinition", "0Harmony"));

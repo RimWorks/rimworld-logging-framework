@@ -10,9 +10,8 @@ internal static class DegradedMode
 
     internal static bool IsPresent => _detected;
 
-    // Claims the process-wide Verse.Log hijack for this copy. Independent RimLogging copies are byte-loaded
-    // into separate Assembly identities but share one AppDomain, so a value in AppDomain data is visible to
-    // all of them. The first copy to claim installs the hijack; later copies see the claim and run degraded.
+    // Separate copies load as separate assemblies but share one AppDomain, so a value there is
+    // visible to all of them. First copy to claim installs the hijack, the rest run degraded.
     internal static bool AnotherCopyPresent()
     {
         try

@@ -1,10 +1,8 @@
 namespace RimWorks.RimLogging.Capture;
 
 /// <summary>
-/// Identifies the source code location where a log event originated.
-/// Populated either via compile-time caller attributes
-/// (<c>[CallerFilePath]</c>, <c>[CallerLineNumber]</c>, <c>[CallerMemberName]</c>)
-/// or at runtime by a stack walker fallback.
+/// Where a log event came from. Filled by the compile-time caller attributes, or by the
+/// stack walker when those are unavailable.
 /// </summary>
 public readonly struct SourceLocation
 {
@@ -31,9 +29,8 @@ public readonly struct SourceLocation
     }
 
     /// <summary>
-    /// Gets a value indicating whether this location was populated by caller attributes
-    /// rather than a runtime stack-walk fallback. <c>true</c> when both
-    /// <see cref="File"/> is non-empty and <see cref="Line"/> is greater than zero.
+    /// Gets a value indicating whether this location was populated by caller attributes rather than a runtime
+    /// stack-walk fallback. true when both is non-empty and  is greater than zero.
     /// </summary>
     public bool IsCallerProvided => Line > 0 && !string.IsNullOrEmpty(File);
 

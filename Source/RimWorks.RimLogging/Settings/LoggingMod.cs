@@ -11,9 +11,8 @@ public sealed class LoggingMod : Mod
     public static LoggingSettings Settings { get; private set; } = null!;
 
     /// <summary>
-    /// Loads settings, normalizes the log directory, and performs early bootstrap. Runs during
-    /// mod loading (in mod-list order), well before any <see cref="Verse.StaticConstructorOnStartup"/>,
-    /// so the Verse.Log hijack is live before other mods emit their load-time logs.
+    /// Loads settings and runs early bootstrap. Happens during mod loading, before any static
+    /// constructor, so the hijack is live before other mods log.
     /// </summary>
     /// <param name="content">The mod content pack provided by RimWorld.</param>
     public LoggingMod(ModContentPack content) : base(content)

@@ -1,11 +1,8 @@
 namespace RimWorks.RimLogging.Hijack;
 
 /// <summary>
-/// Routes a fully-rendered colored line into vanilla's <c>Verse.Log</c> buffer via reflection-confirmed
-/// method dispatch, wrapped in a <see cref="Pipeline.ReentryGuard"/> scope so Harmony prefix patches
-/// (Task 5.4) can detect and short-circuit recursive calls. After each vanilla write,
-/// <c>Verse.Log.ResetMessageCount</c> is invoked via reflection to prevent duplicate-suppression from
-/// silencing fresh entries.
+/// Writes a rendered line into vanilla's buffer inside a <see cref="Pipeline.ReentryGuard"/>
+/// scope, then resets the message count so duplicate-suppression cannot silence fresh entries.
 /// </summary>
 internal static class VanillaBufferWriteback
 {
