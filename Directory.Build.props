@@ -39,7 +39,7 @@
 
     <PropertyGroup>
         <HasLocalRimWorld>false</HasLocalRimWorld>
-        <HasLocalRimWorld Condition="Exists('..\..\RimWorldWin64_Data\Managed')">true</HasLocalRimWorld>
+        <HasLocalRimWorld Condition="Exists('..\..\..\RimWorldWin64_Data\Managed')">true</HasLocalRimWorld>
         <HasLocalRimWorld Condition="Exists('C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed')">true</HasLocalRimWorld>
         <HasLocalRimWorld Condition="Exists('/mnt/games/SteamLibrary/steamapps/common/RimWorld/RimWorldLinux_Data/Managed')">true</HasLocalRimWorld>
         <HasLocalRimWorld Condition="Exists('/mnt/games/RimWorld/RimWorldLinux_Data/Managed')">true</HasLocalRimWorld>

@@ -19,8 +19,8 @@ all: restore build
 
 clean:
 	rm -rf Assemblies/*.dll Assemblies/*.pdb Assemblies/*.xml
-	rm -rf RimWorks.RimLogging/bin RimWorks.RimLogging/obj
-	rm -rf RimWorks.RimLogging.Tests/bin RimWorks.RimLogging.Tests/obj
+	rm -rf Source/RimWorks.RimLogging/bin Source/RimWorks.RimLogging/obj
+	rm -rf Source/RimWorks.RimLogging.Tests/bin Source/RimWorks.RimLogging.Tests/obj
 
 restore:
 	dotnet restore $(SLN)
@@ -29,7 +29,7 @@ build:
 	dotnet build $(SLN) -c $(CONFIG) --nologo
 
 build-core:
-	dotnet build RimWorks.RimLogging/RimWorks.RimLogging.csproj -c $(CONFIG) --nologo
+	dotnet build Source/RimWorks.RimLogging/RimWorks.RimLogging.csproj -c $(CONFIG) --nologo
 
 test:
 	dotnet test $(SLN) -c $(CONFIG) --nologo
@@ -41,4 +41,4 @@ lint:
 	dotnet format $(SLN) --verify-no-changes
 
 pack:
-	dotnet pack RimWorks.RimLogging/RimWorks.RimLogging.csproj -c Release --nologo -o out/nupkg
+	dotnet pack Source/RimWorks.RimLogging/RimWorks.RimLogging.csproj -c Release --nologo -o out/nupkg

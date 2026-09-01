@@ -17,17 +17,17 @@ const plugins = [
         {
             replacements: [
                 {
-                    files: ['RimWorks.RimLogging/BuildInfo.cs'],
+                    files: ['Source/RimWorks.RimLogging/BuildInfo.cs'],
                     from: 'Revision = ".*"',
                     to: 'Revision = "${nextRelease.version}"',
-                    results: [{ file: 'RimWorks.RimLogging/BuildInfo.cs', hasChanged: true, numMatches: 1, numReplacements: 1 }],
+                    results: [{ file: 'Source/RimWorks.RimLogging/BuildInfo.cs', hasChanged: true, numMatches: 1, numReplacements: 1 }],
                     countMatches: true,
                 },
                 {
-                    files: ['RimWorks.RimLogging/BuildInfo.cs'],
+                    files: ['Source/RimWorks.RimLogging/BuildInfo.cs'],
                     from: 'BuildTime = ".*"',
                     to: () => `BuildTime = "${new Date().toISOString()}"`,
-                    results: [{ file: 'RimWorks.RimLogging/BuildInfo.cs', hasChanged: true, numMatches: 1, numReplacements: 1 }],
+                    results: [{ file: 'Source/RimWorks.RimLogging/BuildInfo.cs', hasChanged: true, numMatches: 1, numReplacements: 1 }],
                     countMatches: true,
                 },
             ],
@@ -37,7 +37,7 @@ const plugins = [
         '@semantic-release/exec',
         {
             prepareCmd:
-                "dotnet pack RimWorks.RimLogging/RimWorks.RimLogging.csproj -c Release -p:Version=${nextRelease.version} -p:PackageVersion=${nextRelease.version} -p:FileVersion=${nextRelease.version.replace(/-.*/, '')}.0 -p:AssemblyVersion=${nextRelease.version.replace(/-.*/, '')}.0 -p:InformationalVersion=${nextRelease.version} -o ./nupkgs",
+                "dotnet pack Source/RimWorks.RimLogging/RimWorks.RimLogging.csproj -c Release -p:Version=${nextRelease.version} -p:PackageVersion=${nextRelease.version} -p:FileVersion=${nextRelease.version.replace(/-.*/, '')}.0 -p:AssemblyVersion=${nextRelease.version.replace(/-.*/, '')}.0 -p:InformationalVersion=${nextRelease.version} -o ./nupkgs",
             publishCmd:
                 "dotnet nuget push './nupkgs/*.nupkg' --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json --skip-duplicate",
         },
@@ -51,7 +51,7 @@ const plugins = [
     [
         '@semantic-release/git',
         {
-            assets: ['RimWorks.RimLogging/BuildInfo.cs'],
+            assets: ['Source/RimWorks.RimLogging/BuildInfo.cs'],
             message: 'chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}',
         },
     ],

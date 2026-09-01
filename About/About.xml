@@ -7,14 +7,8 @@
     <supportedVersions>
         <li>1.6</li>
     </supportedVersions>
-    <modDependencies>
-        <li>
-            <packageId>concordlib.concord</packageId>
-            <displayName>Concord</displayName>
-            <steamWorkshopUrl>https://steamcommunity.com/sharedfiles/filedetails/?id=3758333473</steamWorkshopUrl>
-        </li>
-    </modDependencies>
     <loadAfter>
+        <li>brrainz.harmony</li>
         <li>concordlib.concord</li>
     </loadAfter>
     <description>A public logging framework for RimWorld mods.

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <RootNamespace>RimWorks.RimLogging.Tests</RootNamespace>
+        <AssemblyName>RimWorks.RimLogging.Tests</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="..\RimWorks.RimLogging\**\*.cs"
+                 Exclude="..\RimWorks.RimLogging\bin\**\*.cs;..\RimWorks.RimLogging\obj\**\*.cs;..\RimWorks.RimLogging\Hijack\**\*.cs;..\RimWorks.RimLogging\Bootstrap\**\*.cs;..\RimWorks.RimLogging\Settings\LogDirectory.cs;..\RimWorks.RimLogging\Settings\LoggingSettings.cs;..\RimWorks.RimLogging\Settings\LoggingSettingsWindow.cs;..\RimWorks.RimLogging\Settings\LoggingMod.cs;..\RimWorks.RimLogging\Sinks\VerseLogSink.cs;..\RimWorks.RimLogging\Sinks\SinkDef.cs;..\RimWorks.RimLogging\Pipeline\ShutdownFlush.cs;..\RimWorks.RimLogging\Bundle\ModListSnapshot.cs;..\RimWorks.RimLogging\Bundle\BundlerSessionFactory.cs;..\RimWorks.RimLogging\Channels\ChannelDef.cs;..\RimWorks.RimLogging\Channels\ChannelRegistry.cs;..\RimWorks.RimLogging\Sinks\SinkLoader.cs;..\RimWorks.RimLogging\Viewer\LogViewerWindow.cs;..\RimWorks.RimLogging\Viewer\LogDetailWindow.cs;..\RimWorks.RimLogging\Viewer\LogDetailView.cs;..\RimWorks.RimLogging\Viewer\LogBundleShare.cs;..\RimWorks.RimLogging\Viewer\LevelColors.cs;..\RimWorks.RimLogging\Viewer\LogViewerBoot.cs;..\RimWorks.RimLogging\Viewer\ViewerHooks.cs;..\RimWorks.RimLogging\Patching\PatchBackends.cs;..\RimWorks.RimLogging\Viewer\ChannelClassifierBootstrap.cs;..\RimWorks.RimLogging\Viewer\SuggestField.cs"
+                 LinkBase="LinkedSource" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
+        <PackageReference Include="xunit" Version="2.9.3" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+    </ItemGroup>
+</Project>

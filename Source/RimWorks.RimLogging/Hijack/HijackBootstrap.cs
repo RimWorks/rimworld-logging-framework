@@ -1,13 +1,12 @@
-using Concord;
 using RimWorks.RimLogging.Bootstrap;
 using RimWorks.RimLogging.Capture;
+using RimWorks.RimLogging.Patching;
 
 namespace RimWorks.RimLogging.Hijack;
 
 internal static class HijackBootstrap
 {
     private static volatile bool _installed;
-    private static IPatchHandle? _patches;
 
     internal static bool Install()
     {
@@ -23,22 +22,10 @@ internal static class HijackBootstrap
             Verse.Log.Warning($"[RimLogging] mod-name provider failed: {ex.GetType().Name}: {ex.Message}");
         Sinks.VerseLogSink.VanillaWriter = VanillaBufferWriteback.Write;
         VerseLogBackfill.Drain();
-        _patches = Patcher.Apply(typeof(HijackBootstrap).Assembly);
+        PatchBackends.ApplyBest();
         UnityLogBridge.Install();
         DegradedMode.ClaimHijack();
         _installed = true;
         return true;
-    }
-
-    internal static void UninstallForTests()
-    {
-        UnityLogBridge.Uninstall();
-        _patches?.Dispose();
-        _patches = null;
-        Sinks.VerseLogSink.VanillaWriter = null;
-        AssemblyChannelCache.OnResolverError = null;
-        ModNameCache.OnProviderError = null;
-        DegradedMode.ReleaseHijackForTests();
-        _installed = false;
     }
 }

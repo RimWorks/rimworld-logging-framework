@@ -20,7 +20,7 @@ internal static class StaticInit
         }
         catch (System.Exception ex)
         {
-            Verse.Log.Error("[RimLogging] def bootstrap failed: " + ex);
+            PanicLog.Write("[RimLogging] def bootstrap failed: " + ex);
         }
     }
 }

@@ -39,7 +39,7 @@ dotnet_diagnostic.S101.severity = none
 # The mod ships net472; the test project compiles the same source as net10.0. These rules all
 # suggest .NET Core-only APIs (ThrowIfNull, ThrowIfLessThan, Environment.ProcessId,
 # StartsWith(char), Contains(char), GeneratedRegex) so they only fire in the test build.
-[RimWorks.RimLogging/**.cs]
+[Source/RimWorks.RimLogging/**.cs]
 dotnet_diagnostic.CA1510.severity = none
 dotnet_diagnostic.CA1512.severity = none
 dotnet_diagnostic.CA1837.severity = none

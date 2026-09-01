@@ -34,7 +34,7 @@ internal static class EarlyInit
         }
         catch (System.Exception ex)
         {
-            Verse.Log.Error("[RimLogging] early bootstrap failed: " + ex);
+            PanicLog.Write("[RimLogging] early bootstrap failed: " + ex);
         }
     }
 }

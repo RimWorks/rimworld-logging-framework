@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net472</TargetFramework>
+        <AssemblyName>RimWorks.RimLogging.Patches.Concord</AssemblyName>
+        <RootNamespace>RimWorks.RimLogging.Patches.Concord</RootNamespace>
+        <OutDir>$(MSBuildProjectDirectory)\..\..\Concord\Assemblies\</OutDir>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+        <IsPackable>false</IsPackable>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Krafs.Rimworld.Ref" Version="1.6.*" ExcludeAssets="runtime" PrivateAssets="all"/>
+        <PackageReference Include="Concord.Ref" Version="0.4.1" ExcludeAssets="runtime" PrivateAssets="all"/>
+        <PackageReference Include="Concord.Analyzers" Version="0.4.1" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all">
+            <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Private=false: the core ships once, from the root Assemblies folder. -->
+        <ProjectReference Include="..\RimWorks.RimLogging\RimWorks.RimLogging.csproj" Private="false"/>
+    </ItemGroup>
+</Project>

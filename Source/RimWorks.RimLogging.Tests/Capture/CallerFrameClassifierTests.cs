@@ -77,4 +77,15 @@ public class CallerFrameClassifierTests
         Assert.False(CallerFrameClassifier.IsInternalFrame("HarmonyLib", "SomeMod"));
         Assert.False(CallerFrameClassifier.IsInternalFrame("HarmonyLibrarian.Tools", "SomeMod"));
     }
+
+    [Fact]
+    public void IsInternalFrame_OurOwnPatchBackendFrames_AreSkipped()
+    {
+        // the backends live in separate assemblies, so without this the mod that logged
+        // would be attributed to RimLogging itself
+        Assert.True(CallerFrameClassifier.IsInternalFrame(
+            "RimWorks.RimLogging.Patches.Concord.VerseLogPatch", "RimWorks.RimLogging.Patches.Concord"));
+        Assert.True(CallerFrameClassifier.IsInternalFrame(
+            "RimWorks.RimLogging.Patches.Harmony.HarmonyBackend", "RimWorks.RimLogging.Patches.Harmony"));
+    }
 }

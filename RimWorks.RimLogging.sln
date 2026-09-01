@@ -2,9 +2,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RimWorks.RimLogging", "RimWorks.RimLogging\RimWorks.RimLogging.csproj", "{B0000001-0000-0000-0000-000000000001}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RimWorks.RimLogging", "Source\RimWorks.RimLogging\RimWorks.RimLogging.csproj", "{B0000001-0000-0000-0000-000000000001}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RimWorks.RimLogging.Tests", "RimWorks.RimLogging.Tests\RimWorks.RimLogging.Tests.csproj", "{B0000001-0000-0000-0000-000000000003}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RimWorks.RimLogging.Tests", "Source\RimWorks.RimLogging.Tests\RimWorks.RimLogging.Tests.csproj", "{B0000001-0000-0000-0000-000000000003}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RimWorks.RimLogging.Patches.Concord", "Source\RimWorks.RimLogging.Patches.Concord\RimWorks.RimLogging.Patches.Concord.csproj", "{B0000001-0000-0000-0000-000000000004}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RimWorks.RimLogging.Patches.Harmony", "Source\RimWorks.RimLogging.Patches.Harmony\RimWorks.RimLogging.Patches.Harmony.csproj", "{B0000001-0000-0000-0000-000000000005}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,6 +24,14 @@ Global
 		{B0000001-0000-0000-0000-000000000003}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B0000001-0000-0000-0000-000000000003}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B0000001-0000-0000-0000-000000000003}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0000001-0000-0000-0000-000000000004}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0000001-0000-0000-0000-000000000004}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0000001-0000-0000-0000-000000000004}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0000001-0000-0000-0000-000000000004}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0000001-0000-0000-0000-000000000005}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0000001-0000-0000-0000-000000000005}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0000001-0000-0000-0000-000000000005}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0000001-0000-0000-0000-000000000005}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
