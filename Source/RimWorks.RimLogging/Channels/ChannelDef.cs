@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -25,4 +26,24 @@ public class ChannelDef : Verse.Def
     public string? ColorHex => color.HasValue
         ? ColorUtility.ToHtmlStringRGB(color.Value)
         : null;
+
+    /// <summary>Reports config errors, allowing the dots that vanilla's defName rule rejects.</summary>
+    /// <returns>Every base error except the defName-characters one, plus our own dotted-name check.</returns>
+    public override IEnumerable<string> ConfigErrors()
+    {
+        foreach (string error in base.ConfigErrors())
+        {
+            // dots are how channels nest, so vanilla's defName character rule cannot apply here
+            if (error.IndexOf("should only contain", StringComparison.Ordinal) < 0)
+            {
+                yield return error;
+            }
+        }
+
+        string? problem = ChannelDefName.Validate(defName);
+        if (problem != null)
+        {
+            yield return problem;
+        }
+    }
 }
