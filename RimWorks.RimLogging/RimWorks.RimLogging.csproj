@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <OutDir>..\Assemblies\</OutDir>
+        <!-- Directory.Build.props sets TargetFramework; blank it so the multi-target outer build runs. -->
+        <TargetFramework></TargetFramework>
+        <TargetFrameworks>net472;net48</TargetFrameworks>
+        <!-- net472 is what RimWorld runs, so that build is the one the mod ships. -->
+        <OutDir Condition="'$(TargetFramework)' == 'net472'">..\Assemblies\</OutDir>
         <RootNamespace>RimWorks.RimLogging</RootNamespace>
         <AssemblyName>RimWorks.RimLogging</AssemblyName>
         <Description>Public structured logging framework for RimWorld 1.6+ mods. Core pipeline, channels, sinks, filter DSL, and Verse.Log + Unity hijack.</Description>
@@ -9,7 +13,7 @@
         <PackageTags>rimworld;logging;modding;framework</PackageTags>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <DocumentationFile>..\Assemblies\$(AssemblyName).xml</DocumentationFile>
+        <DocumentationFile Condition="'$(TargetFramework)' == 'net472'">..\Assemblies\$(AssemblyName).xml</DocumentationFile>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     </PropertyGroup>
 
@@ -17,7 +21,7 @@
         <PackageReference Include="System.Text.Json" Version="8.0.5"/>
         <PackageReference Include="Concord.Ref" Version="0.4.1" PrivateAssets="all"/>
         <PackageReference Include="Concord.Analyzers" Version="0.4.1" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net48" Version="1.0.3" PrivateAssets="all">
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all">
             <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
 
@@ -44,7 +48,8 @@
         <None Include="..\README.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 
-    <Target Name="CopyRimWorldRuntimeDeps" AfterTargets="Build" DependsOnTargets="ResolveAssemblyReferences">
+    <!-- Inner builds only; the multi-target outer build has no ResolveAssemblyReferences. -->
+    <Target Name="CopyRimWorldRuntimeDeps" AfterTargets="Build" DependsOnTargets="ResolveAssemblyReferences" Condition="'$(TargetFramework)' != ''">
         <Copy SourceFiles="@(ReferenceCopyLocalPaths)"
               DestinationFiles="@(ReferenceCopyLocalPaths->'$(OutDir)%(DestinationSubDirectory)%(Filename)%(Extension)')"
               SkipUnchangedFiles="true" />
