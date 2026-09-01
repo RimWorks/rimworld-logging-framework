@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using RimWorks.RimLogging.Bundle;
 using RimWorks.RimLogging.Settings;
 using RimWorld;
@@ -10,7 +11,8 @@ using LogEntry = RimWorks.RimLogging.LogEntry;
 namespace RimWorks.RimLogging.Viewer;
 
 internal static class LogBundleShare {
-    public static async void Upload(ViewerLogSink sink, LogViewerState state, Action invalidate) {
+    /// <summary>Fire-and-forget from the UI; the body catches everything, so the task never faults.</summary>
+    public static async Task Upload(ViewerLogSink sink, LogViewerState state, Action invalidate) {
         state.Uploading = true;
         invalidate();
         try {

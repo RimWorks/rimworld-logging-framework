@@ -8,10 +8,10 @@ public class ChannelClassifierTests
     private static void UseMods(params (string PackageId, string Facing)[] mods)
     {
         ChannelClassifier.Reset();
-        ChannelClassifier.ModTableLoader = () =>
+        ChannelClassifier.UseModTable(() =>
         {
             foreach ((string packageId, string facing) in mods) ChannelClassifier.AddMod(packageId, facing);
-        };
+        });
         ChannelClassifier.EnsureBuilt();
     }
 
@@ -70,7 +70,7 @@ public class ChannelClassifierTests
     {
         int loads = 0;
         ChannelClassifier.Reset();
-        ChannelClassifier.ModTableLoader = () => loads++;
+        ChannelClassifier.UseModTable(() => loads++);
 
         ChannelClassifier.EnsureBuilt();
         ChannelClassifier.EnsureBuilt();

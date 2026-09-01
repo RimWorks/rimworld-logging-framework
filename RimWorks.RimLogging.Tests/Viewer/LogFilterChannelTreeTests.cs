@@ -13,7 +13,7 @@ public class LogFilterChannelTreeTests
     private static LogViewerState FreshState()
     {
         ChannelClassifier.Reset();
-        ChannelClassifier.ModTableLoader = null;
+        ChannelClassifier.UseModTable(null);
         ChannelClassifier.EnsureBuilt();
 
         LogViewerSession.DslSource = "";

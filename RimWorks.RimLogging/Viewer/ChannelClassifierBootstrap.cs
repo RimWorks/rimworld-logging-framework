@@ -6,7 +6,7 @@ namespace RimWorks.RimLogging.Viewer;
 /// <summary>Feeds the running mod list into <see cref="ChannelClassifier"/>. Holds the only Verse dependency in the channel-path logic.</summary>
 internal static class ChannelClassifierBootstrap {
     public static void Install() {
-        ChannelClassifier.ModTableLoader = LoadRunningMods;
+        ChannelClassifier.UseModTable(LoadRunningMods);
     }
 
     private static void LoadRunningMods() {

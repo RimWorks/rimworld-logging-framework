@@ -116,7 +116,7 @@ internal sealed class LogViewerWindow : EditWindow {
         DoRowButton(ref x, y, "CRL_LogViewer_Clear".Translate(), null, ClearEntries);
         DoRowButton(ref x, y, "CRL_LogViewer_Copy".Translate(), null, CopyVisibleToClipboard);
         DoRowButton(ref x, y, "CRL_LogViewer_ShareBundle".Translate(), null,
-            () => LogBundleShare.Upload(sink, state, static () => { }));
+            () => _ = LogBundleShare.Upload(sink, state, static () => { }));
         DoRowButton(
             ref x,
             y,
@@ -411,7 +411,7 @@ internal sealed class LogViewerWindow : EditWindow {
     /// <summary>Refilters only when the sink or a filter input actually changed; this runs every frame.</summary>
     private void RebuildIfStale() {
         string signature = string.Join(
-            "",
+            "\u0001",
             state.ActiveChannel,
             state.ChannelFilter,
             state.DslSource,

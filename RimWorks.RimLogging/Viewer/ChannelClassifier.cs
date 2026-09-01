@@ -16,8 +16,12 @@ internal static class ChannelClassifier {
     public static string ModGroupId => ModGroup;
     public static string VanillaGroupId => VanillaGroup;
 
-    /// <summary>Fills the mod lookup tables. Installed by <c>ChannelClassifierBootstrap</c>, which owns the Verse dependency.</summary>
-    internal static Action? ModTableLoader;
+    private static Action? modTableLoader;
+
+    /// <summary>Installs the table filler. <c>ChannelClassifierBootstrap</c> owns the Verse dependency.</summary>
+    internal static void UseModTable(Action? loader) {
+        modTableLoader = loader;
+    }
 
     public static void EnsureBuilt() {
         if (packageIdToPath != null) {
@@ -28,7 +32,7 @@ internal static class ChannelClassifier {
         fullFacingToPath = new Dictionary<string, string[]>(StringComparer.Ordinal);
         moduleNameToPath = new Dictionary<string, string[]>(StringComparer.Ordinal);
 
-        ModTableLoader?.Invoke();
+        modTableLoader?.Invoke();
     }
 
     /// <summary>Registers one running mod against the channel paths it owns.</summary>
