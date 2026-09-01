@@ -11,6 +11,7 @@
         <li>
             <packageId>concordlib.concord</packageId>
             <displayName>Concord</displayName>
+            <steamWorkshopUrl>https://steamcommunity.com/sharedfiles/filedetails/?id=3758333473</steamWorkshopUrl>
         </li>
     </modDependencies>
     <loadAfter>
