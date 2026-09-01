@@ -42,6 +42,9 @@ internal sealed class LogViewerWindow : EditWindow {
     private float detailPaneHeight = 220f;
     private float detailPaneWidth = 356f;
 
+    private bool tailing = true;
+    private bool selectNewestPending;
+
     private Splitter dragging = Splitter.None;
     private LogDetailWindow? popout;
 
@@ -54,8 +57,9 @@ internal sealed class LogViewerWindow : EditWindow {
     private List<LogEntry> filtered = new List<LogEntry>();
     private List<LogChannel> channels = new List<LogChannel>();
 
-    public LogViewerWindow(ViewerLogSink sink) {
+    public LogViewerWindow(ViewerLogSink sink, bool selectNewest = false) {
         this.sink = sink;
+        selectNewestPending = selectNewest;
         optionalTitle = "CRL_LogViewer_Title".Translate();
         onlyOneOfTypeAllowed = true;
     }
@@ -124,13 +128,21 @@ internal sealed class LogViewerWindow : EditWindow {
             null,
             () => state.ChannelsOpen = !state.ChannelsOpen);
         DoRowButton(ref x, y, PlacementLabel(), null, CyclePlacement);
+        DoRowButton(
+            ref x,
+            y,
+            LogViewerBoot.AutoOpen ? "CRL_LogViewer_AutoOpenOn".Translate() : "CRL_LogViewer_AutoOpenOff".Translate(),
+            null,
+            () => LogViewerBoot.AutoOpen = !LogViewerBoot.AutoOpen);
         DoRowButton(ref x, y, "CRL_LogViewer_OpenVanilla".Translate(), null, LogViewerBoot.OpenVanilla);
 
         for (int i = 0; i < ToggleLevels.Length; i++) {
             DoLevelToggle(ref x, y, i);
         }
 
-        DrawTailingBadge(inRect);
+        if (tailing) {
+            DrawTailingBadge(inRect);
+        }
     }
 
     private void DoLevelToggle(ref float x, float y, int index) {
@@ -153,7 +165,7 @@ internal sealed class LogViewerWindow : EditWindow {
         x += 30f;
     }
 
-    private void DrawTailingBadge(Rect inRect) {
+    private static void DrawTailingBadge(Rect inRect) {
         Rect rect = new Rect(inRect.xMax - 110f, inRect.y, 110f, 24f);
         Rect dot = new Rect(rect.x, rect.y + 9f, 6f, 6f);
         Widgets.DrawBoxSolid(dot, new Color(0.44f, 0.75f, 0.54f));
@@ -163,7 +175,7 @@ internal sealed class LogViewerWindow : EditWindow {
         GUI.color = Color.white;
     }
 
-    private string PlacementLabel() {
+    private static string PlacementLabel() {
         switch (Placement) {
             case DetailPlacement.Right:
                 return "CRL_LogViewer_Detail_Right".Translate();
@@ -279,6 +291,10 @@ internal sealed class LogViewerWindow : EditWindow {
                 break;
         }
 
+        // Window.InnerWindowOnGUI ends with a bare GUI.DragWindow(), which would eat the
+        // detail pane's drag-to-select, so stop being draggable while the pointer is in there
+        draggable = !Mouse.IsOver(detailArea);
+
         DrawFilterStrip(ref listArea);
         DrawList(listArea);
 
@@ -326,7 +342,11 @@ internal sealed class LogViewerWindow : EditWindow {
     private void DrawList(Rect rect) {
         Widgets.DrawBoxSolid(rect, new Color(1f, 1f, 1f, 0.02f));
 
-        Rect view = new Rect(0f, 0f, rect.width - ScrollbarWidth, filtered.Count * RowHeight);
+        float contentHeight = filtered.Count * RowHeight;
+        Rect view = new Rect(0f, 0f, rect.width - ScrollbarWidth, contentHeight);
+        if (tailing) {
+            listScroll.y = TailScroll.MaxScroll(rect.height, contentHeight);
+        }
         Widgets.BeginScrollView(rect, ref listScroll, view);
 
         for (int i = 0; i < filtered.Count; i++) {
@@ -334,6 +354,7 @@ internal sealed class LogViewerWindow : EditWindow {
         }
 
         Widgets.EndScrollView();
+        tailing = TailScroll.IsAtBottom(listScroll.y, rect.height, contentHeight);
 
         if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && Mouse.IsOver(rect)) {
             state.Selected = null;
@@ -365,10 +386,46 @@ internal sealed class LogViewerWindow : EditWindow {
         Widgets.Label(new Rect(messageX, rect.y - 1f, messageWidth, RowHeight), entry.RenderedMessage.Truncate(messageWidth));
         GUI.color = Color.white;
 
+        if (Event.current.type == EventType.MouseDown && Event.current.button == 1 && Mouse.IsOver(rect)) {
+            state.Selected = entry;
+            OpenRowMenu(entry);
+            Event.current.Use();
+            return;
+        }
+
         if (Widgets.ButtonInvisible(rect)) {
             state.Selected = entry;
             Event.current.Use();
         }
+    }
+
+    private void OpenRowMenu(LogEntry entry) {
+        string channelId = ChannelClassifier.JoinPath(ChannelClassifier.PathFor(entry.Channel));
+
+        List<FloatMenuOption> options = new List<FloatMenuOption> {
+            new FloatMenuOption("CRL_LogViewer_Menu_CopyMessage".Translate(),
+                () => CopyToClipboard(entry.RenderedMessage)),
+            new FloatMenuOption("CRL_LogViewer_Menu_CopyWithStack".Translate(),
+                () => CopyToClipboard(EntryText.WithStack(entry))),
+            new FloatMenuOption("CRL_LogViewer_Menu_CopyFullDetail".Translate(),
+                () => CopyToClipboard(EntryText.Full(entry))),
+            new FloatMenuOption("CRL_LogViewer_Menu_CopyChannel".Translate(),
+                () => CopyToClipboard(entry.Channel)),
+            new FloatMenuOption("CRL_LogViewer_Menu_FilterChannel".Translate(),
+                () => state.ActiveChannel = channelId),
+        };
+
+        if (state.ActiveChannel != LogViewerState.AllChannels) {
+            options.Add(new FloatMenuOption("CRL_LogViewer_Menu_ShowAllChannels".Translate(),
+                () => state.ActiveChannel = LogViewerState.AllChannels));
+        }
+
+        Find.WindowStack.Add(new FloatMenu(options));
+    }
+
+    private static void CopyToClipboard(string text) {
+        GUIUtility.systemCopyBuffer = text;
+        Messages.Message("CRL_LogViewer_Copy".Translate(), MessageTypeDefOf.TaskCompletion, false);
     }
 
     // ---- splitters ----
@@ -432,6 +489,11 @@ internal sealed class LogViewerWindow : EditWindow {
         channelNames = DistinctChannels(snapshot);
         cachedRevision = sink.Revision;
         cachedSignature = signature;
+
+        if (selectNewestPending && filtered.Count > 0) {
+            state.Selected = filtered[filtered.Count - 1];
+            selectNewestPending = false;
+        }
     }
 
     private void DrawSuggestionOverlays() {
@@ -499,8 +561,7 @@ internal sealed class LogViewerWindow : EditWindow {
                 .Append(" [").Append(entry.Level).Append("] [").Append(entry.Channel).Append("] ")
                 .AppendLine(entry.RenderedMessage);
         }
-        GUIUtility.systemCopyBuffer = builder.ToString();
-        Messages.Message("CRL_LogViewer_Copy".Translate(), MessageTypeDefOf.TaskCompletion, false);
+        CopyToClipboard(builder.ToString());
     }
 
     // ---- popout ----
@@ -519,7 +580,12 @@ internal sealed class LogViewerWindow : EditWindow {
 
     private void DropPopoutIfUserClosedIt() {
         if (popout != null && !Find.WindowStack.IsOpen(popout)) {
+            // user closed the popout, so fall back to the inline pane instead of respawning it
             popout = null;
+            LoggingSettings settings = LoggingMod.Settings;
+            settings.logViewerDetailPlacement = DetailPlacement.Bottom;
+            settings.Write();
+            return;
         }
         if (Placement == DetailPlacement.Popout && popout == null) {
             SyncPopout();

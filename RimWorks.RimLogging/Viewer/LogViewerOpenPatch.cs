@@ -13,7 +13,7 @@ internal static class LogViewerOpenPatch {
             return Control.Continue;
         }
         if (windowStack.WindowOfType<LogViewerWindow>() == null) {
-            windowStack.Add(new LogViewerWindow(sink));
+            windowStack.Add(new LogViewerWindow(sink, selectNewest: true));
         }
         return Control.Cancel;
     }

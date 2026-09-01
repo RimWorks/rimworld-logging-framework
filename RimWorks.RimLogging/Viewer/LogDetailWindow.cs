@@ -20,6 +20,8 @@ internal sealed class LogDetailWindow : EditWindow {
 
     public override void DoWindowContents(Rect inRect) {
         Text.Font = GameFont.Small;
+        // dragging the window would otherwise swallow drag-to-select in the body
+        draggable = !Mouse.IsOver(inRect);
         LogDetailView.Draw(inRect, state.Selected, ref scroll, LoggingMod.Settings.logViewerCombinedDetail);
     }
 }

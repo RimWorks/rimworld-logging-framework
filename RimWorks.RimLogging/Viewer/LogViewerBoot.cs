@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using LudeonTK;
 using Verse;
 
@@ -21,6 +22,15 @@ internal static class LogViewerBoot {
         catch (Exception ex) {
             Log.Error("Failed to register log viewer sink: " + ex);
         }
+    }
+
+    // EditWindow_Log.canAutoOpen is private, and it is the same flag vanilla's own button flips
+    private static readonly FieldInfo? CanAutoOpenField =
+        typeof(EditWindow_Log).GetField("canAutoOpen", BindingFlags.NonPublic | BindingFlags.Static);
+
+    public static bool AutoOpen {
+        get => CanAutoOpenField?.GetValue(null) as bool? ?? false;
+        set => CanAutoOpenField?.SetValue(null, value);
     }
 
     public static void OpenVanilla() {

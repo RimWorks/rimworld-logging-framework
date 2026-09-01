@@ -11,6 +11,7 @@ internal static class LogDetailView {
     private const float LabelWidth = 86f;
     private const float Pad = 6f;
     private const float ScrollbarWidth = 18f;
+    private const float CopyButtonWidth = 92f;
 
     public static void Draw(Rect rect, LogEntry? entry, ref Vector2 scroll, bool combined) {
         Widgets.DrawBoxSolid(rect, new Color(1f, 1f, 1f, 0.02f));
@@ -22,7 +23,7 @@ internal static class LogDetailView {
 
         Rect inner = rect.ContractedBy(Pad);
         float contentWidth = inner.width - ScrollbarWidth;
-        string trace = entry.StackTrace ?? entry.Exception?.ToString() ?? string.Empty;
+        string trace = EntryText.Trace(entry);
 
         Rect view = new Rect(0f, 0f, contentWidth, MeasureHeight(entry, trace, combined, contentWidth));
         Widgets.BeginScrollView(inner, ref scroll, view);
@@ -52,6 +53,15 @@ internal static class LogDetailView {
         }
 
         Widgets.EndScrollView();
+
+        float copyX = rect.xMax - Pad - ScrollbarWidth - Pad - CopyButtonWidth;
+        Rect copy = new Rect(copyX, rect.y + Pad, CopyButtonWidth, 22f);
+        Text.Font = GameFont.Tiny;
+        if (Widgets.ButtonText(copy, "CRL_LogViewer_Detail_CopyAll".Translate())) {
+            GUIUtility.systemCopyBuffer = EntryText.Full(entry);
+            Messages.Message("CRL_LogViewer_Copy".Translate(), MessageTypeDefOf.TaskCompletion, false);
+        }
+        Text.Font = GameFont.Small;
     }
 
     private static float MeasureHeight(LogEntry entry, string trace, bool combined, float width) {
@@ -61,11 +71,11 @@ internal static class LogDetailView {
         Text.Font = GameFont.Small;
         if (combined) {
             string both = string.IsNullOrEmpty(trace) ? entry.RenderedMessage : entry.RenderedMessage + "\n\n" + trace;
-            h += RowHeight + Text.CalcHeight(both, width) + 6f;
+            h += RowHeight + BlockHeight(both, width) + 6f;
         }
         else {
-            h += RowHeight + Text.CalcHeight(entry.RenderedMessage, width) + 6f;
-            h += RowHeight + Text.CalcHeight(string.IsNullOrEmpty(trace) ? " " : trace, width) + 6f;
+            h += RowHeight + BlockHeight(entry.RenderedMessage, width) + 6f;
+            h += RowHeight + BlockHeight(string.IsNullOrEmpty(trace) ? " " : trace, width) + 6f;
         }
         return h;
     }
@@ -95,17 +105,18 @@ internal static class LogDetailView {
 
         Text.Font = GameFont.Small;
         GUI.color = new Color(0.94f, 0.94f, 0.91f);
-        float h = Text.CalcHeight(body, width);
-        Rect bodyRect = new Rect(0f, y, width, h);
-        Widgets.Label(bodyRect, body);
+        float h = BlockHeight(body, width);
+        // read-only TextArea rather than Label so the text can be selected and copied
+        Widgets.TextArea(new Rect(0f, y, width, h), body, readOnly: true);
         GUI.color = Color.white;
 
-        if (Widgets.ButtonInvisible(bodyRect)) {
-            GUIUtility.systemCopyBuffer = body;
-            Messages.Message("CRL_LogViewer_Copy".Translate(), MessageTypeDefOf.TaskCompletion, false);
-        }
-
         y += h;
+    }
+
+    // measured with the TextArea style, not Text.CalcHeight: the field's padding wraps text
+    // narrower than a Label, so measuring with the wrong style clips the last few lines
+    private static float BlockHeight(string body, float width) {
+        return Text.CurTextAreaReadOnlyStyle.CalcHeight(new GUIContent(body), width);
     }
 
     private static string SourceText(LogEntry entry) {

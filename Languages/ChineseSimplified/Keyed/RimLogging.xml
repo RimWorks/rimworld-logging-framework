@@ -19,6 +19,15 @@
     <CRL_LogViewer_ShowChannels>显示频道</CRL_LogViewer_ShowChannels>
     <CRL_LogViewer_ShareBundle>分享</CRL_LogViewer_ShareBundle>
     <CRL_LogViewer_OpenVanilla>打开原版日志 (Shift+`)</CRL_LogViewer_OpenVanilla>
+    <CRL_LogViewer_Detail_CopyAll>复制全部</CRL_LogViewer_Detail_CopyAll>
+    <CRL_LogViewer_Menu_CopyFullDetail>复制完整详情</CRL_LogViewer_Menu_CopyFullDetail>
+    <CRL_LogViewer_Menu_CopyMessage>复制消息</CRL_LogViewer_Menu_CopyMessage>
+    <CRL_LogViewer_Menu_CopyWithStack>复制消息和堆栈</CRL_LogViewer_Menu_CopyWithStack>
+    <CRL_LogViewer_Menu_CopyChannel>复制频道</CRL_LogViewer_Menu_CopyChannel>
+    <CRL_LogViewer_Menu_FilterChannel>仅筛选此频道</CRL_LogViewer_Menu_FilterChannel>
+    <CRL_LogViewer_Menu_ShowAllChannels>显示所有频道</CRL_LogViewer_Menu_ShowAllChannels>
+    <CRL_LogViewer_AutoOpenOn>自动打开：开</CRL_LogViewer_AutoOpenOn>
+    <CRL_LogViewer_AutoOpenOff>自动打开：关</CRL_LogViewer_AutoOpenOff>
     <CRL_LogViewer_Close>关闭</CRL_LogViewer_Close>
     <CRL_LogViewer_AllChannels>所有频道</CRL_LogViewer_AllChannels>
     <CRL_LogViewer_FilterChannels>筛选频道</CRL_LogViewer_FilterChannels>

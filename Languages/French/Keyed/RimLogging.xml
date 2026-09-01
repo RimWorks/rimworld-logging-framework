@@ -19,6 +19,15 @@
     <CRL_LogViewer_ShowChannels>Afficher les canaux</CRL_LogViewer_ShowChannels>
     <CRL_LogViewer_ShareBundle>Partager</CRL_LogViewer_ShareBundle>
     <CRL_LogViewer_OpenVanilla>Ouvrir le journal d'origine (Maj+`)</CRL_LogViewer_OpenVanilla>
+    <CRL_LogViewer_Detail_CopyAll>Tout copier</CRL_LogViewer_Detail_CopyAll>
+    <CRL_LogViewer_Menu_CopyFullDetail>Copier tous les détails</CRL_LogViewer_Menu_CopyFullDetail>
+    <CRL_LogViewer_Menu_CopyMessage>Copier le message</CRL_LogViewer_Menu_CopyMessage>
+    <CRL_LogViewer_Menu_CopyWithStack>Copier le message + la pile</CRL_LogViewer_Menu_CopyWithStack>
+    <CRL_LogViewer_Menu_CopyChannel>Copier le canal</CRL_LogViewer_Menu_CopyChannel>
+    <CRL_LogViewer_Menu_FilterChannel>Filtrer sur ce canal</CRL_LogViewer_Menu_FilterChannel>
+    <CRL_LogViewer_Menu_ShowAllChannels>Afficher tous les canaux</CRL_LogViewer_Menu_ShowAllChannels>
+    <CRL_LogViewer_AutoOpenOn>Ouverture auto activée</CRL_LogViewer_AutoOpenOn>
+    <CRL_LogViewer_AutoOpenOff>Ouverture auto désactivée</CRL_LogViewer_AutoOpenOff>
     <CRL_LogViewer_Close>Fermer</CRL_LogViewer_Close>
     <CRL_LogViewer_AllChannels>Tous les canaux</CRL_LogViewer_AllChannels>
     <CRL_LogViewer_FilterChannels>Filtrer les canaux</CRL_LogViewer_FilterChannels>
