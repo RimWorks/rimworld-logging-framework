@@ -15,9 +15,7 @@ internal static class ReentryGuard
     /// <summary>Gets a value indicating whether the current thread is already inside a sink write.</summary>
     internal static bool IsInsideSink => _inSink;
 
-    // Routed through this static method (rather than writing _inSink directly in Scope.Dispose)
-    // to avoid S2696 (CRITICAL): updating a static field from an instance method. Keep it static;
-    // inlining it reintroduces that violation. S3398 (move-to-Scope) is wontfix for this reason.
+    // dont inline into Scope.Dispose, a static write from an instance method trips S2696
     private static void ClearInSink() => _inSink = false;
 
     /// <summary>

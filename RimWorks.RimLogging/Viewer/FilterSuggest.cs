@@ -118,7 +118,7 @@ internal static class FilterSuggest {
             || kind == TokenKind.OpLte || kind == TokenKind.OpGt || kind == TokenKind.OpGte;
     }
 
-    private static IReadOnlyList<string> QuotedChannels(IReadOnlyCollection<string> channels) {
+    private static List<string> QuotedChannels(IReadOnlyCollection<string> channels) {
         List<string> quoted = new List<string>(channels.Count);
         foreach (string channel in channels) {
             quoted.Add("\"" + channel + "\"");

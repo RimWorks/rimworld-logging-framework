@@ -7,7 +7,7 @@ namespace RimWorks.RimLogging.Viewer;
 [Patch]
 internal abstract class DebugLogTogglePatch : DebugWindowsOpener {
     [Inject(At.Head, "ToggleLogWindow")]
-    private Control Prefix() {
+    private static Control Prefix() {
         if (Event.current != null && Event.current.shift) {
             return Control.Continue;
         }

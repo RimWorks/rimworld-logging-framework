@@ -8,12 +8,16 @@ namespace RimWorks.RimLogging.Capture;
 /// </summary>
 public static class StackWalker
 {
+    private static readonly TimeSpan RegexTimeout = TimeSpan.FromSeconds(1);
+
     private static readonly System.Text.RegularExpressions.Regex _pathStrip = new(
         @"^.*?(RimworldCosmere[\\/]RimworldCosmere[\\/]|RimWorld[\\/]Mods[\\/])+[\\/]*",
-        System.Text.RegularExpressions.RegexOptions.Compiled);
+        System.Text.RegularExpressions.RegexOptions.Compiled,
+        RegexTimeout);
     private static readonly System.Text.RegularExpressions.Regex _dupDir = new(
         @"^(\w+)[\\/]\1[\\/]",
-        System.Text.RegularExpressions.RegexOptions.Compiled);
+        System.Text.RegularExpressions.RegexOptions.Compiled,
+        RegexTimeout);
 
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<System.Reflection.Assembly, AssemblyHint> _assemblyHints =
         new System.Collections.Concurrent.ConcurrentDictionary<System.Reflection.Assembly, AssemblyHint>();

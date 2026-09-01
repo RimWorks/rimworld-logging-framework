@@ -54,7 +54,7 @@ public class ViewerLogSinkTests
 
         IReadOnlyList<LogEntry> snapshot = sink.Snapshot();
 
-        Assert.Equal(new[] { "first", "second", "third" }, new[] { snapshot[0].RenderedMessage, snapshot[1].RenderedMessage, snapshot[2].RenderedMessage });
+        Assert.Equal(["first", "second", "third"], [snapshot[0].RenderedMessage, snapshot[1].RenderedMessage, snapshot[2].RenderedMessage]);
     }
 
     [Fact]

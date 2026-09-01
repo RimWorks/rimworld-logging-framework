@@ -67,7 +67,7 @@ internal static class ChannelClassifier {
 
         if (channel!.StartsWith(ModChannelPrefix, StringComparison.Ordinal)) {
             if (packageIdToPath != null && packageIdToPath.TryGetValue(channel, out string[]? mapped)) {
-                return Prepend(ModGroup, mapped!);
+                return Prepend(ModGroup, mapped);
             }
             return Prepend(ModGroup, channel.Substring(ModChannelPrefix.Length).Split('.'));
         }
@@ -80,12 +80,12 @@ internal static class ChannelClassifier {
         if (fullFacingToPath != null && segs.Length >= 2) {
             string twoKey = (segs[0] + "." + segs[1]).ToLowerInvariant();
             if (fullFacingToPath.TryGetValue(twoKey, out string[]? modPath2)) {
-                return BuildNative(modPath2!, segs, 2);
+                return BuildNative(modPath2, segs, 2);
             }
         }
 
         if (moduleNameToPath != null && segs.Length >= 1 && moduleNameToPath.TryGetValue(segs[0].ToLowerInvariant(), out string[]? modPath1)) {
-            return BuildNative(modPath1!, segs, 1);
+            return BuildNative(modPath1, segs, 1);
         }
 
         return Prepend(ModGroup, segs);

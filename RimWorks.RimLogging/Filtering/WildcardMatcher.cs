@@ -28,6 +28,6 @@ public static class WildcardMatcher
         if (pattern.IndexOf('*') < 0)
             return input.Equals(pattern, StringComparison.Ordinal);
         string esc = Regex.Escape(pattern).Replace("\\*", ".*");
-        return Regex.IsMatch(input, "^" + esc + "$");
+        return Regex.IsMatch(input, "^" + esc + "$", RegexOptions.None, TimeSpan.FromSeconds(1));
     }
 }

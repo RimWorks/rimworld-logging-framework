@@ -19,73 +19,73 @@ public class FilterSuggestTests
     [Fact]
     public void For_EmptyInput_OffersTheThingsThatCanOpenATerm()
     {
-        Assert.Equal(new[] { "level", "channel", "NOT", "(" }, Items(""));
+        Assert.Equal(["level", "channel", "NOT", "("], Items(""));
     }
 
     [Fact]
     public void For_AfterLevelKeyword_OffersOnlyComparisonOperators()
     {
-        Assert.Equal(new[] { "=", "!=", "<", "<=", ">", ">=" }, Items("level "));
+        Assert.Equal(["=", "!=", "<", "<=", ">", ">="], Items("level "));
     }
 
     [Fact]
     public void For_AfterChannelKeyword_OffersOnlyEqualityOperators()
     {
-        Assert.Equal(new[] { "=", "!=" }, Items("channel "));
+        Assert.Equal(["=", "!="], Items("channel "));
     }
 
     [Fact]
     public void For_AfterALevelOperator_OffersLevelNames()
     {
-        Assert.Equal(new[] { "Trace", "Debug", "Info", "Warn", "Error", "Fatal" }, Items("level >= "));
+        Assert.Equal(["Trace", "Debug", "Info", "Warn", "Error", "Fatal"], Items("level >= "));
     }
 
     [Fact]
     public void For_PartialLevelName_NarrowsToMatchesCaseInsensitively()
     {
-        Assert.Equal(new[] { "Warn" }, Items("level >= w"));
+        Assert.Equal(["Warn"], Items("level >= w"));
     }
 
     [Fact]
     public void For_PartialOperator_NarrowsToOperatorsStartingWithIt()
     {
-        Assert.Equal(new[] { ">", ">=" }, Items("level >"));
+        Assert.Equal([">", ">="], Items("level >"));
     }
 
     [Fact]
     public void For_AfterChannelEquals_OffersLiveChannelNamesQuoted()
     {
-        Assert.Equal(new[] { "\"Cosmere.Roshar\"", "\"Cosmere.Scadrial\"", "\"Unity\"", "\"Vanilla\"" }, Items("channel = "));
+        Assert.Equal(["\"Cosmere.Roshar\"", "\"Cosmere.Scadrial\"", "\"Unity\"", "\"Vanilla\""], Items("channel = "));
     }
 
     [Fact]
     public void For_InsideAnUnterminatedQuote_NarrowsChannelsWithoutRetypingTheQuote()
     {
-        Assert.Equal(new[] { "\"Cosmere.Roshar\"", "\"Cosmere.Scadrial\"" }, Items("channel = \"Cos"));
+        Assert.Equal(["\"Cosmere.Roshar\"", "\"Cosmere.Scadrial\""], Items("channel = \"Cos"));
     }
 
     [Fact]
     public void For_AfterACompleteTerm_OffersConnectors()
     {
-        Assert.Equal(new[] { "AND", "OR" }, Items("level >= Warn "));
+        Assert.Equal(["AND", "OR"], Items("level >= Warn "));
     }
 
     [Fact]
     public void For_AfterAConnector_GoesBackToTermStarts()
     {
-        Assert.Equal(new[] { "level", "channel", "NOT", "(" }, Items("level >= Warn OR "));
+        Assert.Equal(["level", "channel", "NOT", "("], Items("level >= Warn OR "));
     }
 
     [Fact]
     public void For_AfterNot_GoesBackToTermStarts()
     {
-        Assert.Equal(new[] { "level", "channel", "NOT", "(" }, Items("NOT "));
+        Assert.Equal(["level", "channel", "NOT", "("], Items("NOT "));
     }
 
     [Fact]
     public void For_AfterAClosedString_OffersConnectors()
     {
-        Assert.Equal(new[] { "AND", "OR" }, Items("channel = \"Vanilla\" "));
+        Assert.Equal(["AND", "OR"], Items("channel = \"Vanilla\" "));
     }
 
     [Fact]
@@ -140,7 +140,7 @@ public class FilterSuggestTests
     {
         Suggestions s = FilterSuggest.ForChannelFilter("roshar", Channels);
 
-        Assert.Equal(new[] { "Cosmere.Roshar" }, new[] { s.Items[0] });
+        Assert.Equal(["Cosmere.Roshar"], [s.Items[0]]);
         Assert.Single(s.Items);
     }
 

@@ -29,7 +29,7 @@ internal static class LogFilter {
             ),
         };
 
-        AppendVisibleChannels(result, sortedIds, nodes, state, hasChildrenSet, hasFilter, keepIds, labels);
+        AppendVisibleChannels(result, sortedIds, nodes, state, hasChildrenSet, keepIds, labels);
         return result;
     }
 
@@ -64,11 +64,11 @@ internal static class LogFilter {
 
     private static HashSet<string> ComputeKeepIds(Dictionary<string, NodeAccum> nodes, string filterLower) {
         HashSet<string> keepIds = new HashSet<string>(System.StringComparer.Ordinal);
-        foreach (KeyValuePair<string, NodeAccum> kvp in nodes) {
-            if (kvp.Key.ToLowerInvariant().IndexOf(filterLower, System.StringComparison.Ordinal) < 0) {
+        foreach (string id in nodes.Keys) {
+            if (id.ToLowerInvariant().IndexOf(filterLower, System.StringComparison.Ordinal) < 0) {
                 continue;
             }
-            string[] parts = kvp.Key.Split('/');
+            string[] parts = id.Split('/');
             for (int d = 1; d <= parts.Length; d++) {
                 keepIds.Add(string.Join("/", parts, 0, d));
             }
@@ -106,7 +106,6 @@ internal static class LogFilter {
         Dictionary<string, NodeAccum> nodes,
         LogViewerState state,
         HashSet<string> hasChildrenSet,
-        bool hasFilter,
         HashSet<string>? keepIds,
         ChannelLabels labels) {
         string modLabel = labels.ModGroup;
@@ -115,7 +114,7 @@ internal static class LogFilter {
         HashSet<string> visible = new HashSet<string>(System.StringComparer.Ordinal);
         for (int i = 0; i < sortedIds.Count; i++) {
             string id = sortedIds[i];
-            if (hasFilter && keepIds != null && !keepIds.Contains(id)) {
+            if (keepIds != null && !keepIds.Contains(id)) {
                 continue;
             }
             NodeAccum acc = nodes[id];
@@ -123,7 +122,7 @@ internal static class LogFilter {
             int sep = id.LastIndexOf('/');
             string? parentId = sep > 0 ? id.Substring(0, sep) : null;
 
-            if (!AreAncestorsVisible(parentId, acc, hasFilter, visible, state)) {
+            if (!AreAncestorsVisible(parentId, acc, keepIds != null, visible, state)) {
                 continue;
             }
 

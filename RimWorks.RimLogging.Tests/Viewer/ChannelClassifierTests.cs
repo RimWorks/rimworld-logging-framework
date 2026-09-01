@@ -24,7 +24,7 @@ public class ChannelClassifierTests
     {
         UseMods();
 
-        Assert.Equal(new[] { "Vanilla" }, ChannelClassifier.PathFor(channel));
+        Assert.Equal(["Vanilla"], ChannelClassifier.PathFor(channel));
     }
 
     [Fact]
@@ -32,7 +32,7 @@ public class ChannelClassifierTests
     {
         UseMods();
 
-        Assert.Equal(new[] { "Mod", "some", "thing" }, ChannelClassifier.PathFor("Mod.some.thing"));
+        Assert.Equal(["Mod", "some", "thing"], ChannelClassifier.PathFor("Mod.some.thing"));
     }
 
     [Fact]
@@ -40,7 +40,7 @@ public class ChannelClassifierTests
     {
         UseMods(("rimworks.rimlogging", "RimWorks.RimLogging"));
 
-        Assert.Equal(new[] { "Mod", "RimWorks", "RimLogging", "Boot" }, ChannelClassifier.PathFor("RimWorks.RimLogging.Boot"));
+        Assert.Equal(["Mod", "RimWorks", "RimLogging", "Boot"], ChannelClassifier.PathFor("RimWorks.RimLogging.Boot"));
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public class ChannelClassifierTests
     {
         UseMods(("rimworks.rimlogging", "RimWorks.RimLogging"));
 
-        Assert.Equal(new[] { "Mod", "RimWorks", "RimLogging", "Pipeline" }, ChannelClassifier.PathFor("RimLogging.Pipeline"));
+        Assert.Equal(["Mod", "RimWorks", "RimLogging", "Pipeline"], ChannelClassifier.PathFor("RimLogging.Pipeline"));
     }
 
     [Fact]
@@ -56,13 +56,13 @@ public class ChannelClassifierTests
     {
         UseMods();
 
-        Assert.Equal(new[] { "Mod", "Cosmere", "Roshar" }, ChannelClassifier.PathFor("Cosmere.Roshar"));
+        Assert.Equal(["Mod", "Cosmere", "Roshar"], ChannelClassifier.PathFor("Cosmere.Roshar"));
     }
 
     [Fact]
     public void JoinPath_UsesSlashSeparatorSoIdsNestUnambiguously()
     {
-        Assert.Equal("Mod/Cosmere/Roshar", ChannelClassifier.JoinPath(new[] { "Mod", "Cosmere", "Roshar" }));
+        Assert.Equal("Mod/Cosmere/Roshar", ChannelClassifier.JoinPath(["Mod", "Cosmere", "Roshar"]));
     }
 
     [Fact]
