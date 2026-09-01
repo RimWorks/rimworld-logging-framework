@@ -7,8 +7,8 @@ namespace RimWorks.RimLogging;
 public static class BuildInfo
 {
     /// <summary>Framework revision string reported in bundle metadata (placeholder value <c>"0.0.0"</c>).</summary>
-    public const string Revision = "2.0.3";
+    public const string Revision = "2.1.0";
 
     /// <summary>UTC build timestamp in ISO-8601 form reported in bundle metadata (placeholder epoch value).</summary>
-    public const string BuildTime = "2026-08-31T22:37:28.803Z";
+    public const string BuildTime = "2026-09-01T00:00:57.641Z";
 }
