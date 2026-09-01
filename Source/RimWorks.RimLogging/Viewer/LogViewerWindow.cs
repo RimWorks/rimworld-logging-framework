@@ -43,9 +43,7 @@ internal sealed class LogViewerWindow : EditWindow {
     private float detailPaneHeight = 220f;
     private float detailPaneWidth = 356f;
 
-    private bool tailing = true;
-    private bool listDragging;
-    private float lastContentHeight = -1f;
+    private readonly ListTailing tailing = new ListTailing();
     private float listContentHeight;
     private float channelContentHeight;
     private int listFirstRow;
@@ -61,10 +59,8 @@ internal sealed class LogViewerWindow : EditWindow {
     private readonly SuggestField dslField = new SuggestField("rimlog-dsl-filter");
     private List<string> channelNames = new List<string>();
 
-    // GenText.Truncate does no caching unless you hand it a dictionary. Without one it walks a
-    // long message down a character at a time, measuring the font on every step, every pass.
-    // Keep these as Dictionary<string, string>: the TaggedString overload caches the original
-    // instead of the truncated value, so a cache there silently stops truncating.
+    // Truncate does no caching without one of these, and re-measures the font per character.
+    // Keep them string-keyed: the TaggedString overload caches the untruncated value.
     private readonly Dictionary<string, string> messageTruncation = new Dictionary<string, string>();
     private readonly Dictionary<string, string> channelTruncation = new Dictionary<string, string>();
     private readonly Dictionary<string, string> channelNameTruncation = new Dictionary<string, string>();
@@ -135,7 +131,6 @@ internal sealed class LogViewerWindow : EditWindow {
         ReleaseSplitterOnMouseUp();
     }
 
-    // ---- toolbar ----
 
     private void DrawToolbar(Rect inRect) {
         float x = inRect.x;
@@ -164,7 +159,7 @@ internal sealed class LogViewerWindow : EditWindow {
             DoLevelToggle(ref x, y, i);
         }
 
-        if (tailing) {
+        if (tailing.Following) {
             DrawTailingBadge(inRect);
         }
     }
@@ -221,7 +216,6 @@ internal sealed class LogViewerWindow : EditWindow {
         SyncPopout();
     }
 
-    // ---- channel pane ----
 
     private void DrawChannelPane(Rect rect) {
         Widgets.DrawBoxSolid(rect, new Color(1f, 1f, 1f, 0.02f));
@@ -308,7 +302,6 @@ internal sealed class LogViewerWindow : EditWindow {
         }
     }
 
-    // ---- list, filter strip and detail ----
 
     private void DrawContent(Rect rect) {
         Rect listArea = rect;
@@ -381,23 +374,7 @@ internal sealed class LogViewerWindow : EditWindow {
         float contentHeight = listContentHeight;
         Rect view = new Rect(0f, 0f, rect.width - ScrollbarWidth, contentHeight);
 
-        if (Event.current.rawType == EventType.MouseUp) {
-            listDragging = false;
-        }
-        else if (Event.current.type == EventType.MouseDown && Mouse.IsOver(rect)) {
-            listDragging = true;
-        }
-
-        if (listDragging || (Event.current.type == EventType.ScrollWheel && Mouse.IsOver(rect))) {
-            tailing = false;
-        }
-
-        // only follow when new rows actually arrived. snapping every frame fought every drag,
-        // which is what made the scrollbar stutter.
-        if (tailing && contentHeight != lastContentHeight) {
-            listScroll.y = TailScroll.MaxScroll(rect.height, contentHeight);
-        }
-        lastContentHeight = contentHeight;
+        listScroll.y = tailing.BeforeScrollView(rect, listScroll.y, contentHeight);
 
         Widgets.BeginScrollView(rect, ref listScroll, view);
 
@@ -413,11 +390,7 @@ internal sealed class LogViewerWindow : EditWindow {
         }
 
         Widgets.EndScrollView();
-
-        // only resume tailing once the drag ends, so holding the bar never re-snaps mid-drag
-        if (!listDragging) {
-            tailing = TailScroll.IsAtBottom(listScroll.y, rect.height, contentHeight);
-        }
+        tailing.AfterScrollView(rect, listScroll.y, contentHeight);
 
         // exclude the scrollbar strip: grabbing it must not clear the selection, which would
         // collapse the detail pane and change the control id count mid-drag
@@ -509,7 +482,6 @@ internal sealed class LogViewerWindow : EditWindow {
         Messages.Message("CRL_LogViewer_Copy".Translate(), MessageTypeDefOf.TaskCompletion, false);
     }
 
-    // ---- splitters ----
 
     private void DoSplitter(Rect handle, Splitter which) {
         Widgets.DrawBoxSolid(handle, new Color(1f, 1f, 1f, Mouse.IsOver(handle) || dragging == which ? 0.20f : 0.08f));
@@ -544,7 +516,6 @@ internal sealed class LogViewerWindow : EditWindow {
         }
     }
 
-    // ---- state ----
 
     /// <summary>Refilters only when the sink or a filter input actually changed; this runs every frame.</summary>
     private void RebuildIfStale() {
@@ -645,7 +616,6 @@ internal sealed class LogViewerWindow : EditWindow {
         CopyToClipboard(builder.ToString());
     }
 
-    // ---- popout ----
 
     private void SyncPopout() {
         if (Placement == DetailPlacement.Popout) {
