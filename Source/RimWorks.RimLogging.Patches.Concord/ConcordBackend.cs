@@ -36,6 +36,9 @@ public sealed class ConcordBackend : IPatchBackend, IPatchAttributionSource
     /// <inheritdoc/>
     public IReadOnlyList<string>? OwnersFor(StackFrame frame)
     {
+        // TODO(Concord.Ref 0.16.0): swap to Patcher.OwnersOfFrame(frame). the method on the stack
+        // is concord's composed wrapper, so OwnersOf answers about the wrapper and finds nothing.
+        // proven in game against a local 0.16.0 build; waiting on the published package.
         MethodBase? method = frame.GetMethod();
         if (method == null)
         {
