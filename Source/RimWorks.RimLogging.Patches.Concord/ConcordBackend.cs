@@ -26,8 +26,6 @@ public sealed class ConcordBackend : IPatchBackend, IPatchAttributionSource
         Patcher.Apply(typeof(ConcordBackend).Assembly);
     }
 
-    // Concord has no owner accessor yet; empty until that lands upstream
-    /// <inheritdoc/>
     private static readonly object CacheLock = new object();
 
     private static volatile Dictionary<MethodBase, IReadOnlyList<string>> _ownerCache =
@@ -36,9 +34,7 @@ public sealed class ConcordBackend : IPatchBackend, IPatchAttributionSource
     /// <inheritdoc/>
     public IReadOnlyList<string>? OwnersFor(StackFrame frame)
     {
-        // TODO(Concord.Ref 0.16.0): swap to Patcher.OwnersOfFrame(frame). the method on the stack
-        // is concord's composed wrapper, so OwnersOf answers about the wrapper and finds nothing.
-        // proven in game against a local 0.16.0 build; waiting on the published package.
+        // the frame runs concord's composed wrapper; OwnersOfFrame resolves it back, OwnersOf would not
         MethodBase? method = frame.GetMethod();
         if (method == null)
         {
@@ -51,7 +47,7 @@ public sealed class ConcordBackend : IPatchBackend, IPatchAttributionSource
             return hit;
         }
 
-        IReadOnlyList<string> owners = Patcher.OwnersOf(method) ?? Array.Empty<string>();
+        IReadOnlyList<string> owners = Patcher.OwnersOfFrame(frame);
         lock (CacheLock)
         {
             _ownerCache = new Dictionary<MethodBase, IReadOnlyList<string>>(_ownerCache) { [method] = owners };

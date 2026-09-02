@@ -28,6 +28,7 @@
     <CRL_LogViewer_ShowChannels>Show channels</CRL_LogViewer_ShowChannels>
     <CRL_Dev_SeedingOn>Log seeding on.</CRL_Dev_SeedingOn>
     <CRL_Dev_SeedingOff>Log seeding off.</CRL_Dev_SeedingOff>
+    <CRL_Dev_ProbeFired>Attribution probe fired. Select the new error and check its detail pane.</CRL_Dev_ProbeFired>
     <CRL_LogViewer_NextError>Next error</CRL_LogViewer_NextError>
     <CRL_LogViewer_NoErrors>No errors in the current filter.</CRL_LogViewer_NoErrors>
     <CRL_LogViewer_PresetSave>Save current filter...</CRL_LogViewer_PresetSave>
