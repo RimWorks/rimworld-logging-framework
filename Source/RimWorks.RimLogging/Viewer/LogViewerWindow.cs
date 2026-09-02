@@ -276,6 +276,7 @@ internal sealed class LogViewerWindow : EditWindow {
         }
         x += 16f;
 
+        Text.Anchor = TextAnchor.MiddleLeft;
         Rect dot = new Rect(x, rect.y + 8f, 6f, 6f);
         Widgets.DrawBoxSolid(dot, channel.HasError ? LevelColors.For(LogLevel.Error) : LevelColors.ForChannel(channel.Id));
         x += 12f;
@@ -285,12 +286,12 @@ internal sealed class LogViewerWindow : EditWindow {
             channelNameTruncation.Clear();
             lastChannelNameWidth = nameWidth;
         }
-        Widgets.Label(new Rect(x, rect.y - 1f, nameWidth, RowHeight), channel.Name.Truncate(nameWidth, channelNameTruncation));
+        Widgets.Label(new Rect(x, rect.y, nameWidth, rect.height), channel.Name.Truncate(nameWidth, channelNameTruncation));
 
         Text.Anchor = TextAnchor.MiddleRight;
         Text.Font = GameFont.Tiny;
         GUI.color = new Color(0.54f, 0.56f, 0.58f);
-        Widgets.Label(new Rect(rect.xMax - CountColumnWidth, rect.y, CountColumnWidth - 4f, RowHeight), channel.Count.ToString());
+        Widgets.Label(new Rect(rect.xMax - CountColumnWidth, rect.y, CountColumnWidth - 4f, rect.height), channel.Count.ToString());
         GUI.color = Color.white;
         Text.Font = GameFont.Small;
         Text.Anchor = TextAnchor.UpperLeft;
@@ -409,13 +410,14 @@ internal sealed class LogViewerWindow : EditWindow {
         }
         Widgets.DrawHighlightIfMouseover(rect);
 
+        Text.Anchor = TextAnchor.MiddleLeft;
         Text.Font = GameFont.Tiny;
         GUI.color = new Color(0.54f, 0.56f, 0.58f);
-        Widgets.Label(new Rect(rect.x + 4f, rect.y + 1f, TimestampWidth, RowHeight), entry.Timestamp.ToString("HH:mm:ss"));
+        Widgets.Label(new Rect(rect.x + 4f, rect.y, TimestampWidth, rect.height), entry.Timestamp.ToString("HH:mm:ss"));
 
         GUI.color = LevelColors.ForChannel(entry.Channel);
         Widgets.Label(
-            new Rect(rect.x + 4f + TimestampWidth, rect.y + 1f, ChannelColumnWidth, RowHeight),
+            new Rect(rect.x + 4f + TimestampWidth, rect.y, ChannelColumnWidth, rect.height),
             entry.Channel.Truncate(ChannelColumnWidth, channelTruncation));
 
         Text.Font = GameFont.Small;
@@ -427,7 +429,7 @@ internal sealed class LogViewerWindow : EditWindow {
         if (entry.Repeats > 1) {
             Text.Font = GameFont.Tiny;
             GUI.color = new Color(0.54f, 0.56f, 0.58f);
-            Widgets.Label(new Rect(messageX, rect.y + 1f, RepeatColumnWidth, RowHeight), entry.Repeats.ToStringCached());
+            Widgets.Label(new Rect(messageX, rect.y, RepeatColumnWidth, rect.height), entry.Repeats.ToStringCached());
             Text.Font = GameFont.Small;
             GUI.color = LevelColors.For(entry.Level);
         }
@@ -438,9 +440,10 @@ internal sealed class LogViewerWindow : EditWindow {
             messageTruncation.Clear();
             lastMessageWidth = messageWidth;
         }
-        Widgets.Label(new Rect(messageX, rect.y - 1f, messageWidth, RowHeight),
+        Widgets.Label(new Rect(messageX, rect.y, messageWidth, rect.height),
             entry.RenderedMessage.Truncate(messageWidth, messageTruncation));
         GUI.color = Color.white;
+        Text.Anchor = TextAnchor.UpperLeft;
 
         // no ButtonInvisible here: it allocates a control id, and a per-row id count that moves
         // with scrolling shifts every later slider id, which breaks scrollbar dragging
