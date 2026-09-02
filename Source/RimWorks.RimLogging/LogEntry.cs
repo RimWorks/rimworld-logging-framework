@@ -76,4 +76,7 @@ public sealed class LogEntry
     /// when the entry could not be attributed to a known mod.
     /// </summary>
     public string? Mod { get; init; }
+
+    /// <summary>The game tick this was logged on, or <c>null</c> outside a running game.</summary>
+    public int? Tick { get; init; }
 }

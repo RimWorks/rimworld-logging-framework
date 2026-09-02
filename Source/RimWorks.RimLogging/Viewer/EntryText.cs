@@ -54,6 +54,9 @@ internal static class EntryText {
         if (!string.IsNullOrEmpty(entry.Mod)) {
             builder.Append("Mod: ").AppendLine(entry.Mod);
         }
+        if (entry.Tick.HasValue) {
+            builder.Append("Tick: ").AppendLine(entry.Tick.Value.ToString());
+        }
         if (entry.Source.IsCallerProvided) {
             builder.Append("Source: ").Append(entry.Source.File).Append(':').AppendLine(entry.Source.Line.ToString());
         }

@@ -17,6 +17,27 @@ public static class Logging
     /// <summary>When <c>true</c>, every emitted entry captures and stores a formatted stack trace. Defaults to <c>true</c>.</summary>
     public static bool CaptureStackTraces { get; set; } = true;
 
+    /// <summary>Supplies the current game tick, or <c>null</c> when no game is running.</summary>
+    public static System.Func<int?>? TickProvider { get; set; }
+
+    /// <summary>
+    /// The current tick, or <c>null</c>. A provider that throws is swallowed: a logging call must
+    /// never take down its caller, and this one runs on every emit.
+    /// </summary>
+    internal static int? CurrentTick()
+    {
+        System.Func<int?>? provider = TickProvider;
+        if (provider == null) return null;
+        try
+        {
+            return provider();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     internal static System.Func<bool>? IsDegradedProvider { get; set; }
 
     // set by ChannelRegistry at boot; Log.cs cannot reach it directly because the registry is

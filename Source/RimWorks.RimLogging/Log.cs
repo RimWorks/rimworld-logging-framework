@@ -14,6 +14,15 @@ public static class Log
 
     private static readonly Pipeline.LogThrottle Throttle = new Pipeline.LogThrottle();
 
+    /// <summary>
+    /// Attaches a key and value to every entry emitted on this thread until the returned handle
+    /// is disposed. Nested scopes stack, and an explicit context at the call site still wins.
+    /// </summary>
+    /// <param name="key">The context key to attach.</param>
+    /// <param name="value">The value to attach.</param>
+    /// <returns>A handle that removes the pair when disposed.</returns>
+    public static IDisposable PushContext(string key, object? value) => Pipeline.LogScope.Push(key, value);
+
     /// <summary>Log at Trace using a templated message and positional args (default channel).</summary>
     public static void Trace(
         string template,
@@ -439,6 +448,7 @@ public static class Log
 
         SourceLocation src = ResolveSource(site.Line, site.File, site.Source, walk, out string? mod);
         (string rendered, IReadOnlyDictionary<string, object?>? ctx) = RenderMessage(template, args, structuredContext);
+        ctx = Pipeline.LogScope.Merge(ctx);
 
         LogEntry entry = new LogEntry
         {
@@ -449,6 +459,7 @@ public static class Log
             RenderedMessage = rendered,
             Context = ctx,
             Source = src,
+            Tick = Logging.CurrentTick(),
             StackTrace = string.IsNullOrEmpty(capturedTrace) ? null : capturedTrace,
             Exception = exception,
             Mod = mod,
@@ -572,6 +583,8 @@ public static class Log
             MessageTemplate = text ?? string.Empty,
             RenderedMessage = text ?? string.Empty,
             Source = src,
+            Context = Pipeline.LogScope.Merge(null),
+            Tick = Logging.CurrentTick(),
             StackTrace = string.IsNullOrEmpty(captured) ? null : captured,
             Mod = mod,
         };

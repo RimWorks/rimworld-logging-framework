@@ -14,10 +14,15 @@ internal static class StaticInit
             Channels.ChannelRegistry.Boot();
             Sinks.SinkLoader.LoadDefaults();
             Viewer.LogViewerBoot.Init();
+            Logging.TickProvider = CurrentTick;
         }
         catch (System.Exception ex)
         {
             PanicLog.Write("[RimLogging] def bootstrap failed: " + ex);
         }
     }
+
+    // Find.TickManager is Current.Game.tickManager, and Current.Game is null until a save is
+    // loaded, so reaching through Find throws rather than returning null on the main menu
+    private static int? CurrentTick() => Verse.Current.Game?.tickManager?.TicksGame;
 }
