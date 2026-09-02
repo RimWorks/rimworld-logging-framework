@@ -12,6 +12,8 @@ public static class Log
     /// <summary>Name of the default log channel used when no channel is specified.</summary>
     public const string DefaultChannel = "default";
 
+    private static readonly Pipeline.LogThrottle Throttle = new Pipeline.LogThrottle();
+
     /// <summary>Log at Trace using a templated message and positional args (default channel).</summary>
     public static void Trace(
         string template,
@@ -260,6 +262,20 @@ public static class Log
         [CallerFilePath] string file = "")
         => EmitInternal(LogLevel.Warn, channel, message, null, null, ex, new CallSite(SourceLocation.Empty, line, file));
 
+    /// <summary>
+    /// Log at Warn only the first time this key is seen. For callers in a tick loop, where the
+    /// same warning would otherwise land sixty times a second.
+    /// </summary>
+    public static void WarnOnce(
+        string key,
+        string message,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+    {
+        if (!Throttle.Once(key, DateTime.UtcNow)) return;
+        EmitInternal(LogLevel.Warn, DefaultChannel, message, null, null, null, new CallSite(SourceLocation.Empty, line, file));
+    }
+
     /// <summary>Log at Error using a templated message and positional args (default channel).</summary>
     public static void Error(
         string template,
@@ -321,6 +337,20 @@ public static class Log
         [CallerLineNumber] int line = 0,
         [CallerFilePath] string file = "")
         => EmitInternal(LogLevel.Error, channel, message, null, null, ex, new CallSite(SourceLocation.Empty, line, file));
+
+    /// <summary>
+    /// Log at Error only the first time this key is seen. For callers in a tick loop, where the
+    /// same error would otherwise land sixty times a second.
+    /// </summary>
+    public static void ErrorOnce(
+        string key,
+        string message,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+    {
+        if (!Throttle.Once(key, DateTime.UtcNow)) return;
+        EmitInternal(LogLevel.Error, DefaultChannel, message, null, null, null, new CallSite(SourceLocation.Empty, line, file));
+    }
 
     /// <summary>Log at Fatal using a templated message and positional args (default channel).</summary>
     public static void Fatal(
@@ -396,8 +426,15 @@ public static class Log
         // Global gate: the cheapest possible short-circuit. NO formatting, NO reflection.
         if (level < Logging.GlobalMinLevel) return;
 
+        // then the channel's own gate, which only narrows further, and is memoised per channel
+        string resolvedChannel = channel ?? DefaultChannel;
+        Channels.ChannelSettings settings = Logging.SettingsFor(resolvedChannel);
+        if (level < settings.MinLevelOr(Logging.GlobalMinLevel)) return;
+
         // A single stack walk, reused for both the formatted trace and the source fallback.
-        System.Diagnostics.StackTrace? walk = Logging.CaptureStackTraces ? new System.Diagnostics.StackTrace(1, true) : null;
+        System.Diagnostics.StackTrace? walk = settings.ShouldCaptureStack(level, Logging.CaptureStackTraces)
+            ? new System.Diagnostics.StackTrace(1, true)
+            : null;
         string? capturedTrace = walk != null ? Capture.StackWalker.FormatTrace(walk) : null;
 
         SourceLocation src = ResolveSource(site.Line, site.File, site.Source, walk, out string? mod);
