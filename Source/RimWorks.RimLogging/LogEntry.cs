@@ -21,7 +21,7 @@ public sealed class LogEntry
     public LogLevel Level { get; init; }
 
     /// <summary>How many times this entry repeated back to back. 1 for a normal entry.</summary>
-    public int Repeats { get; internal set; } = 1;
+    public int Repeats { get; init; } = 1;
 
     /// <summary>Gets the channel (dot-separated category) this entry was emitted on. Never <c>null</c>.</summary>
     public string Channel

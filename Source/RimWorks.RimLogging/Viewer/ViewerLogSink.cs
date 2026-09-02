@@ -54,7 +54,9 @@ public sealed class ViewerLogSink : ILogSink {
             // LogMessageQueue does. a spamming mod would otherwise make the scrollbar unusable.
             int last = (writeIndex - 1 + ring.Length) % ring.Length;
             if (count > 0 && RepeatsPrevious(ring[last], entry)) {
-                ring[last].Repeats++;
+                // replace rather than mutate: other sinks and earlier snapshots hold this
+                // instance, and LogEntry is documented immutable
+                ring[last] = Repeated(ring[last]);
                 Revision++;
             }
             else {
@@ -67,6 +69,22 @@ public sealed class ViewerLogSink : ILogSink {
             }
         }
         EntryAdded?.Invoke(entry);
+    }
+
+    private static LogEntry Repeated(LogEntry previous) {
+        return new LogEntry {
+            Timestamp = previous.Timestamp,
+            Level = previous.Level,
+            Channel = previous.Channel,
+            MessageTemplate = previous.MessageTemplate,
+            RenderedMessage = previous.RenderedMessage,
+            Context = previous.Context,
+            Source = previous.Source,
+            StackTrace = previous.StackTrace,
+            Exception = previous.Exception,
+            Mod = previous.Mod,
+            Repeats = previous.Repeats + 1,
+        };
     }
 
     private static bool RepeatsPrevious(LogEntry previous, LogEntry entry) {
