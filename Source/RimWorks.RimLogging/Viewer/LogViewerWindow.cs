@@ -567,13 +567,7 @@ internal sealed class LogViewerWindow : EditWindow {
     }
 
     private static List<string> SortedChannelNames(IReadOnlyDictionary<string, ChannelTally> tallies) {
-        List<string> names = new List<string>(tallies.Count);
-        foreach (KeyValuePair<string, ChannelTally> pair in tallies) {
-            if (pair.Key != "(root)") {
-                names.Add(pair.Key);
-            }
-        }
-        return names;
+        return tallies.Keys.Where(key => key != "(root)").ToList();
     }
 
     private List<string> ChannelIds() {

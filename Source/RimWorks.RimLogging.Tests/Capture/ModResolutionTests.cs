@@ -17,7 +17,7 @@ public class ModResolutionTests
     public void ResolveFromPath_PathThroughKnownAssemblyDir_StripsToTailAndResolvesMod()
     {
         IReadOnlyDictionary<string, string> map = Map(("RimWorks.RimLogging", "RimLogging"));
-        string file = "/home/aaron/projects/cryptiklemur/rimworld-logging-framework/RimWorks.RimLogging/Bootstrap/StaticInit.cs";
+        string file = "/home/aaron/projects/RimWorks/rimworld-logging-framework/RimWorks.RimLogging/Bootstrap/StaticInit.cs";
 
         (string path, string? mod) = ModResolution.ResolveFromPath(file, map);
 

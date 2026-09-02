@@ -20,12 +20,9 @@ internal static class ChannelDefName
                 return $"defName {defName} has an empty segment; channel names cannot start, end, or double up on dots.";
             }
 
-            foreach (char c in segment)
+            if (segment.Any(c => !char.IsLetterOrDigit(c) && c != '_' && c != '-'))
             {
-                if (!char.IsLetterOrDigit(c) && c != '_' && c != '-')
-                {
-                    return $"defName {defName} should only contain letters, numbers, underscores, dashes, and dots.";
-                }
+                return $"defName {defName} should only contain letters, numbers, underscores, dashes, and dots.";
             }
         }
 

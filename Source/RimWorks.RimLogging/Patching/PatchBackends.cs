@@ -49,14 +49,10 @@ internal static class PatchBackends
 
     private static string IdleSuffix(List<IPatchBackend> found, IPatchBackend winner)
     {
-        List<string> others = new List<string>();
-        foreach (IPatchBackend backend in found)
-        {
-            if (!ReferenceEquals(backend, winner))
-            {
-                others.Add(backend.Name);
-            }
-        }
+        List<string> others = found
+            .Where(backend => !ReferenceEquals(backend, winner))
+            .Select(backend => backend.Name)
+            .ToList();
         return others.Count == 0 ? string.Empty : $"; idle: {string.Join(", ", others.ToArray())}";
     }
 
@@ -93,15 +89,7 @@ internal static class PatchBackends
         }
         catch (ReflectionTypeLoadException ex)
         {
-            List<Type> loaded = new List<Type>();
-            foreach (Type? type in ex.Types)
-            {
-                if (type != null)
-                {
-                    loaded.Add(type);
-                }
-            }
-            return loaded;
+            return ex.Types.Where(type => type != null).Select(type => type!).ToList();
         }
     }
 }

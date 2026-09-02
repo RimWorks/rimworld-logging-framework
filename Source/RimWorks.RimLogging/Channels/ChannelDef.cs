@@ -31,13 +31,11 @@ public class ChannelDef : Verse.Def
     /// <returns>Every base error except the defName-characters one, plus our own dotted-name check.</returns>
     public override IEnumerable<string> ConfigErrors()
     {
-        foreach (string error in base.ConfigErrors())
+        // dots are how channels nest, so vanilla's defName character rule cannot apply here
+        foreach (string error in base.ConfigErrors()
+            .Where(e => e.IndexOf("should only contain", StringComparison.Ordinal) < 0))
         {
-            // dots are how channels nest, so vanilla's defName character rule cannot apply here
-            if (error.IndexOf("should only contain", StringComparison.Ordinal) < 0)
-            {
-                yield return error;
-            }
+            yield return error;
         }
 
         string? problem = ChannelDefName.Validate(defName);
