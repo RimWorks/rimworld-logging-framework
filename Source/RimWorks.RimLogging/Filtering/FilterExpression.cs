@@ -71,8 +71,15 @@ public sealed class FilterExpression
         OrNode o   => "(" + Stringify(o.Left) + " OR " + Stringify(o.Right) + ")",
         NotNode nt => "NOT " + Stringify(nt.Operand),
         LevelCompareNode lc => "level " + OpToString(lc.Op) + " " + lc.RightValue,
-        ChannelMatchNode cm => "channel " + (cm.Negated ? "!= " : "= ") + "\"" + cm.Pattern + "\"",
+        FieldMatchNode fm => FieldName(fm.Field) + (fm.Negated ? " != " : " = ") + "\"" + fm.Pattern + "\"",
         _ => "<unknown>",
+    };
+
+    private static string FieldName(MatchField field) => field switch
+    {
+        MatchField.Text => "text",
+        MatchField.Mod  => "mod",
+        _               => "channel",
     };
 
     private static string OpToString(TokenKind op) => op switch

@@ -19,7 +19,7 @@ public class FilterSuggestTests
     [Fact]
     public void For_EmptyInput_OffersTheThingsThatCanOpenATerm()
     {
-        Assert.Equal(["level", "channel", "NOT", "("], Items(""));
+        Assert.Equal(["level", "channel", "text", "mod", "NOT", "("], Items(""));
     }
 
     [Fact]
@@ -73,13 +73,13 @@ public class FilterSuggestTests
     [Fact]
     public void For_AfterAConnector_GoesBackToTermStarts()
     {
-        Assert.Equal(["level", "channel", "NOT", "("], Items("level >= Warn OR "));
+        Assert.Equal(["level", "channel", "text", "mod", "NOT", "("], Items("level >= Warn OR "));
     }
 
     [Fact]
     public void For_AfterNot_GoesBackToTermStarts()
     {
-        Assert.Equal(["level", "channel", "NOT", "("], Items("NOT "));
+        Assert.Equal(["level", "channel", "text", "mod", "NOT", "("], Items("NOT "));
     }
 
     [Fact]

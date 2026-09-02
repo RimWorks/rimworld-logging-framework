@@ -42,16 +42,31 @@ internal static class Compiler
                     TokenKind.OpGte => e => e.Level >= rv,
                     _ => throw new InvalidOperationException("Unknown level comparison operator: " + lc.Op),
                 };
-            case ChannelMatchNode cm:
-                string pat = cm.Pattern;
-                bool neg = cm.Negated;
+            case FieldMatchNode fm:
+                string pat = fm.Pattern;
+                bool neg = fm.Negated;
+                MatchField field = fm.Field;
                 return e =>
                 {
-                    bool match = WildcardMatcher.Match(pat, e.Channel);
+                    bool match = Matches(field, pat, e);
                     return neg ? !match : match;
                 };
             default:
                 throw new ArgumentException("Unknown AST node type: " + node.GetType().Name);
+        }
+    }
+
+    private static bool Matches(MatchField field, string pattern, LogEntry e)
+    {
+        switch (field)
+        {
+            case MatchField.Text:
+                // substring, not wildcard: nobody wants to type text = "*exception*"
+                return e.RenderedMessage.IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0;
+            case MatchField.Mod:
+                return e.Mod != null && WildcardMatcher.Match(pattern, e.Mod);
+            default:
+                return WildcardMatcher.Match(pattern, e.Channel);
         }
     }
 }

@@ -27,7 +27,7 @@ public class ParserTests
         LevelCompareNode left = Assert.IsType<LevelCompareNode>(or.Left);
         Assert.Equal(TokenKind.OpGte, left.Op);
         Assert.Equal(LogLevel.Warn, left.RightValue);
-        ChannelMatchNode right = Assert.IsType<ChannelMatchNode>(or.Right);
+        FieldMatchNode right = Assert.IsType<FieldMatchNode>(or.Right);
         Assert.False(right.Negated);
         Assert.Equal("Cosmere.*", right.Pattern);
     }
@@ -39,7 +39,7 @@ public class ParserTests
         AstNode node = Parser.Parse("channel = \"Cosmere.Roshar.*\" AND level >= Debug");
 
         AndNode and = Assert.IsType<AndNode>(node);
-        ChannelMatchNode left = Assert.IsType<ChannelMatchNode>(and.Left);
+        FieldMatchNode left = Assert.IsType<FieldMatchNode>(and.Left);
         Assert.False(left.Negated);
         Assert.Equal("Cosmere.Roshar.*", left.Pattern);
         LevelCompareNode right = Assert.IsType<LevelCompareNode>(and.Right);
@@ -54,10 +54,10 @@ public class ParserTests
         AstNode node = Parser.Parse("channel = \"A\" OR channel = \"B\" AND level >= Info");
 
         OrNode or = Assert.IsType<OrNode>(node);
-        ChannelMatchNode left = Assert.IsType<ChannelMatchNode>(or.Left);
+        FieldMatchNode left = Assert.IsType<FieldMatchNode>(or.Left);
         Assert.Equal("A", left.Pattern);
         AndNode right = Assert.IsType<AndNode>(or.Right);
-        ChannelMatchNode rightLeft = Assert.IsType<ChannelMatchNode>(right.Left);
+        FieldMatchNode rightLeft = Assert.IsType<FieldMatchNode>(right.Left);
         Assert.Equal("B", rightLeft.Pattern);
         LevelCompareNode rightRight = Assert.IsType<LevelCompareNode>(right.Right);
         Assert.Equal(TokenKind.OpGte, rightRight.Op);
@@ -78,7 +78,7 @@ public class ParserTests
         LevelCompareNode leftRight = Assert.IsType<LevelCompareNode>(left.Right);
         Assert.Equal(TokenKind.OpEq, leftRight.Op);
         Assert.Equal(LogLevel.Warn, leftRight.RightValue);
-        ChannelMatchNode right = Assert.IsType<ChannelMatchNode>(and.Right);
+        FieldMatchNode right = Assert.IsType<FieldMatchNode>(and.Right);
         Assert.Equal("Foo", right.Pattern);
     }
 
@@ -89,7 +89,7 @@ public class ParserTests
         AstNode node = Parser.Parse("NOT (channel = \"Unity\")");
 
         NotNode not = Assert.IsType<NotNode>(node);
-        ChannelMatchNode inner = Assert.IsType<ChannelMatchNode>(not.Operand);
+        FieldMatchNode inner = Assert.IsType<FieldMatchNode>(not.Operand);
         Assert.False(inner.Negated);
         Assert.Equal("Unity", inner.Pattern);
     }
@@ -102,7 +102,7 @@ public class ParserTests
 
         NotNode outer = Assert.IsType<NotNode>(node);
         NotNode inner = Assert.IsType<NotNode>(outer.Operand);
-        ChannelMatchNode ch = Assert.IsType<ChannelMatchNode>(inner.Operand);
+        FieldMatchNode ch = Assert.IsType<FieldMatchNode>(inner.Operand);
         Assert.Equal("Foo", ch.Pattern);
     }
 

@@ -9,6 +9,10 @@ public enum TokenKind
     LevelIdent,
     /// <summary>The <c>channel</c> keyword introducing a channel match.</summary>
     ChannelIdent,
+    /// <summary>The <c>text</c> keyword introducing a message substring match.</summary>
+    TextIdent,
+    /// <summary>The <c>mod</c> keyword introducing a mod match.</summary>
+    ModIdent,
     /// <summary>The <c>and</c> logical conjunction keyword.</summary>
     And,
     /// <summary>The <c>or</c> logical disjunction keyword.</summary>

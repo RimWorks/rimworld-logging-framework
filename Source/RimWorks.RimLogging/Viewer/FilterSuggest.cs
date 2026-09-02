@@ -33,7 +33,7 @@ internal readonly struct Suggestions {
 /// <remarks>The grammar is small, so this reads the last complete token instead of parsing incrementally.</remarks>
 internal static class FilterSuggest {
     private static readonly string[] Levels = { "Trace", "Debug", "Info", "Warn", "Error", "Fatal" };
-    private static readonly string[] TermStarts = { "level", "channel", "NOT", "(" };
+    private static readonly string[] TermStarts = { "level", "channel", "text", "mod", "NOT", "(" };
     private static readonly string[] LevelOps = { "=", "!=", "<", "<=", ">", ">=" };
     private static readonly string[] StringOps = { "=", "!=" };
     private static readonly string[] Connectors = { "AND", "OR" };

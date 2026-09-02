@@ -80,7 +80,7 @@ internal static class Parser
             p++;
             return new LevelCompareNode(op, lv);
         }
-        if (ts[p].Kind == TokenKind.ChannelIdent)
+        if (TryMatchField(ts[p].Kind, out MatchField field))
         {
             p++;
             bool neg;
@@ -91,9 +91,20 @@ internal static class Parser
             if (ts[p].Kind != TokenKind.StringLiteral) throw new FormatException($"Expected string literal at {ts[p].Pos}");
             string pat = ts[p].Text;
             p++;
-            return new ChannelMatchNode(pat, neg);
+            return new FieldMatchNode(field, pat, neg);
         }
         throw new FormatException($"Unexpected token '{ts[p].Text}' at {ts[p].Pos}");
+    }
+
+    private static bool TryMatchField(TokenKind kind, out MatchField field)
+    {
+        switch (kind)
+        {
+            case TokenKind.ChannelIdent: field = MatchField.Channel; return true;
+            case TokenKind.TextIdent:    field = MatchField.Text;    return true;
+            case TokenKind.ModIdent:     field = MatchField.Mod;     return true;
+            default:                     field = default;            return false;
+        }
     }
 
     private static bool IsLevelOp(TokenKind k) => k is

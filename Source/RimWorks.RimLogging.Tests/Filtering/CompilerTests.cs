@@ -60,7 +60,7 @@ public class CompilerTests
         Assert.Equal(expected, pred(MakeEntry(entryLevel, "default")));
     }
 
-    // 3. ChannelMatchNode: matches correct channel, respects Negated
+    // 3. FieldMatchNode: matches correct channel, respects Negated
     [Theory]
     [InlineData("Cosmere.Roshar", false, true)]
     [InlineData("Unity", false, false)]
@@ -69,7 +69,7 @@ public class CompilerTests
     public void ChannelMatch_PatternAndNegated(string channel, bool negated, bool expected)
     {
         Func<LogEntry, bool> pred = Compiler.Compile(
-            new ChannelMatchNode("Cosmere.*", negated));
+            new FieldMatchNode(MatchField.Channel, "Cosmere.*", negated));
 
         Assert.Equal(expected, pred(MakeEntry(LogLevel.Info, channel)));
     }
@@ -84,7 +84,7 @@ public class CompilerTests
     {
         Func<LogEntry, bool> pred = Compiler.Compile(new AndNode(
             new LevelCompareNode(TokenKind.OpGte, LogLevel.Warn),
-            new ChannelMatchNode("Cosmere.*", false)));
+            new FieldMatchNode(MatchField.Channel, "Cosmere.*", false)));
 
         Assert.Equal(expected, pred(MakeEntry(lvl, channel)));
     }
@@ -101,7 +101,7 @@ public class CompilerTests
     {
         Func<LogEntry, bool> pred = Compiler.Compile(new OrNode(
             new LevelCompareNode(TokenKind.OpGte, LogLevel.Error),
-            new ChannelMatchNode("Unity", false)));
+            new FieldMatchNode(MatchField.Channel, "Unity", false)));
 
         Assert.Equal(expected, pred(MakeEntry(lvl, channel)));
     }
