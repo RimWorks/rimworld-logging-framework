@@ -148,4 +148,33 @@ public class ViewerLogSinkTests
 
         Assert.NotEqual(afterFirst, sink.Revision);
     }
+
+    [Fact]
+    public void Write_CollapsingARepeat_LeavesAnAlreadyReturnedEntryAlone()
+    {
+        // regression: collapsing used to do ring[last].Repeats++, mutating an entry that other
+        // sinks and earlier snapshots still hold while another thread reads it
+        ViewerLogSink sink = new ViewerLogSink();
+        sink.Write(Entry(LogLevel.Info, "spam"));
+        LogEntry handedOut = sink.Snapshot()[0];
+
+        sink.Write(Entry(LogLevel.Info, "spam"));
+
+        Assert.Equal(1, handedOut.Repeats);
+        Assert.Equal(2, sink.Snapshot()[0].Repeats);
+    }
+
+    [Fact]
+    public void Write_CollapsingARepeat_KeepsTheOriginalEntryFields()
+    {
+        ViewerLogSink sink = new ViewerLogSink();
+        sink.Write(Entry(LogLevel.Warn, "same"));
+        sink.Write(Entry(LogLevel.Warn, "same"));
+
+        LogEntry collapsed = sink.Snapshot()[0];
+
+        Assert.Equal(LogLevel.Warn, collapsed.Level);
+        Assert.Equal("same", collapsed.RenderedMessage);
+        Assert.Equal(2, collapsed.Repeats);
+    }
 }
