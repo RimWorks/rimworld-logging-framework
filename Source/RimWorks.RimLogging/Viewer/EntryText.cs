@@ -4,6 +4,38 @@ namespace RimWorks.RimLogging.Viewer;
 
 /// <summary>Builds the copyable text for one entry. Pure so it tests without Verse.</summary>
 internal static class EntryText {
+    /// <summary>
+    /// Splits a message into the single line a list row can show and the number of lines left
+    /// behind. The count is returned separately so the row can style it apart from the message.
+    /// </summary>
+    internal static (string Head, int Extra) SplitRow(string message) {
+        if (string.IsNullOrEmpty(message)) {
+            return (string.Empty, 0);
+        }
+
+        int firstBreak = message.IndexOf('\n');
+        if (firstBreak < 0) {
+            return (message, 0);
+        }
+
+        int extra = 0;
+        for (int i = firstBreak + 1; i < message.Length; i++) {
+            if (message[i] == '\n') {
+                extra++;
+            }
+        }
+        // a trailing newline closes the last line rather than starting another
+        if (message[message.Length - 1] != '\n') {
+            extra++;
+        }
+
+        return (message.Substring(0, firstBreak).TrimEnd('\r'), extra);
+    }
+
+    /// <summary>The label shown beside a collapsed row, for example <c>(+12 lines)</c>.</summary>
+    internal static string ExtraLinesLabel(int extra)
+        => extra == 1 ? "(+1 line)" : "(+" + extra + " lines)";
+
     internal static string Trace(LogEntry entry) {
         return entry.StackTrace ?? entry.Exception?.ToString() ?? string.Empty;
     }

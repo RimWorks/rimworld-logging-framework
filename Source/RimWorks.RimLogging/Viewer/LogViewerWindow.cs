@@ -18,6 +18,7 @@ internal sealed class LogViewerWindow : EditWindow {
     private const float ErrorStripHeight = 16f;
     private const float ScrollbarWidth = 18f;
     private const float RepeatColumnWidth = 26f;
+    private const float ExtraLineColumnWidth = 82f;
     private const float IndentPerDepth = 12f;
     private const float CountColumnWidth = 46f;
     private const float TimestampWidth = 74f;
@@ -62,6 +63,10 @@ internal sealed class LogViewerWindow : EditWindow {
     // Truncate does no caching without one of these, and re-measures the font per character.
     // Keep them string-keyed: the TaggedString overload caches the untruncated value.
     private readonly Dictionary<string, string> messageTruncation = new Dictionary<string, string>();
+    private readonly Dictionary<string, (string Head, int Extra)> rowPreview =
+        new Dictionary<string, (string Head, int Extra)>(StringComparer.Ordinal);
+    private readonly Dictionary<string, string> headTruncation = new Dictionary<string, string>();
+    private readonly Dictionary<int, string> extraLabels = new Dictionary<int, string>();
     private readonly Dictionary<string, string> channelTruncation = new Dictionary<string, string>();
     private readonly Dictionary<string, string> channelNameTruncation = new Dictionary<string, string>();
     private float lastMessageWidth = -1f;
@@ -461,10 +466,30 @@ internal sealed class LogViewerWindow : EditWindow {
         // the cache is keyed by string only, so it has to be dropped when the column resizes
         if (Mathf.Abs(messageWidth - lastMessageWidth) > 0.5f) {
             messageTruncation.Clear();
+            headTruncation.Clear();
             lastMessageWidth = messageWidth;
         }
-        Widgets.Label(new Rect(messageX, rect.y, messageWidth, rect.height),
-            entry.RenderedMessage.Truncate(messageWidth, messageTruncation));
+        (string head, int extra) = RowMessage(entry.RenderedMessage);
+        if (extra == 0) {
+            Widgets.Label(new Rect(messageX, rect.y, messageWidth, rect.height),
+                head.Truncate(messageWidth, messageTruncation));
+        }
+        else {
+            // the head gets its own cache: it is truncated to a narrower budget than a
+            // single-line message, and one cache cannot hold two widths for the same string
+            float headWidth = messageWidth - ExtraLineColumnWidth;
+            string shown = head.Truncate(headWidth, headTruncation);
+            Widgets.Label(new Rect(messageX, rect.y, headWidth, rect.height), shown);
+
+            // measured so the count sits against the text rather than out at the column edge
+            float shownWidth = Mathf.Min(Text.CalcSize(shown).x, headWidth);
+            Text.Font = GameFont.Tiny;
+            GUI.color = new Color(0.54f, 0.56f, 0.58f);
+            Widgets.Label(
+                new Rect(messageX + shownWidth + 6f, rect.y, ExtraLineColumnWidth, rect.height),
+                ExtraLabel(extra));
+            Text.Font = GameFont.Small;
+        }
         GUI.color = Color.white;
         Text.Anchor = TextAnchor.UpperLeft;
 
@@ -590,6 +615,27 @@ internal sealed class LogViewerWindow : EditWindow {
             state.DslError = ParseError(dslPick);
             InvalidateCache();
         }
+    }
+
+    // multi-line messages collapse to one line, cached because building it per frame would miss
+    // GenText.Truncate's cache on every pass and grow it without bound
+    private (string Head, int Extra) RowMessage(string message) {
+        if (message.IndexOf('\n') < 0) {
+            return (message, 0);
+        }
+        if (!rowPreview.TryGetValue(message, out (string Head, int Extra) split)) {
+            split = EntryText.SplitRow(message);
+            rowPreview[message] = split;
+        }
+        return split;
+    }
+
+    private string ExtraLabel(int extra) {
+        if (!extraLabels.TryGetValue(extra, out string? label)) {
+            label = EntryText.ExtraLinesLabel(extra);
+            extraLabels[extra] = label;
+        }
+        return label;
     }
 
     private static List<string> SortedChannelNames(IReadOnlyDictionary<string, ChannelTally> tallies) {
