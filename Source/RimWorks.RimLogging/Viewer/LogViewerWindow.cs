@@ -138,8 +138,7 @@ internal sealed class LogViewerWindow : EditWindow {
 
         DoRowButton(ref x, y, "CRL_LogViewer_Clear".Translate(), null, ClearEntries);
         DoRowButton(ref x, y, "CRL_LogViewer_Copy".Translate(), null, CopyVisibleToClipboard);
-        DoRowButton(ref x, y, "CRL_LogViewer_ShareBundle".Translate(), null,
-            () => _ = LogBundleShare.Upload(sink, state, static () => { }));
+        DoShareButton(ref x, y);
         DoRowButton(
             ref x,
             y,
@@ -163,6 +162,29 @@ internal sealed class LogViewerWindow : EditWindow {
             DrawTailingBadge(inRect);
         }
     }
+
+    private void DoShareButton(ref float x, float y) {
+        // read once, and keep the label fixed: the upload clears this from a background thread,
+        // and a label that changed mid-frame would drift the control ids DoRowButton allocates
+        bool busy = state.Uploading;
+        string label = "CRL_LogViewer_ShareBundle".Translate();
+        Rect rect = new Rect(x, y, Text.CalcSize(label).x + 10f, 24f);
+
+        DoRowButton(ref x, y, label, null, busy ? IgnoreShare : StartShare);
+        if (!busy) {
+            return;
+        }
+
+        Widgets.DrawRectFast(rect, new Color(0f, 0f, 0f, 0.6f));
+        TextAnchor anchor = Text.Anchor;
+        Text.Anchor = TextAnchor.MiddleCenter;
+        Widgets.Label(rect, Spinner.Frame(Time.realtimeSinceStartup).ToString());
+        Text.Anchor = anchor;
+    }
+
+    private void StartShare() => _ = LogBundleShare.Upload(sink, state, static () => { });
+
+    private static void IgnoreShare() { }
 
     private void DoLevelToggle(ref float x, float y, int index) {
         LogLevel level = ToggleLevels[index];
@@ -264,8 +286,9 @@ internal sealed class LogViewerWindow : EditWindow {
         float x = rect.x + 4f + channel.Depth * IndentPerDepth;
 
         if (channel.HasChildren) {
-            Rect twisty = new Rect(x, rect.y + 4f, 14f, 14f);
+            Rect twisty = new Rect(x, rect.y, 14f, rect.height);
             GUI.color = new Color(0.54f, 0.56f, 0.58f);
+            Text.Anchor = TextAnchor.MiddleCenter;
             Widgets.Label(twisty, channel.Expanded ? "-" : "+");
             GUI.color = Color.white;
             if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && Mouse.IsOver(twisty)) {

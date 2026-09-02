@@ -25,7 +25,8 @@ internal sealed class LogViewerState {
 
     public LogEntry? Selected = null;
 
-    public bool Uploading = false;
+    /// <summary>Set on the UI thread, cleared from the upload continuation, so the read must not be hoisted.</summary>
+    public volatile bool Uploading = false;
 
     public readonly Dictionary<string, bool> ExpandedChannels = new Dictionary<string, bool>(System.StringComparer.Ordinal);
 
