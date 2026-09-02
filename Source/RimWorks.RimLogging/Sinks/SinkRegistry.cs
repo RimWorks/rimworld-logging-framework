@@ -55,6 +55,19 @@ internal static class SinkRegistry
             snap = _sinks.ToArray();
         }
         finally { _lock.ExitWriteLock(); }
+        Channels.ChannelSettings channel = Logging.SettingsFor(entry.Channel);
+
+        // a channel naming only sinks that are not registered would otherwise go dark, so a
+        // destination list that matches nothing at all is treated as no restriction
+        bool restrict = false;
+        if (channel.HasDestinations)
+        {
+            for (int i = 0; i < snap.Length; i++)
+            {
+                if (channel.AllowsSink(snap[i].Name)) { restrict = true; break; }
+            }
+        }
+
         using (ReentryGuard.Enter())
         {
             for (int i = 0; i < snap.Length; i++)
@@ -62,6 +75,7 @@ internal static class SinkRegistry
                 // MinLevel is documented on ILogSink as a per-sink gate, so it has to be
                 // honoured here; a sink cannot filter what it was never told about.
                 if (entry.Level < snap[i].MinLevel) continue;
+                if (restrict && !channel.AllowsSink(snap[i].Name)) continue;
                 try { snap[i].Write(entry); }
                 catch { /* swallow: a misbehaving sink must not break dispatch to the others */ }
             }

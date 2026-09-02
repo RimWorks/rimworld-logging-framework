@@ -27,5 +27,5 @@ public sealed class RollingTextFileSink : RollingFileSink
 
     /// <inheritdoc/>
     protected override string FormatLine(LogEntry entry)
-        => DefaultFormat.Render(FormatTemplate, entry, stripRichText: true);
+        => DefaultFormat.Render(Logging.SettingsFor(entry.Channel).TemplateOr(FormatTemplate), entry, stripRichText: true);
 }

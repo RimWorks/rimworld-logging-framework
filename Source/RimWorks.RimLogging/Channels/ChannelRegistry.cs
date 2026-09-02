@@ -34,7 +34,7 @@ public static class ChannelRegistry
         ChannelDef? def = TryResolve(channelName);
         ChannelSettings resolved = def == null
             ? ChannelSettings.Inherit
-            : new ChannelSettings(def.defaultLevel, def.captureStackAt);
+            : new ChannelSettings(def.defaultLevel, def.captureStackAt, def.destinations, def.format);
 
         lock (SettingsLock)
         {
