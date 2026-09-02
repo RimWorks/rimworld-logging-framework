@@ -11,7 +11,7 @@ public class DocbinRequestTests
     {
         string url = DocbinRequest.Url("https://docbin.app", false, "public", "ignored");
 
-        Assert.Equal("https://docbin.app/api/docs/paste/anon?type=text&language=log", url);
+        Assert.Equal("https://docbin.app/api/docs/paste/anon?type=text&language=rimworld", url);
     }
 
     [Fact]

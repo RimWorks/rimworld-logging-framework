@@ -21,10 +21,10 @@ internal static class DocbinRequest
     internal static string Url(string baseUrl, bool authed, string? visibility, string? name)
     {
         string root = (baseUrl ?? string.Empty).TrimEnd('/');
-        if (!authed) return root + "/api/docs/paste/anon?type=text&language=log";
+        if (!authed) return root + "/api/docs/paste/anon?type=text&language=rimworld";
 
         string vis = string.IsNullOrWhiteSpace(visibility) ? "unlisted" : visibility!;
-        return root + "/api/docs/paste?type=text&language=log"
+        return root + "/api/docs/paste?type=text&language=rimworld"
              + "&visibility=" + Uri.EscapeDataString(vis)
              + "&name=" + Uri.EscapeDataString(name ?? string.Empty);
     }
