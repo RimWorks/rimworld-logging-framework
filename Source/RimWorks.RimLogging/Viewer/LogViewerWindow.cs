@@ -534,11 +534,14 @@ internal sealed class LogViewerWindow : EditWindow {
 
         IReadOnlyList<LogEntry> snapshot = sink.Snapshot();
         filtered = LogFilter.Apply(snapshot, state);
-        channels = LogFilter.BuildChannels(snapshot, state, new ChannelLabels(
+
+        // tree and channel list come from the sink's running tallies, so neither walks the buffer
+        IReadOnlyDictionary<string, ChannelTally> tallies = sink.ChannelTallies();
+        channels = LogFilter.BuildChannels(tallies, snapshot.Count, state, new ChannelLabels(
             "CRL_LogViewer_AllChannels".Translate(),
             "CRL_LogViewer_Group_Mod".Translate(),
             "CRL_LogViewer_Group_Vanilla".Translate()));
-        channelNames = DistinctChannels(snapshot);
+        channelNames = SortedChannelNames(tallies);
         cachedRevision = sink.Revision;
         cachedSignature = signature;
 
@@ -563,13 +566,11 @@ internal sealed class LogViewerWindow : EditWindow {
         }
     }
 
-    private static List<string> DistinctChannels(IReadOnlyList<LogEntry> snapshot) {
-        HashSet<string> seen = new HashSet<string>(System.StringComparer.Ordinal);
-        List<string> names = new List<string>();
-        for (int i = 0; i < snapshot.Count; i++) {
-            string channel = snapshot[i].Channel;
-            if (!string.IsNullOrEmpty(channel) && seen.Add(channel)) {
-                names.Add(channel);
+    private static List<string> SortedChannelNames(IReadOnlyDictionary<string, ChannelTally> tallies) {
+        List<string> names = new List<string>(tallies.Count);
+        foreach (KeyValuePair<string, ChannelTally> pair in tallies) {
+            if (pair.Key != "(root)") {
+                names.Add(pair.Key);
             }
         }
         return names;

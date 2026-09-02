@@ -8,13 +8,13 @@ public class ViewerLogSinkTests
 {
     private const int RingCapacity = 20000;
 
-    private static LogEntry Entry(LogLevel level, string message)
+    private static LogEntry Entry(LogLevel level, string message, string channel = "Test")
     {
         return new LogEntry
         {
             Timestamp = new System.DateTime(2026, 1, 1),
             Level = level,
-            Channel = "Test",
+            Channel = channel,
             MessageTemplate = message,
             RenderedMessage = message,
         };
@@ -176,5 +176,67 @@ public class ViewerLogSinkTests
         Assert.Equal(LogLevel.Warn, collapsed.Level);
         Assert.Equal("same", collapsed.RenderedMessage);
         Assert.Equal(2, collapsed.Repeats);
+    }
+
+    [Fact]
+    public void ChannelTallies_CountRowsPerChannel()
+    {
+        ViewerLogSink sink = new ViewerLogSink();
+        sink.Write(Entry(LogLevel.Info, "a", "Alpha"));
+        sink.Write(Entry(LogLevel.Info, "b", "Alpha"));
+        sink.Write(Entry(LogLevel.Info, "c", "Beta"));
+
+        var tallies = sink.ChannelTallies();
+
+        Assert.Equal(2, tallies["Alpha"].Count);
+        Assert.Equal(1, tallies["Beta"].Count);
+    }
+
+    [Fact]
+    public void ChannelTallies_ErrorCountTracksErrorsNotRows()
+    {
+        ViewerLogSink sink = new ViewerLogSink();
+        sink.Write(Entry(LogLevel.Info, "fine", "Alpha"));
+        sink.Write(Entry(LogLevel.Error, "bad", "Alpha"));
+
+        Assert.Equal(2, sink.ChannelTallies()["Alpha"].Count);
+        Assert.Equal(1, sink.ChannelTallies()["Alpha"].ErrorCount);
+    }
+
+    [Fact]
+    public void ChannelTallies_EvictedEntriesAreSubtracted()
+    {
+        // the tally has to shrink as the ring wraps, or the tree counts drift up forever
+        ViewerLogSink sink = new ViewerLogSink();
+        for (int i = 0; i < RingCapacity + 50; i++)
+        {
+            sink.Write(Entry(LogLevel.Info, i.ToString(), "Alpha"));
+        }
+
+        Assert.Equal(RingCapacity, sink.ChannelTallies()["Alpha"].Count);
+    }
+
+    [Fact]
+    public void ChannelTallies_ChannelDropsOutOnceEveryRowIsEvicted()
+    {
+        ViewerLogSink sink = new ViewerLogSink();
+        sink.Write(Entry(LogLevel.Error, "old", "Gone"));
+        for (int i = 0; i < RingCapacity; i++)
+        {
+            sink.Write(Entry(LogLevel.Info, i.ToString(), "Alpha"));
+        }
+
+        Assert.False(sink.ChannelTallies().ContainsKey("Gone"));
+        Assert.Equal(0, sink.ChannelTallies()["Alpha"].ErrorCount);
+    }
+
+    [Fact]
+    public void ChannelTallies_ClearEmptiesThem()
+    {
+        ViewerLogSink sink = new ViewerLogSink();
+        sink.Write(Entry(LogLevel.Info, "x", "Alpha"));
+        sink.Clear();
+
+        Assert.Empty(sink.ChannelTallies());
     }
 }

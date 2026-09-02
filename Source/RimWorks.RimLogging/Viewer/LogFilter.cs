@@ -6,9 +6,15 @@ namespace RimWorks.RimLogging.Viewer;
 
 internal static class LogFilter {
     public static List<LogChannel> BuildChannels(IReadOnlyList<LogEntry> snapshot, LogViewerState state, ChannelLabels labels) {
+        return BuildChannels(TallyByChannel(snapshot), snapshot.Count, state, labels);
+    }
+
+    /// <summary>Builds the tree from tallies the sink already keeps, so it never walks the entries.</summary>
+    public static List<LogChannel> BuildChannels(
+        IReadOnlyDictionary<string, ChannelTally> perChannel, int totalRows, LogViewerState state, ChannelLabels labels) {
         ChannelClassifier.EnsureBuilt();
 
-        Dictionary<string, NodeAccum> nodes = AccumulateNodes(snapshot);
+        Dictionary<string, NodeAccum> nodes = AccumulateNodes(perChannel);
 
         string channelFilter = state.ChannelFilter;
         bool hasFilter = !string.IsNullOrEmpty(channelFilter);
@@ -21,7 +27,7 @@ internal static class LogFilter {
             new LogChannel(
                 LogViewerState.AllChannels,
                 labels.All,
-                snapshot.Count,
+                totalRows,
                 0,
                 false,
                 false,
@@ -33,24 +39,34 @@ internal static class LogFilter {
         return result;
     }
 
-    // Tally per channel before touching paths. PathFor allocates and each depth needs a
-    // string.Join, so per-entry costs thousands of allocations for a handful of channels.
-    private static Dictionary<string, NodeAccum> AccumulateNodes(IReadOnlyList<LogEntry> snapshot) {
+    /// <summary>Rolls a snapshot up per channel. Only used when no tally is supplied.</summary>
+    internal static Dictionary<string, ChannelTally> TallyByChannel(IReadOnlyList<LogEntry> snapshot) {
         Dictionary<string, ChannelTally> perChannel = new Dictionary<string, ChannelTally>(System.StringComparer.Ordinal);
         for (int i = 0; i < snapshot.Count; i++) {
             LogEntry entry = snapshot[i];
-            string channel = string.IsNullOrEmpty(entry.Channel) ? "(root)" : entry.Channel;
-            perChannel.TryGetValue(channel, out ChannelTally tally);
+            perChannel.TryGetValue(KeyFor(entry.Channel), out ChannelTally tally);
             tally.Count++;
-            tally.HasError |= entry.Level >= LogLevel.Error;
-            perChannel[channel] = tally;
+            if (entry.Level >= LogLevel.Error) {
+                tally.ErrorCount++;
+            }
+            perChannel[KeyFor(entry.Channel)] = tally;
         }
+        return perChannel;
+    }
 
+    /// <summary>Channel key used by the tree. Empty channels group under "(root)".</summary>
+    internal static string KeyFor(string? channel) {
+        return string.IsNullOrEmpty(channel) ? "(root)" : channel!;
+    }
+
+    // PathFor allocates and each depth needs a string.Join, so this walks the handful of
+    // distinct channels rather than every entry.
+    private static Dictionary<string, NodeAccum> AccumulateNodes(IReadOnlyDictionary<string, ChannelTally> perChannel) {
         Dictionary<string, NodeAccum> nodes = new Dictionary<string, NodeAccum>(System.StringComparer.Ordinal);
         foreach (KeyValuePair<string, ChannelTally> channelTally in perChannel) {
             string[] path = ChannelClassifier.PathFor(channelTally.Key);
             int count = channelTally.Value.Count;
-            bool isError = channelTally.Value.HasError;
+            bool isError = channelTally.Value.ErrorCount > 0;
 
             for (int d = 1; d <= path.Length; d++) {
                 string id = string.Join("/", path, 0, d);
@@ -71,11 +87,6 @@ internal static class LogFilter {
             }
         }
         return nodes;
-    }
-
-    private struct ChannelTally {
-        public int Count;
-        public bool HasError;
     }
 
     private static HashSet<string> ComputeKeepIds(Dictionary<string, NodeAccum> nodes, string filterLower) {

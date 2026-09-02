@@ -8,6 +8,7 @@ namespace RimWorks.RimLogging.Viewer;
 public sealed class ViewerLogSink : ILogSink {
     private readonly object syncRoot = new object();
     private readonly LogEntry[] ring = new LogEntry[20000];
+    private readonly Dictionary<string, ChannelTally> tallies = new Dictionary<string, ChannelTally>(StringComparer.Ordinal);
     private int writeIndex;
     private int count;
 
@@ -21,6 +22,18 @@ public sealed class ViewerLogSink : ILogSink {
 
     /// <summary>Bumped on every write and on clear, so the viewer knows when to refilter.</summary>
     public int Revision { get; private set; }
+
+    /// <summary>Row and error counts per channel, kept as entries land so the viewer never rescans.</summary>
+    internal IReadOnlyDictionary<string, ChannelTally> ChannelTallies() {
+        lock (syncRoot) {
+            return new Dictionary<string, ChannelTally>(tallies, StringComparer.Ordinal);
+        }
+    }
+
+    /// <summary>Rows currently held, which is the count the channel tree shows for "all".</summary>
+    public int Count {
+        get { lock (syncRoot) { return count; } }
+    }
 
     /// <summary>Copies the buffer out in oldest-first order.</summary>
     public IReadOnlyList<LogEntry> Snapshot() {
@@ -38,6 +51,7 @@ public sealed class ViewerLogSink : ILogSink {
     public void Clear() {
         lock (syncRoot) {
             Array.Clear(ring, 0, ring.Length);
+            tallies.Clear();
             writeIndex = 0;
             count = 0;
             Revision++;
@@ -60,7 +74,11 @@ public sealed class ViewerLogSink : ILogSink {
                 Revision++;
             }
             else {
+                if (count == ring.Length) {
+                    Untally(ring[writeIndex]);
+                }
                 ring[writeIndex] = entry;
+                Tally(entry);
                 writeIndex = (writeIndex + 1) % ring.Length;
                 if (count < ring.Length) {
                     count++;
@@ -69,6 +87,33 @@ public sealed class ViewerLogSink : ILogSink {
             }
         }
         EntryAdded?.Invoke(entry);
+    }
+
+    private void Tally(LogEntry entry) {
+        string key = LogFilter.KeyFor(entry.Channel);
+        tallies.TryGetValue(key, out ChannelTally tally);
+        tally.Count++;
+        if (entry.Level >= LogLevel.Error) {
+            tally.ErrorCount++;
+        }
+        tallies[key] = tally;
+    }
+
+    private void Untally(LogEntry entry) {
+        string key = LogFilter.KeyFor(entry.Channel);
+        if (!tallies.TryGetValue(key, out ChannelTally tally)) {
+            return;
+        }
+        tally.Count--;
+        if (entry.Level >= LogLevel.Error) {
+            tally.ErrorCount--;
+        }
+        if (tally.Count <= 0) {
+            tallies.Remove(key);
+        }
+        else {
+            tallies[key] = tally;
+        }
     }
 
     private static LogEntry Repeated(LogEntry previous) {
