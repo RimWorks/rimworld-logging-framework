@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using RimWorks.RimLogging;
 using RimWorks.RimLogging.Viewer;
 using Xunit;
@@ -7,7 +8,7 @@ namespace RimWorks.RimLogging.Tests.Viewer;
 
 public class EntryTextTests
 {
-    private static LogEntry Entry(string message, string? stack = null, Exception? ex = null) =>
+    private static LogEntry Entry(string message, string? stack = null, Exception? ex = null, IReadOnlyList<string>? patchedBy = null) =>
         new LogEntry
         {
             Timestamp = new DateTime(2026, 9, 1, 4, 31, 26, DateTimeKind.Utc),
@@ -17,6 +18,7 @@ public class EntryTextTests
             RenderedMessage = message,
             StackTrace = stack,
             Exception = ex,
+            PatchedBy = patchedBy ?? Array.Empty<string>(),
         };
 
     [Fact]
@@ -67,6 +69,20 @@ public class EntryTextTests
     public void Full_NoMod_OmitsTheModLineRatherThanPrintingItEmpty()
     {
         Assert.DoesNotContain("Mod:", EntryText.Full(Entry("boom")));
+    }
+
+    [Fact]
+    public void Full_NoPatchedBy_OmitsThePatchedByLine()
+    {
+        Assert.DoesNotContain("Patched by:", EntryText.Full(Entry("boom")));
+    }
+
+    [Fact]
+    public void Full_HasPatchedBy_ListsTheOwnersCommaSeparated()
+    {
+        string text = EntryText.Full(Entry("boom", patchedBy: ["mod.a", "mod.b"]));
+
+        Assert.Contains("Patched by: mod.a, mod.b", text);
     }
 
     [Fact]

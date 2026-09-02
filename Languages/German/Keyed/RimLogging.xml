@@ -46,6 +46,7 @@
     <CRL_LogViewer_Detail_Level>Stufe</CRL_LogViewer_Detail_Level>
     <CRL_LogViewer_Detail_Channel>Kanal</CRL_LogViewer_Detail_Channel>
     <CRL_LogViewer_Detail_Mod>Mod</CRL_LogViewer_Detail_Mod>
+    <CRL_LogViewer_Detail_PatchedBy>Gepatcht von</CRL_LogViewer_Detail_PatchedBy>
     <CRL_LogViewer_Detail_Source>Quelle</CRL_LogViewer_Detail_Source>
     <CRL_LogViewer_Detail_Message>Nachricht</CRL_LogViewer_Detail_Message>
     <CRL_LogViewer_Detail_Stack>Stacktrace</CRL_LogViewer_Detail_Stack>

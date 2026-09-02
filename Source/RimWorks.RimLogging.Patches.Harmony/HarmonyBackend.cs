@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Reflection;
 using HarmonyLib;
 using LudeonTK;
 using RimWorks.RimLogging.Hijack;
@@ -8,7 +12,7 @@ using Verse;
 namespace RimWorks.RimLogging.Patches.Harmony;
 
 /// <summary>RimLogging's hooks as Harmony patches. Ranked below Concord.</summary>
-public sealed class HarmonyBackend : IPatchBackend
+public sealed class HarmonyBackend : IPatchBackend, IPatchAttributionSource
 {
     private const string HarmonyId = "rimworks.rimlogging";
 
@@ -36,6 +40,39 @@ public sealed class HarmonyBackend : IPatchBackend
             prefix: Prefix(nameof(ToggleLogWindowPrefix)));
         harmony.Patch(AccessTools.Method(typeof(UIRoot), "CheckOpenLogWindow"),
             prefix: Prefix(nameof(CheckOpenLogWindowPrefix)));
+    }
+
+    // Concord's bridge into an already-Harmony-patched target, not a mod; never surfaced as one
+    private const string ConcordBridgeOwnerId = "concord.bridge";
+
+    // keyed by the resolved original, not the frame: repeat frames for the same patched
+    // method are common (a hot error loop), copy-on-write like ChannelRegistry.SettingsFor
+    private static volatile Dictionary<MethodBase, IReadOnlyList<string>> _ownerCache =
+        new Dictionary<MethodBase, IReadOnlyList<string>>();
+    private static readonly object CacheLock = new object();
+
+    /// <inheritdoc/>
+    public IReadOnlyList<string> OwnersFor(StackFrame frame)
+    {
+        MethodBase? original = HarmonyLib.Harmony.GetOriginalMethodFromStackframe(frame);
+        if (original == null) return Array.Empty<string>();
+        if (_ownerCache.TryGetValue(original, out IReadOnlyList<string>? hit)) return hit;
+
+        global::HarmonyLib.Patches? info = HarmonyLib.Harmony.GetPatchInfo(original);
+        List<string> owners = new List<string>(info?.Owners.Count ?? 0);
+        if (info != null)
+        {
+            foreach (string owner in info.Owners)
+            {
+                if (owner != ConcordBridgeOwnerId) owners.Add(owner);
+            }
+        }
+
+        lock (CacheLock)
+        {
+            _ownerCache = new Dictionary<MethodBase, IReadOnlyList<string>>(_ownerCache) { [original] = owners };
+        }
+        return owners;
     }
 
     // a Harmony prefix returning false skips the original, which is what the hooks already mean

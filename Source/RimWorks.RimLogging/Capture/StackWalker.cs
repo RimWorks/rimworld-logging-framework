@@ -111,14 +111,31 @@ public static class StackWalker
     /// </summary>
     /// <param name="st">A pre-captured stack trace to format.</param>
     /// <returns>A formatted trace string; empty when no qualifying frames exist.</returns>
-    public static string FormatTrace(System.Diagnostics.StackTrace st)
+    public static string FormatTrace(System.Diagnostics.StackTrace st) => FormatTrace(st, out _);
+
+    /// <summary>Same as <see cref="FormatTrace(System.Diagnostics.StackTrace)"/>, plus the
+    /// distinct patch-owner ids found across every frame of the same walk.</summary>
+    public static string FormatTrace(System.Diagnostics.StackTrace st, out System.Collections.Generic.IReadOnlyList<string> patchedBy)
     {
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        System.Collections.Generic.List<string>? owners = null;
+        bool attributionEnabled = Logging.AttributionProvider != null;
         for (int i = 0; i < st.FrameCount; i++)
         {
             System.Diagnostics.StackFrame? frame = st.GetFrame(i);
             if (frame == null) continue;
             System.Reflection.MethodBase? method = frame.GetMethod();
+
+            // StackFrame, not MethodBase: Mono nulls GetMethod() on a Harmony replacement frame, and only the frame lets Harmony's native-address fallback resolve it.
+            if (attributionEnabled)
+            {
+                foreach (string owner in Patching.PatchAttributionGuard.OwnersFor(frame))
+                {
+                    owners ??= new System.Collections.Generic.List<string>();
+                    if (!owners.Contains(owner)) owners.Add(owner);
+                }
+            }
+
             System.Type? declaringType = method?.DeclaringType;
             string? declaring = declaringType?.FullName;
             string? assembly = declaringType?.Assembly.GetName().Name;
@@ -137,6 +154,7 @@ public static class StackWalker
             sb.Append('\n');
         }
         if (sb.Length > 0 && sb[sb.Length - 1] == '\n') sb.Length--;
+        patchedBy = (System.Collections.Generic.IReadOnlyList<string>?)owners ?? System.Array.Empty<string>();
         return sb.ToString();
     }
 

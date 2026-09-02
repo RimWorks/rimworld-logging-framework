@@ -44,6 +44,10 @@ public static class Logging
     // Verse-bound and dropped from the test compile
     internal static System.Func<string, Channels.ChannelSettings>? ChannelSettingsProvider { get; set; }
 
+    // set by PatchBackends once the winning backend applies; takes a StackFrame, not a
+    // MethodBase, so Mono's null-GetMethod() replacement frames can still resolve (see StackWalker).
+    internal static System.Func<System.Diagnostics.StackFrame, System.Collections.Generic.IReadOnlyList<string>>? AttributionProvider { get; set; }
+
     /// <summary>The overrides for a channel, or none when no registry is installed.</summary>
     internal static Channels.ChannelSettings SettingsFor(string channel)
         => ChannelSettingsProvider?.Invoke(channel) ?? Channels.ChannelSettings.Inherit;

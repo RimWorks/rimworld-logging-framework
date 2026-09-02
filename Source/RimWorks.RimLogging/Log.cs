@@ -444,7 +444,8 @@ public static class Log
         System.Diagnostics.StackTrace? walk = settings.ShouldCaptureStack(level, Logging.CaptureStackTraces)
             ? new System.Diagnostics.StackTrace(1, true)
             : null;
-        string? capturedTrace = walk != null ? Capture.StackWalker.FormatTrace(walk) : null;
+        IReadOnlyList<string> patchedBy = Array.Empty<string>();
+        string? capturedTrace = walk != null ? Capture.StackWalker.FormatTrace(walk, out patchedBy) : null;
 
         SourceLocation src = ResolveSource(site.Line, site.File, site.Source, walk, out string? mod);
         (string rendered, IReadOnlyDictionary<string, object?>? ctx) = RenderMessage(template, args, structuredContext);
@@ -463,6 +464,7 @@ public static class Log
             StackTrace = string.IsNullOrEmpty(capturedTrace) ? null : capturedTrace,
             Exception = exception,
             Mod = mod,
+            PatchedBy = patchedBy,
         };
 
         Logging.Emit(entry);
@@ -572,7 +574,8 @@ public static class Log
         System.Diagnostics.StackTrace? walk = (stackTrace == null && settings.ShouldCaptureStack(level, Logging.CaptureStackTraces))
             ? new System.Diagnostics.StackTrace(1, true)
             : null;
-        string? captured = stackTrace ?? (walk != null ? Capture.StackWalker.FormatTrace(walk) : null);
+        IReadOnlyList<string> patchedBy = Array.Empty<string>();
+        string? captured = stackTrace ?? (walk != null ? Capture.StackWalker.FormatTrace(walk, out patchedBy) : null);
         SourceLocation src = walk != null ? Capture.StackWalker.FirstCallerFrame(walk) : SourceLocation.Empty;
 
         LogEntry e = new LogEntry
@@ -587,6 +590,7 @@ public static class Log
             Tick = Logging.CurrentTick(),
             StackTrace = string.IsNullOrEmpty(captured) ? null : captured,
             Mod = mod,
+            PatchedBy = patchedBy,
         };
         Logging.Emit(e);
     }

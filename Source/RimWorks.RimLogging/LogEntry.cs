@@ -79,4 +79,7 @@ public sealed class LogEntry
 
     /// <summary>The game tick this was logged on, or <c>null</c> outside a running game.</summary>
     public int? Tick { get; init; }
+
+    /// <summary>Owner ids of mods that patched a method on this trace, or empty when none did.</summary>
+    public IReadOnlyList<string> PatchedBy { get; init; } = Array.Empty<string>();
 }

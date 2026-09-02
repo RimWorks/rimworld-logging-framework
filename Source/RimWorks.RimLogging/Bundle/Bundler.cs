@@ -41,7 +41,7 @@ public static class Bundler
                 Channel = e.Channel,
                 Source = e.Source.IsCallerProvided ? $"{e.Source.File}:{e.Source.Line}" : "",
                 Message = RichText.Strip(e.RenderedMessage),
-                Context = CopyContext(e.Context),
+                Context = CopyContext(e.Context, e.PatchedBy),
                 Stack = e.StackTrace ?? e.Exception?.ToString(),
             });
         }
@@ -63,12 +63,16 @@ public static class Bundler
         _              => level.ToString(),
     };
 
-    private static Dictionary<string, object?>? CopyContext(IReadOnlyDictionary<string, object?>? source)
+    private static Dictionary<string, object?>? CopyContext(IReadOnlyDictionary<string, object?>? source, IReadOnlyList<string> patchedBy)
     {
-        if (source == null) return null;
-        Dictionary<string, object?> copy = new Dictionary<string, object?>(source.Count);
-        foreach (KeyValuePair<string, object?> kv in source)
-            copy[kv.Key] = kv.Value;
+        if (source == null && patchedBy.Count == 0) return null;
+        Dictionary<string, object?> copy = new Dictionary<string, object?>(source?.Count ?? 1);
+        if (source != null)
+        {
+            foreach (KeyValuePair<string, object?> kv in source)
+                copy[kv.Key] = kv.Value;
+        }
+        if (patchedBy.Count > 0) copy["PatchedBy"] = string.Join(",", patchedBy);
         return copy;
     }
 }

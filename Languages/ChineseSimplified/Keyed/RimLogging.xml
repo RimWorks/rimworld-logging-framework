@@ -46,6 +46,7 @@
     <CRL_LogViewer_Detail_Level>级别</CRL_LogViewer_Detail_Level>
     <CRL_LogViewer_Detail_Channel>频道</CRL_LogViewer_Detail_Channel>
     <CRL_LogViewer_Detail_Mod>模组</CRL_LogViewer_Detail_Mod>
+    <CRL_LogViewer_Detail_PatchedBy>补丁来源</CRL_LogViewer_Detail_PatchedBy>
     <CRL_LogViewer_Detail_Source>来源</CRL_LogViewer_Detail_Source>
     <CRL_LogViewer_Detail_Message>消息</CRL_LogViewer_Detail_Message>
     <CRL_LogViewer_Detail_Stack>堆栈跟踪</CRL_LogViewer_Detail_Stack>

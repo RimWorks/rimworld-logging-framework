@@ -1,11 +1,17 @@
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Reflection;
+using RimWorks.RimLogging;
 using RimWorks.RimLogging.Capture;
 using Xunit;
 
 // Namespace outside RimWorks.RimLogging.* so this test's frame is not skipped by WalkOnce.
 namespace RimLoggingTestsExternal.Capture;
 
-public class StackWalkerTests
+public class StackWalkerTests : System.IDisposable
 {
+    public void Dispose() => Logging.AttributionProvider = null;
+
     [Fact]
     public void WalkOnce_FromTest_ReturnsTestMethodName()
     {
@@ -277,5 +283,69 @@ public class StackWalkerTests
 
         Assert.DoesNotContain("RimWorks.RimLogging.", formatted);
         Assert.Contains(nameof(FormatTrace_SkipsRimLoggingFrames_AndReturnsOuterCaller), formatted);
+    }
+
+    [Fact]
+    public void FormatTrace_out_NoProviderInstalled_PatchedByIsEmpty()
+    {
+        Logging.AttributionProvider = null;
+        System.Diagnostics.StackTrace st = new System.Diagnostics.StackTrace(0, true);
+
+        StackWalker.FormatTrace(st, out IReadOnlyList<string> patchedBy);
+
+        Assert.Empty(patchedBy);
+    }
+
+    [Fact]
+    public void FormatTrace_out_ProviderOwnsAFrameInTheWalk_ReturnsThatOwner()
+    {
+        MethodBase here = MethodBase.GetCurrentMethod()!;
+        Logging.AttributionProvider = f => ReferenceEquals(f.GetMethod(), here) ? ["some.mod"] : System.Array.Empty<string>();
+        System.Diagnostics.StackTrace st = new System.Diagnostics.StackTrace(0, true);
+
+        StackWalker.FormatTrace(st, out IReadOnlyList<string> patchedBy);
+
+        Assert.Equal(["some.mod"], patchedBy);
+    }
+
+    [Fact]
+    public void FormatTrace_out_ProviderReportsTheSameOwnerTwice_DedupesIt()
+    {
+        Logging.AttributionProvider = _ => ["dup.mod", "dup.mod"];
+        System.Diagnostics.StackTrace st = new System.Diagnostics.StackTrace(0, true);
+
+        StackWalker.FormatTrace(st, out IReadOnlyList<string> patchedBy);
+
+        Assert.Equal(["dup.mod"], patchedBy);
+    }
+
+    [Fact]
+    public void FormatTrace_out_ProviderThrows_PatchedByIsEmptyRatherThanPropagating()
+    {
+        Logging.AttributionProvider = _ => throw new System.InvalidOperationException("backend blew up");
+        System.Diagnostics.StackTrace st = new System.Diagnostics.StackTrace(0, true);
+
+        string formatted = StackWalker.FormatTrace(st, out IReadOnlyList<string> patchedBy);
+
+        Assert.Empty(patchedBy);
+        Assert.Contains(nameof(FormatTrace_out_ProviderThrows_PatchedByIsEmptyRatherThanPropagating), formatted);
+    }
+
+    // a Harmony replacement DynamicMethod frame on Mono has a null GetMethod(); the provider
+    // must still be queried with the frame itself so Harmony's native-address fallback can run.
+    private sealed class NullMethodStackFrame : System.Diagnostics.StackFrame
+    {
+        public override MethodBase GetMethod() => null!;
+    }
+
+    [Fact]
+    public void FormatTrace_out_FrameWithNullGetMethod_StillReachesTheProvider()
+    {
+        Logging.AttributionProvider = f => f.GetMethod() == null ? ["mono.mod"] : System.Array.Empty<string>();
+        System.Diagnostics.StackTrace st = new System.Diagnostics.StackTrace(new NullMethodStackFrame());
+
+        StackWalker.FormatTrace(st, out IReadOnlyList<string> patchedBy);
+
+        Assert.Equal(["mono.mod"], patchedBy);
     }
 }

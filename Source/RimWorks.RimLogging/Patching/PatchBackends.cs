@@ -40,6 +40,11 @@ internal static class PatchBackends
                 continue;
             }
 
+            if (backend is IPatchAttributionSource attribution)
+            {
+                Logging.AttributionProvider = attribution.OwnersFor;
+            }
+
             Verse.Log.Message($"[RimLogging] patched via {backend.Name}{IdleSuffix(found, backend)}");
             return;
         }

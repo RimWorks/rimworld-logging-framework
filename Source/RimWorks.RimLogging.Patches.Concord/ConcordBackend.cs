@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using Concord;
 using LudeonTK;
 using RimWorks.RimLogging.Hijack;
@@ -8,7 +11,7 @@ using Verse;
 namespace RimWorks.RimLogging.Patches.Concord;
 
 /// <summary>RimLogging's hooks as Concord injections. Ranked above Harmony.</summary>
-public sealed class ConcordBackend : IPatchBackend
+public sealed class ConcordBackend : IPatchBackend, IPatchAttributionSource
 {
     /// <inheritdoc/>
     public string Name => "Concord";
@@ -21,6 +24,10 @@ public sealed class ConcordBackend : IPatchBackend
     {
         Patcher.Apply(typeof(ConcordBackend).Assembly);
     }
+
+    // Concord has no owner accessor yet; empty until that lands upstream
+    /// <inheritdoc/>
+    public IReadOnlyList<string> OwnersFor(StackFrame frame) => Array.Empty<string>();
 }
 
 [Patch(typeof(Verse.Log))]

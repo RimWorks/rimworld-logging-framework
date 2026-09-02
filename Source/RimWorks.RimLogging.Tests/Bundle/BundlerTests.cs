@@ -15,7 +15,8 @@ public class BundlerTests
         IReadOnlyDictionary<string, object?>? ctx = null,
         Exception? ex = null,
         string? stackTrace = null,
-        SourceLocation source = default)
+        SourceLocation source = default,
+        IReadOnlyList<string>? patchedBy = null)
     {
         return new LogEntry
         {
@@ -28,6 +29,7 @@ public class BundlerTests
             Source = source,
             StackTrace = stackTrace,
             Exception = ex,
+            PatchedBy = patchedBy ?? Array.Empty<string>(),
         };
     }
 
@@ -128,5 +130,34 @@ public class BundlerTests
         BundlePayload p = Bundler.Build(new[] { e }, "x", "y", new List<BundlePayload.ModInfo>());
 
         Assert.Equal("", p.Entries[0].Source);
+    }
+
+    [Fact]
+    public void Build_NoPatchedByAndNoContext_ProducesNullContext()
+    {
+        LogEntry e = MakeEntry();
+        BundlePayload p = Bundler.Build(new[] { e }, "x", "y", new List<BundlePayload.ModInfo>());
+
+        Assert.Null(p.Entries[0].Context);
+    }
+
+    [Fact]
+    public void Build_PatchedBy_AddsItToContextAsCommaJoinedOwners()
+    {
+        LogEntry e = MakeEntry(patchedBy: ["mod.a", "mod.b"]);
+        BundlePayload p = Bundler.Build(new[] { e }, "x", "y", new List<BundlePayload.ModInfo>());
+
+        Assert.Equal("mod.a,mod.b", p.Entries[0].Context!["PatchedBy"]);
+    }
+
+    [Fact]
+    public void Build_PatchedByAndExistingContext_MergesRatherThanReplacing()
+    {
+        IReadOnlyDictionary<string, object?> ctx = new Dictionary<string, object?> { ["pawn"] = "Randy" };
+        LogEntry e = MakeEntry(ctx: ctx, patchedBy: ["mod.a"]);
+        BundlePayload p = Bundler.Build(new[] { e }, "x", "y", new List<BundlePayload.ModInfo>());
+
+        Assert.Equal("Randy", p.Entries[0].Context!["pawn"]);
+        Assert.Equal("mod.a", p.Entries[0].Context!["PatchedBy"]);
     }
 }

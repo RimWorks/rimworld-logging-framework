@@ -46,6 +46,7 @@
     <CRL_LogViewer_Detail_Level>Niveau</CRL_LogViewer_Detail_Level>
     <CRL_LogViewer_Detail_Channel>Canal</CRL_LogViewer_Detail_Channel>
     <CRL_LogViewer_Detail_Mod>Mod</CRL_LogViewer_Detail_Mod>
+    <CRL_LogViewer_Detail_PatchedBy>Modifié par</CRL_LogViewer_Detail_PatchedBy>
     <CRL_LogViewer_Detail_Source>Source</CRL_LogViewer_Detail_Source>
     <CRL_LogViewer_Detail_Message>Message</CRL_LogViewer_Detail_Message>
     <CRL_LogViewer_Detail_Stack>Pile d'appels</CRL_LogViewer_Detail_Stack>
