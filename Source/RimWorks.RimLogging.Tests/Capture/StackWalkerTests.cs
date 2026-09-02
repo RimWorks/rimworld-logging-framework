@@ -291,9 +291,11 @@ public class StackWalkerTests : System.IDisposable
         Logging.AttributionProvider = null;
         System.Diagnostics.StackTrace st = new System.Diagnostics.StackTrace(0, true);
 
-        StackWalker.FormatTrace(st, out IReadOnlyList<string> patchedBy);
+        StackWalker.FormatTrace(st, out IReadOnlyList<string>? patchedBy);
 
-        Assert.Empty(patchedBy);
+        // with no provider the answer is a definite "nothing", not "could not tell"
+        Assert.NotNull(patchedBy);
+        Assert.Empty(patchedBy!);
     }
 
     [Fact]
@@ -303,7 +305,7 @@ public class StackWalkerTests : System.IDisposable
         Logging.AttributionProvider = f => ReferenceEquals(f.GetMethod(), here) ? ["some.mod"] : System.Array.Empty<string>();
         System.Diagnostics.StackTrace st = new System.Diagnostics.StackTrace(0, true);
 
-        StackWalker.FormatTrace(st, out IReadOnlyList<string> patchedBy);
+        StackWalker.FormatTrace(st, out IReadOnlyList<string>? patchedBy);
 
         Assert.Equal(["some.mod"], patchedBy);
     }
@@ -314,21 +316,23 @@ public class StackWalkerTests : System.IDisposable
         Logging.AttributionProvider = _ => ["dup.mod", "dup.mod"];
         System.Diagnostics.StackTrace st = new System.Diagnostics.StackTrace(0, true);
 
-        StackWalker.FormatTrace(st, out IReadOnlyList<string> patchedBy);
+        StackWalker.FormatTrace(st, out IReadOnlyList<string>? patchedBy);
 
         Assert.Equal(["dup.mod"], patchedBy);
     }
 
     [Fact]
-    public void FormatTrace_out_ProviderThrows_PatchedByIsEmptyRatherThanPropagating()
+    public void FormatTrace_out_ProviderThrows_PatchedByIsUnavailable()
     {
         Logging.AttributionProvider = _ => throw new System.InvalidOperationException("backend blew up");
         System.Diagnostics.StackTrace st = new System.Diagnostics.StackTrace(0, true);
 
-        string formatted = StackWalker.FormatTrace(st, out IReadOnlyList<string> patchedBy);
+        string formatted = StackWalker.FormatTrace(st, out IReadOnlyList<string>? patchedBy);
 
-        Assert.Empty(patchedBy);
-        Assert.Contains(nameof(FormatTrace_out_ProviderThrows_PatchedByIsEmptyRatherThanPropagating), formatted);
+        // unavailable, not empty: an entry must not claim a method is unpatched when the
+        // backend never managed to answer. the frames still reach the formatted trace.
+        Assert.Null(patchedBy);
+        Assert.Contains(nameof(FormatTrace_out_ProviderThrows_PatchedByIsUnavailable), formatted);
     }
 
     // a Harmony replacement DynamicMethod frame on Mono has a null GetMethod(); the provider
@@ -344,7 +348,7 @@ public class StackWalkerTests : System.IDisposable
         Logging.AttributionProvider = f => f.GetMethod() == null ? ["mono.mod"] : System.Array.Empty<string>();
         System.Diagnostics.StackTrace st = new System.Diagnostics.StackTrace(new NullMethodStackFrame());
 
-        StackWalker.FormatTrace(st, out IReadOnlyList<string> patchedBy);
+        StackWalker.FormatTrace(st, out IReadOnlyList<string>? patchedBy);
 
         Assert.Equal(["mono.mod"], patchedBy);
     }

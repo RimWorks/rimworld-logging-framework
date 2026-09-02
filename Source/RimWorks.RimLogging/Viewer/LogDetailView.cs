@@ -34,7 +34,11 @@ internal static class LogDetailView {
         if (!string.IsNullOrEmpty(entry.Mod)) {
             DrawRow(ref y, contentWidth, "CRL_LogViewer_Detail_Mod", entry.Mod!, LevelColors.ForChannel(entry.Mod!));
         }
-        if (entry.PatchedBy.Count > 0) {
+        if (entry.PatchedBy == null) {
+            DrawRow(ref y, contentWidth, "CRL_LogViewer_Detail_PatchedBy",
+                "CRL_LogViewer_Detail_PatchedByUnavailable".Translate(), new Color(0.45f, 0.45f, 0.45f));
+        }
+        else if (entry.PatchedBy.Count > 0) {
             DrawRow(ref y, contentWidth, "CRL_LogViewer_Detail_PatchedBy", string.Join(", ", entry.PatchedBy), Color.gray);
         }
         DrawRow(ref y, contentWidth, "CRL_LogViewer_Detail_Source", SourceText(entry), Color.gray);
@@ -75,7 +79,7 @@ internal static class LogDetailView {
     }
 
     private static float MeasureHeight(LogEntry entry, string trace, bool combined, float width) {
-        int rows = 3 + (string.IsNullOrEmpty(entry.Mod) ? 0 : 1) + (entry.PatchedBy.Count > 0 ? 1 : 0) + (entry.Context?.Count ?? 0);
+        int rows = 3 + (string.IsNullOrEmpty(entry.Mod) ? 0 : 1) + (entry.PatchedBy is null or { Count: > 0 } ? 1 : 0) + (entry.Context?.Count ?? 0);
         float h = rows * RowHeight + 6f;
 
         Text.Font = GameFont.Small;

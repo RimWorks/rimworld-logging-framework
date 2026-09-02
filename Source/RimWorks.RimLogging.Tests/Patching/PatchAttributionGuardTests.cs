@@ -17,7 +17,11 @@ public class PatchAttributionGuardTests : IDisposable
     {
         Logging.AttributionProvider = null;
 
-        Assert.Empty(PatchAttributionGuard.OwnersFor(Frame));
+        IReadOnlyList<string>? owners = PatchAttributionGuard.OwnersFor(Frame);
+
+        // no backend at all is a definite "nothing patched it", not "could not tell"
+        Assert.NotNull(owners);
+        Assert.Empty(owners!);
     }
 
     [Fact]
@@ -29,20 +33,19 @@ public class PatchAttributionGuardTests : IDisposable
     }
 
     [Fact]
-    public void OwnersFor_ProviderThrows_IsEmptyRatherThanPropagating()
+    public void OwnersFor_ProviderThrows_IsUnavailableRatherThanEmpty()
     {
         Logging.AttributionProvider = _ => throw new InvalidOperationException("backend blew up");
 
-        IReadOnlyList<string> owners = PatchAttributionGuard.OwnersFor(Frame);
-
-        Assert.Empty(owners);
+        // a backend that blew up did not tell us the method is clean
+        Assert.Null(PatchAttributionGuard.OwnersFor(Frame));
     }
 
     [Fact]
-    public void OwnersFor_ProviderReturnsNull_IsEmptyRatherThanNull()
+    public void OwnersFor_ProviderReturnsNull_StaysUnavailable()
     {
-        Logging.AttributionProvider = _ => null!;
+        Logging.AttributionProvider = _ => null;
 
-        Assert.Empty(PatchAttributionGuard.OwnersFor(Frame));
+        Assert.Null(PatchAttributionGuard.OwnersFor(Frame));
     }
 }

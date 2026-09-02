@@ -54,7 +54,10 @@ internal static class EntryText {
         if (!string.IsNullOrEmpty(entry.Mod)) {
             builder.Append("Mod: ").AppendLine(entry.Mod);
         }
-        if (entry.PatchedBy.Count > 0) {
+        if (entry.PatchedBy == null) {
+            builder.AppendLine("Patched by: unavailable, this patch library cannot report owners");
+        }
+        else if (entry.PatchedBy.Count > 0) {
             builder.Append("Patched by: ").AppendLine(string.Join(", ", entry.PatchedBy));
         }
         if (entry.Tick.HasValue) {

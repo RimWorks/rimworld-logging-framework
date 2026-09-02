@@ -52,11 +52,24 @@ public sealed class HarmonyBackend : IPatchBackend, IPatchAttributionSource
     private static readonly object CacheLock = new object();
 
     /// <inheritdoc/>
-    public IReadOnlyList<string> OwnersFor(StackFrame frame)
+    public IReadOnlyList<string>? OwnersFor(StackFrame frame)
     {
+        // key on the frame's own method first. resolving through Harmony costs more than the
+        // dictionary hit, and most frames are unpatched and repeat constantly across captures,
+        // so paying the resolve every time made attribution 7% of a capture instead of 1%.
+        MethodBase? raw = frame.GetMethod();
+        Dictionary<MethodBase, IReadOnlyList<string>> snapshot = _ownerCache;
+        if (raw != null && snapshot.TryGetValue(raw, out IReadOnlyList<string>? rawHit)) return rawHit;
+
+        // a null raw method is the Mono replacement-frame case, where only the frame carries
+        // enough for Harmony's native-address fallback
         MethodBase? original = HarmonyLib.Harmony.GetOriginalMethodFromStackframe(frame);
         if (original == null) return Array.Empty<string>();
-        if (_ownerCache.TryGetValue(original, out IReadOnlyList<string>? hit)) return hit;
+        if (snapshot.TryGetValue(original, out IReadOnlyList<string>? hit))
+        {
+            if (raw != null) Remember(raw, hit);
+            return hit;
+        }
 
         global::HarmonyLib.Patches? info = HarmonyLib.Harmony.GetPatchInfo(original);
         List<string> owners = new List<string>(info?.Owners.Count ?? 0);
@@ -68,11 +81,17 @@ public sealed class HarmonyBackend : IPatchBackend, IPatchAttributionSource
             }
         }
 
+        Remember(original, owners);
+        if (raw != null && !ReferenceEquals(raw, original)) Remember(raw, owners);
+        return owners;
+    }
+
+    private static void Remember(MethodBase key, IReadOnlyList<string> owners)
+    {
         lock (CacheLock)
         {
-            _ownerCache = new Dictionary<MethodBase, IReadOnlyList<string>>(_ownerCache) { [original] = owners };
+            _ownerCache = new Dictionary<MethodBase, IReadOnlyList<string>>(_ownerCache) { [key] = owners };
         }
-        return owners;
     }
 
     // a Harmony prefix returning false skips the original, which is what the hooks already mean

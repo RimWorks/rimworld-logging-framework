@@ -4,23 +4,24 @@ using System.Diagnostics;
 
 namespace RimWorks.RimLogging.Patching;
 
-/// <summary>Guards <see cref="Logging.AttributionProvider"/> calls: no provider, a throw, or a
-/// null result all become empty, so a bad backend never takes down a log call.</summary>
+/// <summary>
+/// Guards <see cref="Logging.AttributionProvider"/> calls. A throw becomes "could not answer"
+/// rather than "nothing patched it", because reporting a clean method we never managed to check
+/// is a wrong answer, not a missing one.
+/// </summary>
 internal static class PatchAttributionGuard
 {
-    private static readonly IReadOnlyList<string> Empty = Array.Empty<string>();
-
-    internal static IReadOnlyList<string> OwnersFor(StackFrame frame)
+    internal static IReadOnlyList<string>? OwnersFor(StackFrame frame)
     {
-        Func<StackFrame, IReadOnlyList<string>>? provider = Logging.AttributionProvider;
-        if (provider == null) return Empty;
+        Func<StackFrame, IReadOnlyList<string>?>? provider = Logging.AttributionProvider;
+        if (provider == null) return Array.Empty<string>();
         try
         {
-            return provider(frame) ?? Empty;
+            return provider(frame);
         }
         catch
         {
-            return Empty;
+            return null;
         }
     }
 }

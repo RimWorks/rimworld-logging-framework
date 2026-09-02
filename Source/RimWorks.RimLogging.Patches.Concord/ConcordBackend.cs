@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 using Concord;
 using LudeonTK;
 using RimWorks.RimLogging.Hijack;
@@ -27,7 +28,69 @@ public sealed class ConcordBackend : IPatchBackend, IPatchAttributionSource
 
     // Concord has no owner accessor yet; empty until that lands upstream
     /// <inheritdoc/>
-    public IReadOnlyList<string> OwnersFor(StackFrame frame) => Array.Empty<string>();
+    private static readonly object CacheLock = new object();
+
+    private static volatile Dictionary<MethodBase, IReadOnlyList<string>> _ownerCache =
+        new Dictionary<MethodBase, IReadOnlyList<string>>();
+
+    // bound by reflection, not a compile-time call, so the Concord.Ref floor stays where it is.
+    // the runtime Concord.dll comes from the player's Concord mod and we cannot pin it, so a
+    // build that referenced OwnersOf directly would raise our floor for every Concord API we
+    // touch just to gain a diagnostic. absent method means no attribution, same as before.
+    private static readonly Func<MethodBase, IReadOnlyList<string>>? OwnersOf = BindOwnersOf();
+
+    private static Func<MethodBase, IReadOnlyList<string>>? BindOwnersOf()
+    {
+        try
+        {
+            MethodInfo? method = typeof(Patcher).GetMethod(
+                "OwnersOf",
+                BindingFlags.Public | BindingFlags.Static,
+                binder: null,
+                types: [typeof(MethodBase)],
+                modifiers: null);
+            if (method == null || !typeof(IReadOnlyList<string>).IsAssignableFrom(method.ReturnType))
+            {
+                return null;
+            }
+            return (Func<MethodBase, IReadOnlyList<string>>)Delegate.CreateDelegate(
+                typeof(Func<MethodBase, IReadOnlyList<string>>), method);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<string>? OwnersFor(StackFrame frame)
+    {
+        // no method on this Concord build means we could not ask, which is not the same as
+        // asking and being told nothing patched it
+        if (OwnersOf == null)
+        {
+            return null;
+        }
+
+        MethodBase? method = frame.GetMethod();
+        if (method == null)
+        {
+            return Array.Empty<string>();
+        }
+
+        Dictionary<MethodBase, IReadOnlyList<string>> snapshot = _ownerCache;
+        if (snapshot.TryGetValue(method, out IReadOnlyList<string>? hit))
+        {
+            return hit;
+        }
+
+        IReadOnlyList<string> owners = OwnersOf(method) ?? Array.Empty<string>();
+        lock (CacheLock)
+        {
+            _ownerCache = new Dictionary<MethodBase, IReadOnlyList<string>>(_ownerCache) { [method] = owners };
+        }
+        return owners;
+    }
 }
 
 [Patch(typeof(Verse.Log))]

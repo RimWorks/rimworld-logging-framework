@@ -63,16 +63,16 @@ public static class Bundler
         _              => level.ToString(),
     };
 
-    private static Dictionary<string, object?>? CopyContext(IReadOnlyDictionary<string, object?>? source, IReadOnlyList<string> patchedBy)
+    private static Dictionary<string, object?>? CopyContext(IReadOnlyDictionary<string, object?>? source, IReadOnlyList<string>? patchedBy)
     {
-        if (source == null && patchedBy.Count == 0) return null;
+        if (source == null && patchedBy is not { Count: > 0 }) return null;
         Dictionary<string, object?> copy = new Dictionary<string, object?>(source?.Count ?? 1);
         if (source != null)
         {
             foreach (KeyValuePair<string, object?> kv in source)
                 copy[kv.Key] = kv.Value;
         }
-        if (patchedBy.Count > 0) copy["PatchedBy"] = string.Join(",", patchedBy);
+        if (patchedBy is { Count: > 0 }) copy["PatchedBy"] = string.Join(",", patchedBy);
         return copy;
     }
 }

@@ -115,11 +115,12 @@ public static class StackWalker
 
     /// <summary>Same as <see cref="FormatTrace(System.Diagnostics.StackTrace)"/>, plus the
     /// distinct patch-owner ids found across every frame of the same walk.</summary>
-    public static string FormatTrace(System.Diagnostics.StackTrace st, out System.Collections.Generic.IReadOnlyList<string> patchedBy)
+    public static string FormatTrace(System.Diagnostics.StackTrace st, out System.Collections.Generic.IReadOnlyList<string>? patchedBy)
     {
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
         System.Collections.Generic.List<string>? owners = null;
         bool attributionEnabled = Logging.AttributionProvider != null;
+        bool attributionUnavailable = false;
         for (int i = 0; i < st.FrameCount; i++)
         {
             System.Diagnostics.StackFrame? frame = st.GetFrame(i);
@@ -129,10 +130,20 @@ public static class StackWalker
             // StackFrame, not MethodBase: Mono nulls GetMethod() on a Harmony replacement frame, and only the frame lets Harmony's native-address fallback resolve it.
             if (attributionEnabled)
             {
-                foreach (string owner in Patching.PatchAttributionGuard.OwnersFor(frame))
+                System.Collections.Generic.IReadOnlyList<string>? frameOwners =
+                    Patching.PatchAttributionGuard.OwnersFor(frame);
+                if (frameOwners == null)
                 {
-                    owners ??= new System.Collections.Generic.List<string>();
-                    if (!owners.Contains(owner)) owners.Add(owner);
+                    // flag only: this frame still belongs in the formatted trace
+                    attributionUnavailable = true;
+                }
+                else
+                {
+                    foreach (string owner in frameOwners)
+                    {
+                        owners ??= new System.Collections.Generic.List<string>();
+                        if (!owners.Contains(owner)) owners.Add(owner);
+                    }
                 }
             }
 
@@ -154,7 +165,11 @@ public static class StackWalker
             sb.Append('\n');
         }
         if (sb.Length > 0 && sb[sb.Length - 1] == '\n') sb.Length--;
-        patchedBy = (System.Collections.Generic.IReadOnlyList<string>?)owners ?? System.Array.Empty<string>();
+        // one unanswerable frame makes the entry unanswerable: claiming the owners we did find
+        // are the whole story would be a confident half-answer
+        patchedBy = attributionUnavailable
+            ? null
+            : (System.Collections.Generic.IReadOnlyList<string>?)owners ?? System.Array.Empty<string>();
         return sb.ToString();
     }
 

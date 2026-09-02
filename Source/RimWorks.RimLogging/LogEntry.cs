@@ -81,5 +81,9 @@ public sealed class LogEntry
     public int? Tick { get; init; }
 
     /// <summary>Owner ids of mods that patched a method on this trace, or empty when none did.</summary>
-    public IReadOnlyList<string> PatchedBy { get; init; } = Array.Empty<string>();
+    /// <summary>
+    /// Mods that patched a method on this entry's stack. Empty means nothing patched it;
+    /// <c>null</c> means attribution could not run, which is a different claim.
+    /// </summary>
+    public IReadOnlyList<string>? PatchedBy { get; init; } = Array.Empty<string>();
 }

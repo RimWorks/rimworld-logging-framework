@@ -444,7 +444,7 @@ public static class Log
         System.Diagnostics.StackTrace? walk = settings.ShouldCaptureStack(level, Logging.CaptureStackTraces)
             ? new System.Diagnostics.StackTrace(1, true)
             : null;
-        IReadOnlyList<string> patchedBy = Array.Empty<string>();
+        IReadOnlyList<string>? patchedBy = Array.Empty<string>();
         string? capturedTrace = walk != null ? Capture.StackWalker.FormatTrace(walk, out patchedBy) : null;
 
         SourceLocation src = ResolveSource(site.Line, site.File, site.Source, walk, out string? mod);
@@ -574,7 +574,7 @@ public static class Log
         System.Diagnostics.StackTrace? walk = (stackTrace == null && settings.ShouldCaptureStack(level, Logging.CaptureStackTraces))
             ? new System.Diagnostics.StackTrace(1, true)
             : null;
-        IReadOnlyList<string> patchedBy = Array.Empty<string>();
+        IReadOnlyList<string>? patchedBy = Array.Empty<string>();
         string? captured = stackTrace ?? (walk != null ? Capture.StackWalker.FormatTrace(walk, out patchedBy) : null);
         SourceLocation src = walk != null ? Capture.StackWalker.FirstCallerFrame(walk) : SourceLocation.Empty;
 
