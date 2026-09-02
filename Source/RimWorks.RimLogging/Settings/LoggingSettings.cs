@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using RimWorks.RimLogging;
+using RimWorks.RimLogging.Bundle;
 using Verse;
 
 namespace RimWorks.RimLogging.Settings;
@@ -31,6 +32,18 @@ public sealed class LoggingSettings : ModSettings
     /// <summary>Optional user-supplied GitHub PAT; when set, it is relayed to the bundle proxy so gists are created under the user's account. Empty means the proxy uses its own token.</summary>
     public string githubToken = LoggingSettingsDefaults.GitHubToken;
 
+    /// <summary>Which publisher the share button uses: <c>docbin</c> or <c>gist</c>.</summary>
+    public string publisher = LoggingSettingsDefaults.Publisher;
+
+    /// <summary>Base URL of the Docbin instance bundles are pasted to.</summary>
+    public string docbinUrl = LoggingSettingsDefaults.DocbinUrl;
+
+    /// <summary>Optional Docbin API key. When set, pastes are authenticated and the size ceiling rises from 1 MiB to 5 MiB.</summary>
+    public string docbinApiKey = LoggingSettingsDefaults.DocbinApiKey;
+
+    /// <summary>Visibility applied to authenticated Docbin pastes.</summary>
+    public string docbinVisibility = LoggingSettingsDefaults.DocbinVisibility;
+
     /// <summary>When <c>true</c>, the log viewer detail pane combines message and stack trace into one scroll area instead of separate panes.</summary>
     public bool logViewerCombinedDetail;
 
@@ -46,6 +59,10 @@ public sealed class LoggingSettings : ModSettings
         Scribe_Values.Look(ref proxyUrl, "proxyUrl", LoggingSettingsDefaults.ProxyUrl);
         Scribe_Values.Look(ref captureStackTraces, "captureStackTraces", LoggingSettingsDefaults.CaptureStackTraces);
         Scribe_Values.Look(ref githubToken, "githubToken", LoggingSettingsDefaults.GitHubToken);
+        Scribe_Values.Look(ref publisher, "publisher", LoggingSettingsDefaults.Publisher);
+        Scribe_Values.Look(ref docbinUrl, "docbinUrl", LoggingSettingsDefaults.DocbinUrl);
+        Scribe_Values.Look(ref docbinApiKey, "docbinApiKey", LoggingSettingsDefaults.DocbinApiKey);
+        Scribe_Values.Look(ref docbinVisibility, "docbinVisibility", LoggingSettingsDefaults.DocbinVisibility);
         Scribe_Values.Look(ref logViewerCombinedDetail, "logViewerCombinedDetail", false);
         Scribe_Values.Look(ref logViewerDetailPlacement, "logViewerDetailPlacement", Viewer.DetailPlacement.Bottom);
         Scribe_Collections.Look(ref filterPresetNames, "filterPresetNames", LookMode.Value);
@@ -57,4 +74,14 @@ public sealed class LoggingSettings : ModSettings
             if (string.IsNullOrEmpty(logDirectory)) logDirectory = LogDirectory.Default;
         }
     }
+
+    /// <summary>Copies the upload-related settings into the Verse-free shape the publishers take.</summary>
+    internal PublishOptions ToPublishOptions() => new PublishOptions {
+        Publisher = publisher,
+        DocbinUrl = docbinUrl,
+        DocbinApiKey = docbinApiKey,
+        DocbinVisibility = docbinVisibility,
+        ProxyUrl = proxyUrl,
+        GitHubToken = githubToken,
+    };
 }

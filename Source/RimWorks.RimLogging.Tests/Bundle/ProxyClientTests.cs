@@ -38,9 +38,9 @@ public class ProxyClientTests
         StubHandler h = new StubHandler { Body = "{\"url\":\"https://gist.github.com/x/abc\"}" };
         HttpClient client = new HttpClient(h);
         ProxyClient proxy = new ProxyClient("https://proxy.example/upload", client);
-        ProxyResult r = await proxy.UploadAsync(new BundlePayload());
+        PublishResult r = await proxy.UploadAsync(new BundlePayload());
         Assert.True(r.Success);
-        Assert.Equal("https://gist.github.com/x/abc", r.GistUrl);
+        Assert.Equal("https://gist.github.com/x/abc", r.Url);
         Assert.Null(r.ErrorMessage);
     }
 
@@ -50,7 +50,7 @@ public class ProxyClientTests
         StubHandler h = new StubHandler { Status = HttpStatusCode.InternalServerError, Body = "server down" };
         HttpClient client = new HttpClient(h);
         ProxyClient proxy = new ProxyClient("https://x/up", client);
-        ProxyResult r = await proxy.UploadAsync(new BundlePayload());
+        PublishResult r = await proxy.UploadAsync(new BundlePayload());
         Assert.False(r.Success);
         Assert.Contains("500", r.ErrorMessage!);
         Assert.Contains("server down", r.ErrorMessage!);
@@ -62,7 +62,7 @@ public class ProxyClientTests
         StubHandler h = new StubHandler { Body = "not json" };
         HttpClient client = new HttpClient(h);
         ProxyClient proxy = new ProxyClient("https://x/up", client);
-        ProxyResult r = await proxy.UploadAsync(new BundlePayload());
+        PublishResult r = await proxy.UploadAsync(new BundlePayload());
         Assert.False(r.Success);
         Assert.Contains("Malformed", r.ErrorMessage!);
     }
@@ -73,7 +73,7 @@ public class ProxyClientTests
         StubHandler h = new StubHandler { Body = "{\"other\":\"field\"}" };
         HttpClient client = new HttpClient(h);
         ProxyClient proxy = new ProxyClient("https://x/up", client);
-        ProxyResult r = await proxy.UploadAsync(new BundlePayload());
+        PublishResult r = await proxy.UploadAsync(new BundlePayload());
         Assert.False(r.Success);
         Assert.Contains("missing", r.ErrorMessage!, StringComparison.OrdinalIgnoreCase);
     }
@@ -84,7 +84,7 @@ public class ProxyClientTests
         StubHandler h = new StubHandler { ThrowOnSend = new HttpRequestException("DNS failure") };
         HttpClient client = new HttpClient(h);
         ProxyClient proxy = new ProxyClient("https://x/up", client);
-        ProxyResult r = await proxy.UploadAsync(new BundlePayload());
+        PublishResult r = await proxy.UploadAsync(new BundlePayload());
         Assert.False(r.Success);
         Assert.Contains("DNS failure", r.ErrorMessage!);
     }

@@ -30,8 +30,8 @@ public sealed class ProxyClient
     /// missing url and transport errors all come back as a failed result instead of throwing.
     /// </summary>
     /// <param name="payload">The bundle to upload.</param>
-    /// <returns>A <see cref="ProxyResult"/> describing success with the gist URL, or failure with an error message.</returns>
-    public async System.Threading.Tasks.Task<ProxyResult> UploadAsync(BundlePayload payload)
+    /// <returns>A <see cref="PublishResult"/> describing success with the gist URL, or failure with an error message.</returns>
+    public async System.Threading.Tasks.Task<PublishResult> UploadAsync(BundlePayload payload)
     {
         try
         {
@@ -46,27 +46,27 @@ public sealed class ProxyClient
             string body = await resp.Content.ReadAsStringAsync().ConfigureAwait(false);
             if (!resp.IsSuccessStatusCode)
             {
-                return new ProxyResult { Success = false, ErrorMessage = $"{(int)resp.StatusCode} {resp.ReasonPhrase}: {body}" };
+                return new PublishResult { Success = false, ErrorMessage = $"{(int)resp.StatusCode} {resp.ReasonPhrase}: {body}" };
             }
 
             try
             {
                 using System.Text.Json.JsonDocument doc = System.Text.Json.JsonDocument.Parse(body);
                 string gistUrl = doc.RootElement.GetProperty("url").GetString() ?? "";
-                return new ProxyResult { Success = true, GistUrl = gistUrl };
+                return new PublishResult { Success = true, Url = gistUrl };
             }
             catch (System.Text.Json.JsonException jex)
             {
-                return new ProxyResult { Success = false, ErrorMessage = $"Malformed response JSON: {jex.Message}" };
+                return new PublishResult { Success = false, ErrorMessage = $"Malformed response JSON: {jex.Message}" };
             }
             catch (System.Collections.Generic.KeyNotFoundException)
             {
-                return new ProxyResult { Success = false, ErrorMessage = "Response JSON missing 'url' field" };
+                return new PublishResult { Success = false, ErrorMessage = "Response JSON missing 'url' field" };
             }
         }
         catch (System.Exception ex)
         {
-            return new ProxyResult { Success = false, ErrorMessage = ex.Message };
+            return new PublishResult { Success = false, ErrorMessage = ex.Message };
         }
     }
 }

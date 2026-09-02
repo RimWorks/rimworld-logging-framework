@@ -18,12 +18,12 @@ internal static class LogBundleShare {
         try {
             IReadOnlyList<LogEntry> entries = sink.Snapshot();
             BundlePayload payload = BundlerSessionFactory.BuildForRunningSession(entries);
-            ProxyClient proxy = new ProxyClient(LoggingMod.Settings.proxyUrl);
-            ProxyResult result = await proxy.UploadAsync(payload).ConfigureAwait(false);
-            if (result.Success && !string.IsNullOrEmpty(result.GistUrl)) {
-                GUIUtility.systemCopyBuffer = result.GistUrl;
+            PublishResult result = await BundleUploadCoordinator
+                .Upload(payload, LoggingMod.Settings.ToPublishOptions()).ConfigureAwait(false);
+            if (result.Success && !string.IsNullOrEmpty(result.Url)) {
+                GUIUtility.systemCopyBuffer = result.Url;
                 Messages.Message(
-                    (string)"CRL_LogViewer_BundleShared".Translate(result.GistUrl!.Named("URL")),
+                    (string)"CRL_LogViewer_BundleShared".Translate(result.Url!.Named("URL")),
                     MessageTypeDefOf.PositiveEvent,
                     false
                 );

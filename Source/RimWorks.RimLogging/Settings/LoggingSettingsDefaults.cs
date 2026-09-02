@@ -1,8 +1,8 @@
 namespace RimWorks.RimLogging.Settings;
 
 /// <summary>
-/// Canonical default values for . Referenced from the field initializers, the Scribe_Values.Look defaults
-/// in , and the Reset button in LoggingSettingsWindow so the three sites cannot drift apart.
+/// Canonical default values for <see cref="LoggingSettings"/>. Referenced from the field initializers,
+/// the Scribe_Values.Look defaults, and the Reset button so the three sites cannot drift apart.
 /// </summary>
 internal static class LoggingSettingsDefaults
 {
@@ -11,4 +11,8 @@ internal static class LoggingSettingsDefaults
     internal const string ProxyUrl = "https://rimlogging-bundle.cryptiklemur.workers.dev/v1/bundle";
     internal const bool CaptureStackTraces = true;
     internal const string GitHubToken = "";
+    internal const string Publisher = "docbin";
+    internal const string DocbinUrl = "https://docbin.app";
+    internal const string DocbinApiKey = "";
+    internal const string DocbinVisibility = "unlisted";
 }

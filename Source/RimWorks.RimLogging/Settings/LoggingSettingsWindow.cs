@@ -38,6 +38,45 @@ public static class LoggingSettingsWindow
         s.retentionCount = (int)l.Slider(s.retentionCount, 1, 50);
 
         l.Gap();
+        if (l.ButtonTextLabeled("CRL_Settings_Publisher".Translate(), PublisherLabel(s)))
+        {
+            Find.WindowStack.Add(new FloatMenu(new List<FloatMenuOption>
+            {
+                new FloatMenuOption("CRL_Settings_Publisher_Docbin".Translate(), () => s.publisher = "docbin"),
+                new FloatMenuOption("CRL_Settings_Publisher_Gist".Translate(), () => s.publisher = "gist"),
+            }));
+        }
+
+        l.Gap();
+        l.Label("CRL_Settings_DocbinUrl".Translate());
+        s.docbinUrl = l.TextEntry(s.docbinUrl);
+
+        l.Gap();
+        l.Label("CRL_Settings_DocbinApiKey".Translate());
+        s.docbinApiKey = l.TextEntry(s.docbinApiKey);
+        l.Label("CRL_Settings_DocbinApiKey_Note".Translate());
+
+        l.Gap();
+        if (Bundle.DocbinVisibility.CanChoose(s.docbinApiKey))
+        {
+            if (l.ButtonTextLabeled("CRL_Settings_DocbinVisibility".Translate(), VisibilityLabel(s)))
+            {
+                Find.WindowStack.Add(new FloatMenu(new List<FloatMenuOption>
+                {
+                    new FloatMenuOption("CRL_Settings_Visibility_Unlisted".Translate(),
+                        () => s.docbinVisibility = Bundle.DocbinVisibility.Unlisted),
+                    new FloatMenuOption("CRL_Settings_Visibility_Public".Translate(),
+                        () => s.docbinVisibility = Bundle.DocbinVisibility.Public),
+                }));
+            }
+        }
+        else
+        {
+            l.Label("CRL_Settings_DocbinVisibility".Translate() + ": " + "CRL_Settings_Visibility_Public".Translate());
+            l.Label("CRL_Settings_DocbinVisibility_AnonNote".Translate());
+        }
+
+        l.Gap();
         l.Label("CRL_Settings_ProxyUrl".Translate());
         s.proxyUrl = l.TextEntry(s.proxyUrl);
 
@@ -67,17 +106,31 @@ public static class LoggingSettingsWindow
             s.proxyUrl = LoggingSettingsDefaults.ProxyUrl;
             s.captureStackTraces = LoggingSettingsDefaults.CaptureStackTraces;
             s.githubToken = LoggingSettingsDefaults.GitHubToken;
+            s.publisher = LoggingSettingsDefaults.Publisher;
+            s.docbinUrl = LoggingSettingsDefaults.DocbinUrl;
+            s.docbinApiKey = LoggingSettingsDefaults.DocbinApiKey;
+            s.docbinVisibility = LoggingSettingsDefaults.DocbinVisibility;
             s.logViewerCombinedDetail = false;
         }
 
         l.End();
     }
 
+    private static string VisibilityLabel(LoggingSettings s)
+        => (Bundle.DocbinVisibility.Effective(true, s.docbinVisibility) == Bundle.DocbinVisibility.Public
+            ? "CRL_Settings_Visibility_Public"
+            : "CRL_Settings_Visibility_Unlisted").Translate();
+
+    private static string PublisherLabel(LoggingSettings s)
+        => (Bundle.BundleUploadCoordinator.UsesGist(s.publisher)
+            ? "CRL_Settings_Publisher_Gist"
+            : "CRL_Settings_Publisher_Docbin").Translate();
+
     /// <summary>
-    /// Uploads the current log buffer through the proxy, relaying the user's PAT if set. Runs
-    /// async and marshals the resulting URL or error back to the main thread to show it.
+    /// Uploads the current log buffer through the configured publisher. Runs async and
+    /// marshals the resulting URL or error back to the main thread to show it.
     /// </summary>
-    /// <param name="s">The settings supplying the proxy URL and optional GitHub token.</param>
+    /// <param name="s">The settings supplying the publisher choice and its credentials.</param>
     private static async Task StartUpload(LoggingSettings s)
     {
         try
@@ -90,9 +143,7 @@ public static class LoggingSettingsWindow
             }
 
             BundlePayload payload = BundlerSessionFactory.BuildForRunningSession(memory.Entries);
-            string? token = string.IsNullOrWhiteSpace(s.githubToken) ? null : s.githubToken;
-            ProxyClient client = new ProxyClient(s.proxyUrl, githubToken: token);
-            ProxyResult result = await client.UploadAsync(payload);
+            PublishResult result = await BundleUploadCoordinator.Upload(payload, s.ToPublishOptions());
 
             string message = BundleUploadCoordinator.DescribeResult(result);
             MessageTypeDef type = result.Success ? MessageTypeDefOf.PositiveEvent : MessageTypeDefOf.NegativeEvent;

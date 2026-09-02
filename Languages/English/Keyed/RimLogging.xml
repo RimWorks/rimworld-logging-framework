@@ -3,6 +3,16 @@
     <CRL_Settings_GlobalMinLevel>Global minimum log level</CRL_Settings_GlobalMinLevel>
     <CRL_Settings_LogDir>Log directory</CRL_Settings_LogDir>
     <CRL_Settings_Retention>Retained log files</CRL_Settings_Retention>
+    <CRL_Settings_Publisher>Share bundles to</CRL_Settings_Publisher>
+    <CRL_Settings_Publisher_Docbin>Docbin</CRL_Settings_Publisher_Docbin>
+    <CRL_Settings_Publisher_Gist>GitHub gist</CRL_Settings_Publisher_Gist>
+    <CRL_Settings_DocbinUrl>Docbin URL</CRL_Settings_DocbinUrl>
+    <CRL_Settings_DocbinApiKey>Docbin API key (optional)</CRL_Settings_DocbinApiKey>
+    <CRL_Settings_DocbinApiKey_Note>Stored in plain text in this mod's settings. Without a key, bundles are pasted anonymously and capped at 1 MB. With one, the cap rises to 5 MB and the paste is named and kept under your account.</CRL_Settings_DocbinApiKey_Note>
+    <CRL_Settings_DocbinVisibility>Docbin visibility</CRL_Settings_DocbinVisibility>
+    <CRL_Settings_DocbinVisibility_AnonNote>Anonymous pastes are public and kept for a year, though they do not appear in Docbin's search. Add an API key above to keep them unlisted.</CRL_Settings_DocbinVisibility_AnonNote>
+    <CRL_Settings_Visibility_Public>Public</CRL_Settings_Visibility_Public>
+    <CRL_Settings_Visibility_Unlisted>Unlisted</CRL_Settings_Visibility_Unlisted>
     <CRL_Settings_ProxyUrl>Bundle upload proxy URL</CRL_Settings_ProxyUrl>
     <CRL_Settings_CaptureStackTraces>Capture stack traces for every entry</CRL_Settings_CaptureStackTraces>
     <CRL_Settings_LogViewerCombinedDetail>Combine message and stack trace in the log viewer</CRL_Settings_LogViewerCombinedDetail>

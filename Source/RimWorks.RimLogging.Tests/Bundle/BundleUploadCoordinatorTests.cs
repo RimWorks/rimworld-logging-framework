@@ -35,7 +35,7 @@ public class BundleUploadCoordinatorTests
     public void DescribeResult_Success_IncludesGistUrl()
     {
         string message = BundleUploadCoordinator.DescribeResult(
-            new ProxyResult { Success = true, GistUrl = "https://gist.github.com/u/abc" });
+            new PublishResult { Success = true, Url = "https://gist.github.com/u/abc" });
 
         Assert.Contains("https://gist.github.com/u/abc", message);
     }
@@ -44,7 +44,7 @@ public class BundleUploadCoordinatorTests
     public void DescribeResult_Failure_IncludesErrorMessage()
     {
         string message = BundleUploadCoordinator.DescribeResult(
-            new ProxyResult { Success = false, ErrorMessage = "429 rate limited" });
+            new PublishResult { Success = false, ErrorMessage = "429 rate limited" });
 
         Assert.Contains("429 rate limited", message);
     }
@@ -56,5 +56,23 @@ public class BundleUploadCoordinatorTests
         public void Write(LogEntry entry) { }
         public void Flush() { }
         public void Dispose() { }
+    }
+
+    [Theory]
+    [InlineData("gist")]
+    [InlineData("GIST")]
+    public void UsesGist_GistIdsSelectTheGistPath(string publisher)
+    {
+        Assert.True(BundleUploadCoordinator.UsesGist(publisher));
+    }
+
+    [Theory]
+    [InlineData("docbin")]
+    [InlineData("")]
+    [InlineData(null)]
+    [InlineData("something else")]
+    public void UsesGist_EverythingElseFallsBackToDocbin(string? publisher)
+    {
+        Assert.False(BundleUploadCoordinator.UsesGist(publisher));
     }
 }
