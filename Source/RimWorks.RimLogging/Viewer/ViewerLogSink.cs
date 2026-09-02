@@ -9,8 +9,11 @@ public sealed class ViewerLogSink : ILogSink {
     private readonly object syncRoot = new object();
     private readonly LogEntry[] ring = new LogEntry[20000];
     private readonly Dictionary<string, ChannelTally> tallies = new Dictionary<string, ChannelTally>(StringComparer.Ordinal);
+    private readonly int[] levelCounts = new int[LevelSlotCount];
     private int writeIndex;
     private int count;
+
+    private const int LevelSlotCount = 6;
 
     /// <summary>Raised after each entry lands in the buffer.</summary>
     public event Action<LogEntry>? EntryAdded;
@@ -27,6 +30,13 @@ public sealed class ViewerLogSink : ILogSink {
     internal IReadOnlyDictionary<string, ChannelTally> ChannelTallies() {
         lock (syncRoot) {
             return new Dictionary<string, ChannelTally>(tallies, StringComparer.Ordinal);
+        }
+    }
+
+    /// <summary>Per-level row counts, kept alongside the channel tallies so the toolbar pills never rescan.</summary>
+    internal LevelCounts LevelTallies() {
+        lock (syncRoot) {
+            return LevelCounts.FromCounts(levelCounts);
         }
     }
 
@@ -52,6 +62,7 @@ public sealed class ViewerLogSink : ILogSink {
         lock (syncRoot) {
             Array.Clear(ring, 0, ring.Length);
             tallies.Clear();
+            Array.Clear(levelCounts, 0, levelCounts.Length);
             writeIndex = 0;
             count = 0;
             Revision++;
@@ -97,6 +108,7 @@ public sealed class ViewerLogSink : ILogSink {
             tally.ErrorCount++;
         }
         tallies[key] = tally;
+        levelCounts[(int)entry.Level]++;
     }
 
     private void Untally(LogEntry entry) {
@@ -114,6 +126,7 @@ public sealed class ViewerLogSink : ILogSink {
         else {
             tallies[key] = tally;
         }
+        levelCounts[(int)entry.Level]--;
     }
 
     private static LogEntry Repeated(LogEntry previous) {

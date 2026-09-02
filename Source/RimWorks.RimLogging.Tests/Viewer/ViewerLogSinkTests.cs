@@ -239,4 +239,72 @@ public class ViewerLogSinkTests
 
         Assert.Empty(sink.ChannelTallies());
     }
+
+    [Fact]
+    public void LevelTallies_CountRowsPerLevel()
+    {
+        ViewerLogSink sink = new ViewerLogSink();
+        sink.Write(Entry(LogLevel.Info, "a"));
+        sink.Write(Entry(LogLevel.Info, "b"));
+        sink.Write(Entry(LogLevel.Warn, "c"));
+
+        LevelCounts counts = sink.LevelTallies();
+
+        Assert.Equal(2, counts.For(LogLevel.Info));
+        Assert.Equal(1, counts.For(LogLevel.Warn));
+        Assert.Equal(0, counts.For(LogLevel.Debug));
+    }
+
+    [Fact]
+    public void LevelTallies_ErrorFoldsInFatal()
+    {
+        // the Error pill's toggle also flips Fatal, so its count has to include Fatal rows
+        ViewerLogSink sink = new ViewerLogSink();
+        sink.Write(Entry(LogLevel.Error, "a"));
+        sink.Write(Entry(LogLevel.Fatal, "b"));
+
+        Assert.Equal(2, sink.LevelTallies().For(LogLevel.Error));
+    }
+
+    [Fact]
+    public void LevelTallies_MatchABruteForceScanOfTheSnapshot()
+    {
+        // risk mitigation from the toolbar spec: the incremental tally must not drift from a rescan
+        ViewerLogSink sink = new ViewerLogSink();
+        sink.Write(Entry(LogLevel.Trace, "a"));
+        sink.Write(Entry(LogLevel.Warn, "b"));
+        sink.Write(Entry(LogLevel.Error, "c"));
+        sink.Write(Entry(LogLevel.Fatal, "d"));
+        sink.Write(Entry(LogLevel.Warn, "e"));
+
+        LevelCounts incremental = sink.LevelTallies();
+        LevelCounts rescanned = LevelCounts.FromSnapshot(sink.Snapshot());
+
+        foreach (LogLevel level in new[] { LogLevel.Trace, LogLevel.Debug, LogLevel.Info, LogLevel.Warn, LogLevel.Error, LogLevel.Fatal })
+        {
+            Assert.Equal(rescanned.For(level), incremental.For(level));
+        }
+    }
+
+    [Fact]
+    public void LevelTallies_EvictedEntriesAreSubtracted()
+    {
+        ViewerLogSink sink = new ViewerLogSink();
+        for (int i = 0; i < RingCapacity + 50; i++)
+        {
+            sink.Write(Entry(LogLevel.Info, i.ToString()));
+        }
+
+        Assert.Equal(RingCapacity, sink.LevelTallies().For(LogLevel.Info));
+    }
+
+    [Fact]
+    public void LevelTallies_ClearEmptiesThem()
+    {
+        ViewerLogSink sink = new ViewerLogSink();
+        sink.Write(Entry(LogLevel.Error, "x"));
+        sink.Clear();
+
+        Assert.Equal(0, sink.LevelTallies().For(LogLevel.Error));
+    }
 }

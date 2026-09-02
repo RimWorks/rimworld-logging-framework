@@ -23,22 +23,18 @@
     <CRL_Settings_Reset>Reset to defaults</CRL_Settings_Reset>
     <CRL_LogViewer_Title>Log Viewer</CRL_LogViewer_Title>
     <CRL_LogViewer_Tailing>TAILING</CRL_LogViewer_Tailing>
-    <CRL_LogViewer_Presets>Presets</CRL_LogViewer_Presets>
     <CRL_LogViewer_PresetName>Preset {INDEX}</CRL_LogViewer_PresetName>
     <CRL_LogViewer_HideChannels>Hide channels</CRL_LogViewer_HideChannels>
     <CRL_LogViewer_ShowChannels>Show channels</CRL_LogViewer_ShowChannels>
-    <CRL_LogViewer_ShareBundle>Share</CRL_LogViewer_ShareBundle>
     <CRL_Dev_SeedingOn>Log seeding on.</CRL_Dev_SeedingOn>
     <CRL_Dev_SeedingOff>Log seeding off.</CRL_Dev_SeedingOff>
     <CRL_LogViewer_NextError>Next error</CRL_LogViewer_NextError>
     <CRL_LogViewer_NoErrors>No errors in the current filter.</CRL_LogViewer_NoErrors>
-    <CRL_LogViewer_Presets>Presets</CRL_LogViewer_Presets>
     <CRL_LogViewer_PresetSave>Save current filter...</CRL_LogViewer_PresetSave>
     <CRL_LogViewer_PresetDelete>Delete "{NAME}"</CRL_LogViewer_PresetDelete>
     <CRL_LogViewer_PresetNoFilter>Type a filter first, then save it as a preset.</CRL_LogViewer_PresetNoFilter>
     <CRL_LogViewer_PresetNamePrompt>Name this filter preset</CRL_LogViewer_PresetNamePrompt>
     <CRL_LogViewer_PresetNameEmpty>Give the preset a name.</CRL_LogViewer_PresetNameEmpty>
-    <CRL_LogViewer_OpenVanilla>Open vanilla log (Shift+`)</CRL_LogViewer_OpenVanilla>
     <CRL_LogViewer_Detail_CopyAll>Copy all</CRL_LogViewer_Detail_CopyAll>
     <CRL_LogViewer_Menu_CopyFullDetail>Copy full detail</CRL_LogViewer_Menu_CopyFullDetail>
     <CRL_LogViewer_Menu_CopyMessage>Copy message</CRL_LogViewer_Menu_CopyMessage>
@@ -75,9 +71,18 @@
     <CRL_LogViewer_Deselect>Deselect</CRL_LogViewer_Deselect>
     <CRL_LogViewer_Copy>Copy</CRL_LogViewer_Copy>
     <CRL_LogViewer_BundleShared>Bug bundle shared. URL copied to clipboard: {URL}</CRL_LogViewer_BundleShared>
-    <CRL_LogViewer_Clear>Clear</CRL_LogViewer_Clear>
     <CRL_LogViewer_Detail_Bottom>Detail: bottom</CRL_LogViewer_Detail_Bottom>
     <CRL_LogViewer_Detail_Right>Detail: right</CRL_LogViewer_Detail_Right>
     <CRL_LogViewer_Detail_Popout>Detail: popout</CRL_LogViewer_Detail_Popout>
     <CRL_LogViewer_DetailWindowTitle>Log Entry Detail</CRL_LogViewer_DetailWindowTitle>
+    <CRL_Tip_Clear>Clear the log</CRL_Tip_Clear>
+    <CRL_Tip_Copy>Copy visible entries</CRL_Tip_Copy>
+    <CRL_Tip_Share>Share as a bug bundle</CRL_Tip_Share>
+    <CRL_Tip_Filter>Filter by level, channel, text or mod. Example: level &gt;= Warn AND mod = "Harmony"</CRL_Tip_Filter>
+    <CRL_Tip_Presets>Saved filters</CRL_Tip_Presets>
+    <CRL_Tip_Level>{LEVEL}: {COUNT} entries. Click to {ACTION}</CRL_Tip_Level>
+    <CRL_Tip_NextError>Jump to next error</CRL_Tip_NextError>
+    <CRL_Tip_VanillaLog>Open the vanilla log (Shift+`)</CRL_Tip_VanillaLog>
+    <CRL_Tip_More>More: channels, detail pane, auto-open</CRL_Tip_More>
+    <CRL_Tip_Tailing>Following new entries. Scroll up to stop</CRL_Tip_Tailing>
 </LanguageData>

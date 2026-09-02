@@ -23,6 +23,43 @@ internal sealed class LogViewerWindow : EditWindow {
     private const float CountColumnWidth = 46f;
     private const float TimestampWidth = 74f;
     private const float ChannelColumnWidth = 156f;
+    private const float ButtonSize = 24f;
+    private const float ButtonGap = 4f;
+    private const float GroupGap = 8f;
+    private const float PillMinWidth = 26f;
+    private const float PillPadding = 12f;
+
+    private const float TailingDotSize = 6f;
+    private const float TailingDotGap = 6f;
+
+    // the badge reports state rather than doing anything, so it wants more air than the
+    // gap between two buttons or it reads as another control in the run
+    private const float TailingLeadGap = 20f;
+
+    // measured, not fixed: a hardcoded reserve wider than the badge leaves dead space to its
+    // right and the whole trailing cluster stops looking anchored
+    private static float TailingWidth =>
+        TailingLeadGap + TailingDotSize + TailingDotGap + Text.CalcSize("CRL_LogViewer_Tailing".Translate()).x;
+
+    // one constant for both the draw and the width accounting, so the two cannot drift apart
+    private const float GroupDividerWidth = (2f * GroupGap) + 1f;
+
+    // 16px glyph centred in a 24px face, matching the vanilla icon buttons
+    private const float IconInset = 4f;
+
+    // #414141, the face colour sampled from the vanilla dev toolbar
+    private float pillsTotalWidth;
+
+    private static readonly Color ButtonFace = new Color(0.255f, 0.255f, 0.255f);
+    private static readonly Color TailingGreen = new Color(0.44f, 0.75f, 0.54f);
+
+    private const float FilterGroupFixed = (2f * GroupGap) + ButtonSize + ButtonGap;
+
+    private static readonly Color GroupDivider = new Color(0.29f, 0.31f, 0.32f);
+    private static readonly Color SegmentDivider = new Color(0.16f, 0.17f, 0.18f);
+
+    private static Texture2D? nextErrorTexture;
+    private static Texture2D NextErrorTexture => nextErrorTexture ??= ContentFinder<Texture2D>.Get("UI/Buttons/RimLogging/NextError");
 
     private static readonly LogLevel[] ToggleLevels = {
         LogLevel.Trace, LogLevel.Debug, LogLevel.Info, LogLevel.Warn, LogLevel.Error,
@@ -78,6 +115,11 @@ internal sealed class LogViewerWindow : EditWindow {
     private string cachedSignature = string.Empty;
     private List<LogEntry> filtered = new List<LogEntry>();
     private List<LogChannel> channels = new List<LogChannel>();
+    private LevelCounts levelCounts;
+
+    private ToolbarPlan toolbarPlan = new ToolbarPlan(false, false, ToolbarLayout.FilterFloor);
+    private readonly string[] pillLabels = new string[ToggleLevels.Length];
+    private readonly float[] pillWidths = new float[ToggleLevels.Length];
 
     public LogViewerWindow(ViewerLogSink sink, bool selectNewest = false) {
         this.sink = sink;
@@ -121,7 +163,7 @@ internal sealed class LogViewerWindow : EditWindow {
         Text.Font = GameFont.Small;
 
         Rect body = inRect;
-        body.yMin += ToolbarHeight;
+        body.yMin += toolbarPlan.TwoRows ? ToolbarHeight * 2f : ToolbarHeight;
 
 
         if (state.ChannelsOpen) {
@@ -140,36 +182,117 @@ internal sealed class LogViewerWindow : EditWindow {
 
 
     private void DrawToolbar(Rect inRect) {
+        if (Event.current.type == EventType.Layout) {
+            BuildToolbarLayout(inRect.width - TailingWidth);
+        }
+
         float x = inRect.x;
         float y = inRect.y;
 
-        DoRowButton(ref x, y, "CRL_LogViewer_Clear".Translate(), null, ClearEntries);
-        DoRowButton(ref x, y, "CRL_LogViewer_Copy".Translate(), null, CopyVisibleToClipboard);
+        DoIconButton(ref x, y, TexButton.Delete, "CRL_Tip_Clear".Translate(), ClearEntries);
+        DoIconButton(ref x, y, TexButton.Copy, "CRL_Tip_Copy".Translate(), CopyVisibleToClipboard);
         DoShareButton(ref x, y);
-        DoRowButton(
-            ref x,
-            y,
-            state.ChannelsOpen ? "CRL_LogViewer_HideChannels".Translate() : "CRL_LogViewer_ShowChannels".Translate(),
-            null,
-            () => state.ChannelsOpen = !state.ChannelsOpen);
-        DoRowButton(ref x, y, PlacementLabel(), null, CyclePlacement);
-        DoRowButton(
-            ref x,
-            y,
-            LogViewerBoot.AutoOpen ? "CRL_LogViewer_AutoOpenOn".Translate() : "CRL_LogViewer_AutoOpenOff".Translate(),
-            null,
-            () => LogViewerBoot.AutoOpen = !LogViewerBoot.AutoOpen);
-        DoRowButton(ref x, y, "CRL_LogViewer_NextError".Translate(), null, JumpToNextError);
-        DoRowButton(ref x, y, "CRL_LogViewer_Presets".Translate(), null, OpenPresetMenu);
-        DoRowButton(ref x, y, "CRL_LogViewer_OpenVanilla".Translate(), null, LogViewerBoot.OpenVanilla);
+        DoGroupDivider(ref x, y);
 
+        // the trailing cluster is anchored to the right edge and the filter field takes whatever
+        // is left, so measurement drift lands in the elastic gap instead of pushing icons off
+        float rightX = inRect.xMax - TailingWidth - RightClusterWidth();
+
+        if (!toolbarPlan.TwoRows) {
+            DrawFilterGroup(ref x, y, Mathf.Max(ToolbarLayout.FilterFloor, rightX - x - FilterGroupFixed));
+        }
+
+        x = rightX;
+        DoGroupDivider(ref x, y);
         for (int i = 0; i < ToggleLevels.Length; i++) {
             DoLevelToggle(ref x, y, i);
+        }
+        DoGroupDivider(ref x, y);
+
+        if (!toolbarPlan.CompactLevels) {
+            DoIconButton(ref x, y, NextErrorTexture, "CRL_Tip_NextError".Translate(), JumpToNextError);
+        }
+        DoIconButton(ref x, y, TexButton.ToggleLog, "CRL_Tip_VanillaLog".Translate(), LogViewerBoot.OpenVanilla);
+        DoIconButton(ref x, y, TexButton.OpenDebugActionsMenu, "CRL_Tip_More".Translate(), OpenMoreMenu);
+
+        if (toolbarPlan.TwoRows) {
+            float rowTwoX = inRect.x;
+            float rowTwoY = y + ToolbarHeight;
+            DrawFilterGroup(ref rowTwoX, rowTwoY, toolbarPlan.FilterFieldWidth);
         }
 
         if (tailing.Following) {
             DrawTailingBadge(inRect);
         }
+    }
+
+    /// <summary>Row-one width with counted pills, since that is what decides whether the field
+    /// and Presets fit on row one at all.</summary>
+    private void BuildToolbarLayout(float availableWidth) {
+        float pillsWidth = ComputePillWidths(compact: false);
+        float rowOneFixed = (6 * (ButtonSize + ButtonGap)) + (3 * GroupDividerWidth) + pillsWidth;
+        // filter group is: gap + presets button (with its own trailing gap) + gap, all baked into DrawFilterGroup.
+        float filterGroupWidth = FilterGroupFixed;
+        toolbarPlan = ToolbarLayout.Compute(availableWidth, rowOneFixed, filterGroupWidth);
+        pillsTotalWidth = toolbarPlan.CompactLevels ? ComputePillWidths(compact: true) : pillsWidth;
+    }
+
+    private float ComputePillWidths(bool compact) {
+        float total = 0f;
+        for (int i = 0; i < ToggleLevels.Length; i++) {
+            string name = (string)ToggleLevelKeys[i].Translate();
+            if (compact) {
+                pillLabels[i] = name.Substring(0, 1).ToUpperInvariant();
+                pillWidths[i] = PillMinWidth;
+            }
+            else {
+                string label = name + " " + levelCounts.For(ToggleLevels[i]);
+                pillLabels[i] = label;
+                pillWidths[i] = Mathf.Max(PillMinWidth, Text.CalcSize(label).x + (2f * PillPadding));
+            }
+            total += pillWidths[i];
+        }
+        return total;
+    }
+
+    private void DrawFilterGroup(ref float x, float y, float width) {
+        Rect fieldRect = new Rect(x, y, width, ButtonSize);
+        Rect textRect = fieldRect;
+        textRect.xMin += 16f;
+        string nextDsl = dslField.Draw(
+            textRect,
+            state.DslSource,
+            "CRL_LogViewer_DslPlaceholder",
+            FilterSuggest.For(state.DslSource, channelNames));
+        if (nextDsl != state.DslSource) {
+            state.DslSource = nextDsl;
+            state.DslError = ParseError(nextDsl);
+            InvalidateCache();
+        }
+
+        Rect searchIconRect = new Rect(fieldRect.x + 2f, fieldRect.y + (fieldRect.height - 13f) / 2f, 13f, 13f);
+        GUI.DrawTexture(searchIconRect, TexButton.Search);
+        TooltipHandler.TipRegion(fieldRect, "CRL_Tip_Filter".Translate());
+
+        x += width + GroupGap;
+        DoIconButton(ref x, y, TexButton.NewFile, "CRL_Tip_Presets".Translate(), OpenPresetMenu);
+        x += GroupGap;
+    }
+
+    private void OpenMoreMenu() {
+        List<FloatMenuOption> options = new List<FloatMenuOption> {
+            new FloatMenuOption(
+                state.ChannelsOpen ? "CRL_LogViewer_HideChannels".Translate() : "CRL_LogViewer_ShowChannels".Translate(),
+                () => state.ChannelsOpen = !state.ChannelsOpen),
+            new FloatMenuOption(PlacementLabel(), CyclePlacement),
+            new FloatMenuOption(
+                LogViewerBoot.AutoOpen ? "CRL_LogViewer_AutoOpenOn".Translate() : "CRL_LogViewer_AutoOpenOff".Translate(),
+                () => LogViewerBoot.AutoOpen = !LogViewerBoot.AutoOpen),
+        };
+        if (toolbarPlan.CompactLevels) {
+            options.Add(new FloatMenuOption("CRL_LogViewer_NextError".Translate(), JumpToNextError));
+        }
+        Find.WindowStack.Add(new FloatMenu(options));
     }
 
     private void JumpToNextError() {
@@ -226,13 +349,14 @@ internal sealed class LogViewerWindow : EditWindow {
     }
 
     private void DoShareButton(ref float x, float y) {
-        // read once, and keep the label fixed: the upload clears this from a background thread,
-        // and a label that changed mid-frame would drift the control ids DoRowButton allocates
         bool busy = state.Uploading;
-        string label = "CRL_LogViewer_ShareBundle".Translate();
-        Rect rect = new Rect(x, y, Text.CalcSize(label).x + 10f, 24f);
+        Rect rect = new Rect(x, y, ButtonSize, ButtonSize);
+        if (DrawIconFace(rect, TexButton.Save) && !busy) {
+            StartShare();
+        }
+        TooltipHandler.TipRegion(rect, "CRL_Tip_Share".Translate());
+        x += ButtonSize + ButtonGap;
 
-        DoRowButton(ref x, y, label, null, busy ? IgnoreShare : StartShare);
         if (!busy) {
             return;
         }
@@ -246,36 +370,78 @@ internal sealed class LogViewerWindow : EditWindow {
 
     private void StartShare() => _ = LogBundleShare.Upload(sink, state, static () => { });
 
-    private static void IgnoreShare() { }
+    private static void DoIconButton(ref float x, float y, Texture2D texture, string tooltip, Action action) {
+        Rect rect = new Rect(x, y, ButtonSize, ButtonSize);
+        if (DrawIconFace(rect, texture)) {
+            action();
+        }
+        TooltipHandler.TipRegion(rect, tooltip);
+        x += ButtonSize + ButtonGap;
+    }
+
+    /// <summary>
+    /// Draws an icon on a button face. DevGUI.ButtonImage draws the texture alone, so an icon
+    /// used bare floats on the bar with no button under it.
+    /// </summary>
+    private static bool DrawIconFace(Rect rect, Texture2D texture) {
+        Widgets.DrawBoxSolid(rect, ButtonFace);
+        Widgets.DrawHighlightIfMouseover(rect);
+        GUI.DrawTexture(new Rect(rect.x + IconInset, rect.y + IconInset,
+            rect.width - (2f * IconInset), rect.height - (2f * IconInset)), texture);
+        return Widgets.ButtonInvisible(rect);
+    }
+
+    /// <summary>Width of the right-anchored cluster: the level pills and the buttons after them.</summary>
+    private float RightClusterWidth() {
+        float icons = toolbarPlan.CompactLevels ? 2 : 3;
+        return (2f * GroupDividerWidth) + pillsTotalWidth + (icons * (ButtonSize + ButtonGap));
+    }
+
+    private static void DoGroupDivider(ref float x, float y) {
+        Widgets.DrawBoxSolid(new Rect(x + GroupGap, y + 3f, 1f, ButtonSize - 6f), GroupDivider);
+        x += GroupDividerWidth;
+    }
 
     private void DoLevelToggle(ref float x, float y, int index) {
         LogLevel level = ToggleLevels[index];
         int slot = (int)level;
         bool on = state.Levels[slot];
-        string label = ((string)ToggleLevelKeys[index].Translate()).Substring(0, 1).ToUpperInvariant();
+        float width = pillWidths[index];
 
-        Rect rect = new Rect(x, y, 26f, 24f);
-        GUI.color = on ? LevelColors.For(level) : new Color(0.42f, 0.43f, 0.44f);
-        if (DevGUI.ButtonText(rect, label)) {
+        Rect rect = new Rect(x, y, width, ButtonSize);
+        GUI.color = on ? LevelColors.For(level) : new Color(0.30f, 0.31f, 0.32f);
+        if (DevGUI.ButtonText(rect, pillLabels[index])) {
             state.Levels[slot] = !on;
             if (level == LogLevel.Error) {
                 state.Levels[(int)LogLevel.Fatal] = !on;
             }
         }
-
         GUI.color = Color.white;
-        TooltipHandler.TipRegion(rect, ToggleLevelKeys[index].Translate());
-        x += 30f;
+
+        string action = on ? "hide" : "show";
+        TooltipHandler.TipRegion(rect, "CRL_Tip_Level".Translate(
+            ToggleLevelKeys[index].Translate().Named("LEVEL"),
+            levelCounts.For(level).ToString().Named("COUNT"),
+            action.Named("ACTION")));
+
+        // segments butt together and are split by a hairline, so the row reads as one control
+        if (index < ToggleLevels.Length - 1) {
+            Widgets.DrawBoxSolid(new Rect(rect.xMax - 1f, y + 2f, 1f, ButtonSize - 4f), SegmentDivider);
+        }
+        x += width;
     }
 
     private static void DrawTailingBadge(Rect inRect) {
-        Rect rect = new Rect(inRect.xMax - 110f, inRect.y, 110f, 24f);
-        Rect dot = new Rect(rect.x, rect.y + 9f, 6f, 6f);
-        Widgets.DrawBoxSolid(dot, new Color(0.44f, 0.75f, 0.54f));
+        float width = TailingWidth;
+        Rect rect = new Rect(inRect.xMax - width, inRect.y, width, ButtonSize);
+        Rect dot = new Rect(rect.x + TailingLeadGap, rect.y + 9f, TailingDotSize, TailingDotSize);
+        Widgets.DrawBoxSolid(dot, TailingGreen);
 
-        GUI.color = new Color(0.44f, 0.75f, 0.54f);
-        Widgets.Label(new Rect(dot.xMax + 6f, rect.y + 2f, rect.width - 12f, 22f), "CRL_LogViewer_Tailing".Translate());
+        GUI.color = TailingGreen;
+        Widgets.Label(new Rect(dot.xMax + TailingDotGap, rect.y + 2f, rect.width, 22f),
+            "CRL_LogViewer_Tailing".Translate());
         GUI.color = Color.white;
+        TooltipHandler.TipRegion(rect, "CRL_Tip_Tailing".Translate());
     }
 
     private static string PlacementLabel() {
@@ -407,7 +573,7 @@ internal sealed class LogViewerWindow : EditWindow {
                 break;
         }
 
-        DrawFilterStrip(ref listArea);
+        DrawFilterError(ref listArea);
         DrawList(listArea);
 
         if (Placement != DetailPlacement.Popout) {
@@ -415,33 +581,17 @@ internal sealed class LogViewerWindow : EditWindow {
         }
     }
 
-    private void DrawFilterStrip(ref Rect area) {
-        Rect strip = new Rect(area.x + 2f, area.y + 2f, area.width - 4f, FilterStripHeight);
-
-        Rect dslBox = strip;
-        string nextDsl = dslField.Draw(
-            dslBox,
-            state.DslSource,
-            "CRL_LogViewer_DslPlaceholder",
-            FilterSuggest.For(state.DslSource, channelNames));
-        if (nextDsl != state.DslSource) {
-            state.DslSource = nextDsl;
-            state.DslError = ParseError(nextDsl);
-            InvalidateCache();
-        }
-
-        area.yMin = strip.yMax + 2f;
-
+    private void DrawFilterError(ref Rect area) {
         if (string.IsNullOrEmpty(state.DslError)) {
             return;
         }
 
         Text.Font = GameFont.Tiny;
         GUI.color = LevelColors.For(LogLevel.Error);
-        Widgets.Label(new Rect(area.x + 2f, area.y, area.width - 4f, ErrorStripHeight), state.DslError);
+        Widgets.Label(new Rect(area.x + 2f, area.y + 2f, area.width - 4f, ErrorStripHeight), state.DslError);
         GUI.color = Color.white;
         Text.Font = GameFont.Small;
-        area.yMin += ErrorStripHeight;
+        area.yMin += ErrorStripHeight + 2f;
     }
 
     private static string? ParseError(string source) {
@@ -657,6 +807,7 @@ internal sealed class LogViewerWindow : EditWindow {
             "CRL_LogViewer_Group_Mod".Translate(),
             "CRL_LogViewer_Group_Vanilla".Translate()));
         channelNames = SortedChannelNames(tallies);
+        levelCounts = sink.LevelTallies();
         cachedRevision = sink.Revision;
         cachedSignature = signature;
 
