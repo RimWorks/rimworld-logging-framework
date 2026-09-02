@@ -33,45 +33,9 @@ public sealed class ConcordBackend : IPatchBackend, IPatchAttributionSource
     private static volatile Dictionary<MethodBase, IReadOnlyList<string>> _ownerCache =
         new Dictionary<MethodBase, IReadOnlyList<string>>();
 
-    // bound by reflection, not a compile-time call, so the Concord.Ref floor stays where it is.
-    // the runtime Concord.dll comes from the player's Concord mod and we cannot pin it, so a
-    // build that referenced OwnersOf directly would raise our floor for every Concord API we
-    // touch just to gain a diagnostic. absent method means no attribution, same as before.
-    private static readonly Func<MethodBase, IReadOnlyList<string>>? OwnersOf = BindOwnersOf();
-
-    private static Func<MethodBase, IReadOnlyList<string>>? BindOwnersOf()
-    {
-        try
-        {
-            MethodInfo? method = typeof(Patcher).GetMethod(
-                "OwnersOf",
-                BindingFlags.Public | BindingFlags.Static,
-                binder: null,
-                types: [typeof(MethodBase)],
-                modifiers: null);
-            if (method == null || !typeof(IReadOnlyList<string>).IsAssignableFrom(method.ReturnType))
-            {
-                return null;
-            }
-            return (Func<MethodBase, IReadOnlyList<string>>)Delegate.CreateDelegate(
-                typeof(Func<MethodBase, IReadOnlyList<string>>), method);
-        }
-        catch (Exception)
-        {
-            return null;
-        }
-    }
-
     /// <inheritdoc/>
     public IReadOnlyList<string>? OwnersFor(StackFrame frame)
     {
-        // no method on this Concord build means we could not ask, which is not the same as
-        // asking and being told nothing patched it
-        if (OwnersOf == null)
-        {
-            return null;
-        }
-
         MethodBase? method = frame.GetMethod();
         if (method == null)
         {
@@ -84,7 +48,7 @@ public sealed class ConcordBackend : IPatchBackend, IPatchAttributionSource
             return hit;
         }
 
-        IReadOnlyList<string> owners = OwnersOf(method) ?? Array.Empty<string>();
+        IReadOnlyList<string> owners = Patcher.OwnersOf(method) ?? Array.Empty<string>();
         lock (CacheLock)
         {
             _ownerCache = new Dictionary<MethodBase, IReadOnlyList<string>>(_ownerCache) { [method] = owners };
