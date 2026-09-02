@@ -38,6 +38,8 @@ internal sealed class LogViewerWindow : EditWindow {
 
     private Vector2 channelScroll;
     private Vector2 listScroll;
+    private float lastListHeight = 1f;
+    private float? pendingScroll;
     private Vector2 detailScroll;
 
     private float channelPaneWidth = 220f;
@@ -157,6 +159,8 @@ internal sealed class LogViewerWindow : EditWindow {
             LogViewerBoot.AutoOpen ? "CRL_LogViewer_AutoOpenOn".Translate() : "CRL_LogViewer_AutoOpenOff".Translate(),
             null,
             () => LogViewerBoot.AutoOpen = !LogViewerBoot.AutoOpen);
+        DoRowButton(ref x, y, "CRL_LogViewer_NextError".Translate(), null, JumpToNextError);
+        DoRowButton(ref x, y, "CRL_LogViewer_Presets".Translate(), null, OpenPresetMenu);
         DoRowButton(ref x, y, "CRL_LogViewer_OpenVanilla".Translate(), null, LogViewerBoot.OpenVanilla);
 
         for (int i = 0; i < ToggleLevels.Length; i++) {
@@ -166,6 +170,59 @@ internal sealed class LogViewerWindow : EditWindow {
         if (tailing.Following) {
             DrawTailingBadge(inRect);
         }
+    }
+
+    private void JumpToNextError() {
+        int from = state.Selected == null ? -1 : filtered.IndexOf(state.Selected);
+        int next = ErrorJump.Next(filtered, from, LogLevel.Error);
+        if (next < 0) {
+            Messages.Message("CRL_LogViewer_NoErrors".Translate(), MessageTypeDefOf.RejectInput, false);
+            return;
+        }
+        state.Selected = filtered[next];
+        pendingScroll = ErrorJump.ScrollTo(next, RowHeight, lastListHeight, filtered.Count);
+    }
+
+    private void OpenPresetMenu() {
+        LoggingSettings settings = LoggingMod.Settings;
+        List<FloatMenuOption> options = new List<FloatMenuOption> {
+            new FloatMenuOption("CRL_LogViewer_PresetSave".Translate(), PromptForPresetName),
+        };
+        foreach (string preset in Filtering.FilterPresets.Usable(settings.filterPresetNames, settings.filterPresetExpressions)) {
+            string captured = preset;
+            options.Add(new FloatMenuOption(captured, () => ApplyPreset(captured)));
+            options.Add(new FloatMenuOption(
+                "CRL_LogViewer_PresetDelete".Translate(captured.Named("NAME")),
+                () => {
+                    Filtering.FilterPresets.Remove(settings.filterPresetNames, settings.filterPresetExpressions, captured);
+                    settings.Write();
+                }));
+        }
+        Find.WindowStack.Add(new FloatMenu(options));
+    }
+
+    private void PromptForPresetName() {
+        string expression = state.DslSource;
+        if (string.IsNullOrWhiteSpace(expression)) {
+            Messages.Message("CRL_LogViewer_PresetNoFilter".Translate(), MessageTypeDefOf.RejectInput, false);
+            return;
+        }
+        Find.WindowStack.Add(new Dialog_NameFilterPreset(name => {
+            LoggingSettings settings = LoggingMod.Settings;
+            Filtering.FilterPresets.Save(settings.filterPresetNames, settings.filterPresetExpressions, name, expression);
+            settings.Write();
+        }));
+    }
+
+    private void ApplyPreset(string preset) {
+        LoggingSettings settings = LoggingMod.Settings;
+        string? expression = Filtering.FilterPresets.Expression(
+            settings.filterPresetNames, settings.filterPresetExpressions, preset);
+        if (expression == null) {
+            return;
+        }
+        state.DslSource = expression;
+        InvalidateCache();
     }
 
     private void DoShareButton(ref float x, float y) {
@@ -403,7 +460,14 @@ internal sealed class LogViewerWindow : EditWindow {
         float contentHeight = listContentHeight;
         Rect view = new Rect(0f, 0f, rect.width - ScrollbarWidth, contentHeight);
 
+        lastListHeight = rect.height;
         listScroll.y = tailing.BeforeScrollView(rect, listScroll.y, contentHeight);
+
+        // applied after tailing so a jump is not immediately undone by the follow-the-tail pull
+        if (pendingScroll.HasValue) {
+            listScroll.y = pendingScroll.Value;
+            pendingScroll = null;
+        }
 
         Widgets.BeginScrollView(rect, ref listScroll, view);
 

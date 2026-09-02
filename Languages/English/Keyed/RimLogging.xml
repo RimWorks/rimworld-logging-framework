@@ -28,6 +28,14 @@
     <CRL_LogViewer_HideChannels>Hide channels</CRL_LogViewer_HideChannels>
     <CRL_LogViewer_ShowChannels>Show channels</CRL_LogViewer_ShowChannels>
     <CRL_LogViewer_ShareBundle>Share</CRL_LogViewer_ShareBundle>
+    <CRL_LogViewer_NextError>Next error</CRL_LogViewer_NextError>
+    <CRL_LogViewer_NoErrors>No errors in the current filter.</CRL_LogViewer_NoErrors>
+    <CRL_LogViewer_Presets>Presets</CRL_LogViewer_Presets>
+    <CRL_LogViewer_PresetSave>Save current filter...</CRL_LogViewer_PresetSave>
+    <CRL_LogViewer_PresetDelete>Delete "{NAME}"</CRL_LogViewer_PresetDelete>
+    <CRL_LogViewer_PresetNoFilter>Type a filter first, then save it as a preset.</CRL_LogViewer_PresetNoFilter>
+    <CRL_LogViewer_PresetNamePrompt>Name this filter preset</CRL_LogViewer_PresetNamePrompt>
+    <CRL_LogViewer_PresetNameEmpty>Give the preset a name.</CRL_LogViewer_PresetNameEmpty>
     <CRL_LogViewer_OpenVanilla>Open vanilla log (Shift+`)</CRL_LogViewer_OpenVanilla>
     <CRL_LogViewer_Detail_CopyAll>Copy all</CRL_LogViewer_Detail_CopyAll>
     <CRL_LogViewer_Menu_CopyFullDetail>Copy full detail</CRL_LogViewer_Menu_CopyFullDetail>
