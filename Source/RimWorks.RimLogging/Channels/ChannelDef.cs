@@ -7,14 +7,14 @@ namespace RimWorks.RimLogging.Channels;
 /// <summary>Verse Def describing a named logging channel and its defaults (level, color, stack-capture threshold, destinations, format).</summary>
 public class ChannelDef : Verse.Def
 {
-    /// <summary>Minimum level at which entries on this channel are emitted by default.</summary>
-    public LogLevel defaultLevel = LogLevel.Info;
+    /// <summary>Minimum level for this channel, or <c>null</c> to follow the global minimum.</summary>
+    public LogLevel? defaultLevel = null;
 
     /// <summary>Optional display color for this channel, or <c>null</c> for no color.</summary>
     public Color? color = null;
 
-    /// <summary>Level at or above which a stack trace is captured for entries on this channel.</summary>
-    public LogLevel captureStackAt = LogLevel.Error;
+    /// <summary>Level at or above which a stack trace is captured, or <c>null</c> to follow the global switch.</summary>
+    public LogLevel? captureStackAt = null;
 
     /// <summary>Names of the sink destinations entries on this channel are routed to.</summary>
     public List<string> destinations = new List<string>();

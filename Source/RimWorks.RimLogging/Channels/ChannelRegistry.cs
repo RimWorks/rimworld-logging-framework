@@ -9,12 +9,41 @@ public static class ChannelRegistry
 {
     private static Dictionary<string, ChannelDef>? _byName;
 
+    // resolving a channel walks its dot-segments and allocates a substring per level, which is
+    // fine once and far too expensive per emit. copy-on-write so the read side never locks.
+    private static volatile Dictionary<string, ChannelSettings> _settings =
+        new Dictionary<string, ChannelSettings>(StringComparer.Ordinal);
+
+    private static readonly object SettingsLock = new object();
+
     internal static void Boot()
     {
         Dictionary<string, ChannelDef> table = new Dictionary<string, ChannelDef>(StringComparer.Ordinal);
         foreach (ChannelDef d in Verse.DefDatabase<ChannelDef>.AllDefs)
             table[d.defName] = d;
         _byName = table;
+        _settings = new Dictionary<string, ChannelSettings>(StringComparer.Ordinal);
+        Logging.ChannelSettingsProvider = SettingsFor;
+    }
+
+    /// <summary>The overrides for a channel, memoised because this runs on every emit.</summary>
+    internal static ChannelSettings SettingsFor(string channelName)
+    {
+        if (_settings.TryGetValue(channelName, out ChannelSettings hit)) return hit;
+
+        ChannelDef? def = TryResolve(channelName);
+        ChannelSettings resolved = def == null
+            ? ChannelSettings.Inherit
+            : new ChannelSettings(def.defaultLevel, def.captureStackAt);
+
+        lock (SettingsLock)
+        {
+            _settings = new Dictionary<string, ChannelSettings>(_settings, StringComparer.Ordinal)
+            {
+                [channelName] = resolved,
+            };
+        }
+        return resolved;
     }
 
     /// <summary>Resolves the owning <see cref="ChannelDef"/> for a channel name by prefix match, or <c>null</c> if none matches or the registry is not booted.</summary>

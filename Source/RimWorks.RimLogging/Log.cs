@@ -407,7 +407,7 @@ public static class Log
         {
             Timestamp = DateTime.UtcNow,
             Level = level,
-            Channel = channel ?? DefaultChannel,
+            Channel = resolvedChannel,
             MessageTemplate = template ?? string.Empty,
             RenderedMessage = rendered,
             Context = ctx,
@@ -518,7 +518,10 @@ public static class Log
     {
         if (level < Logging.GlobalMinLevel) return;
 
-        System.Diagnostics.StackTrace? walk = (stackTrace == null && Logging.CaptureStackTraces)
+        Channels.ChannelSettings settings = Logging.SettingsFor(channel);
+        if (level < settings.MinLevelOr(Logging.GlobalMinLevel)) return;
+
+        System.Diagnostics.StackTrace? walk = (stackTrace == null && settings.ShouldCaptureStack(level, Logging.CaptureStackTraces))
             ? new System.Diagnostics.StackTrace(1, true)
             : null;
         string? captured = stackTrace ?? (walk != null ? Capture.StackWalker.FormatTrace(walk) : null);

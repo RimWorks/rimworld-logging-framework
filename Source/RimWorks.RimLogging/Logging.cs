@@ -19,6 +19,14 @@ public static class Logging
 
     internal static System.Func<bool>? IsDegradedProvider { get; set; }
 
+    // set by ChannelRegistry at boot; Log.cs cannot reach it directly because the registry is
+    // Verse-bound and dropped from the test compile
+    internal static System.Func<string, Channels.ChannelSettings>? ChannelSettingsProvider { get; set; }
+
+    /// <summary>The overrides for a channel, or none when no registry is installed.</summary>
+    internal static Channels.ChannelSettings SettingsFor(string channel)
+        => ChannelSettingsProvider?.Invoke(channel) ?? Channels.ChannelSettings.Inherit;
+
     /// <summary><c>true</c> when this instance is the primary (non-degraded) logger; <c>false</c> if a degraded-mode provider reports otherwise.</summary>
     public static bool IsPrimary => !(IsDegradedProvider?.Invoke() ?? false);
 

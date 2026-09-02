@@ -4,14 +4,12 @@
     <defName>default</defName>
     <label>Default</label>
     <description>Catch-all channel for callers that don't specify one.</description>
-    <defaultLevel>Info</defaultLevel>
   </RimWorks.RimLogging.Channels.ChannelDef>
 
   <RimWorks.RimLogging.Channels.ChannelDef>
     <defName>Vanilla</defName>
     <label>Vanilla RimWorld</label>
     <description>Verse.Log calls from Assembly-CSharp or core/DLC.</description>
-    <defaultLevel>Info</defaultLevel>
     <color>(0.7, 0.7, 0.7)</color>
   </RimWorks.RimLogging.Channels.ChannelDef>
 
@@ -19,7 +17,6 @@
     <defName>Unity</defName>
     <label>Unity engine</label>
     <description>UnityEngine.Debug.Log entries captured via threaded callback.</description>
-    <defaultLevel>Warn</defaultLevel>
     <color>(0.5, 0.65, 0.85)</color>
   </RimWorks.RimLogging.Channels.ChannelDef>
 </Defs>
