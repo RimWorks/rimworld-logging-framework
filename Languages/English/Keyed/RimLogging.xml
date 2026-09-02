@@ -28,6 +28,8 @@
     <CRL_LogViewer_HideChannels>Hide channels</CRL_LogViewer_HideChannels>
     <CRL_LogViewer_ShowChannels>Show channels</CRL_LogViewer_ShowChannels>
     <CRL_LogViewer_ShareBundle>Share</CRL_LogViewer_ShareBundle>
+    <CRL_Dev_SeedingOn>Log seeding on.</CRL_Dev_SeedingOn>
+    <CRL_Dev_SeedingOff>Log seeding off.</CRL_Dev_SeedingOff>
     <CRL_LogViewer_NextError>Next error</CRL_LogViewer_NextError>
     <CRL_LogViewer_NoErrors>No errors in the current filter.</CRL_LogViewer_NoErrors>
     <CRL_LogViewer_Presets>Presets</CRL_LogViewer_Presets>
