@@ -67,9 +67,6 @@ internal static class VerseLogPatch
 
     [Inject(At.Head, nameof(Verse.Log.Message), parameterTypes: [typeof(string)])]
     private static Control Message(string text) => LogHooks.OnMessage(text) ? Control.Continue : Control.Cancel;
-
-    [Inject(At.Head, nameof(Verse.Log.TryOpenLogWindow))]
-    private static Control TryOpenLogWindow() => ViewerHooks.OnTryOpenLogWindow() ? Control.Continue : Control.Cancel;
 }
 
 [Patch]

@@ -34,8 +34,6 @@ public sealed class HarmonyBackend : IPatchBackend, IPatchAttributionSource
             prefix: Prefix(nameof(WarningPrefix)));
         harmony.Patch(AccessTools.Method(typeof(Verse.Log), nameof(Verse.Log.Message), [typeof(string)]),
             prefix: Prefix(nameof(MessagePrefix)));
-        harmony.Patch(AccessTools.Method(typeof(Verse.Log), nameof(Verse.Log.TryOpenLogWindow)),
-            prefix: Prefix(nameof(TryOpenLogWindowPrefix)));
         harmony.Patch(AccessTools.Method(typeof(DebugWindowsOpener), "ToggleLogWindow"),
             prefix: Prefix(nameof(ToggleLogWindowPrefix)));
         harmony.Patch(AccessTools.Method(typeof(UIRoot), "CheckOpenLogWindow"),
@@ -100,8 +98,6 @@ public sealed class HarmonyBackend : IPatchBackend, IPatchAttributionSource
     private static bool WarningPrefix(string text) => LogHooks.OnWarning(text);
 
     private static bool MessagePrefix(string text) => LogHooks.OnMessage(text);
-
-    private static bool TryOpenLogWindowPrefix() => ViewerHooks.OnTryOpenLogWindow();
 
     private static bool ToggleLogWindowPrefix() => ViewerHooks.OnToggleLogWindow();
 

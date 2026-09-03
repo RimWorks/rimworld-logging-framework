@@ -10,6 +10,7 @@ using Verse;
 namespace RimWorks.RimLogging.Viewer;
 
 /// <summary>Three-pane log viewer drawn in RimWorld's dev-window skin.</summary>
+[StaticConstructorOnStartup]
 internal sealed class LogViewerWindow : EditWindow {
     private const float ToolbarHeight = 26f;
     private const float RowHeight = 22f;
