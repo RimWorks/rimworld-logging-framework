@@ -55,6 +55,16 @@
         <None Include="..\..\README.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 
+    <ItemGroup>
+        <!-- built alongside, but never referenced: the DLL only ships as a package analyzer -->
+        <ProjectReference Include="..\RimWorks.RimLogging.Analyzers\RimWorks.RimLogging.Analyzers.csproj"
+                          PrivateAssets="all" ReferenceOutputAssembly="false" />
+        <!-- pack runs on the outer build, where TargetFramework is empty -->
+        <None Include="..\RimWorks.RimLogging.Analyzers\bin\$(Configuration)\netstandard2.0\RimWorks.RimLogging.Analyzers.dll"
+              Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"
+              Condition="'$(TargetFramework)' == ''" />
+    </ItemGroup>
+
     <!-- Inner builds only; the multi-target outer build has no ResolveAssemblyReferences. -->
     <Target Name="CopyRimWorldRuntimeDeps" AfterTargets="Build" DependsOnTargets="ResolveAssemblyReferences" Condition="'$(TargetFramework)' != ''">
         <Copy SourceFiles="@(ReferenceCopyLocalPaths)"

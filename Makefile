@@ -19,8 +19,7 @@ all: restore build
 
 clean:
 	rm -rf Assemblies/*.dll Assemblies/*.pdb Assemblies/*.xml
-	rm -rf Source/RimWorks.RimLogging/bin Source/RimWorks.RimLogging/obj
-	rm -rf Source/RimWorks.RimLogging.Tests/bin Source/RimWorks.RimLogging.Tests/obj
+	rm -rf Source/*/bin Source/*/obj
 
 restore:
 	dotnet restore $(SLN)

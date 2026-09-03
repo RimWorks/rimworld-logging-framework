@@ -13,6 +13,7 @@ A public, structured logging framework for RimWorld 1.6+ mods. It replaces vanil
 - Multi-sink output (Verse writeback, rolling text/NDJSON files, in-memory) with a plugin sink API.
 - Lock-free MPSC queue with a background drain; synchronous bypass for `Error` / `Fatal`.
 - Three-pane in-game log viewer with a channel tree and an expression filter DSL. The detail pane docks to the bottom, docks to the right, or pops out into its own window.
+- A Roslyn analyzer in the NuGet package that flags leftover `Verse.Log` calls at build time.
 
 ![RimLogging preview card](https://raw.githubusercontent.com/RimWorks/rimworld-logging-framework/main/About/Preview.png)
 
@@ -68,6 +69,7 @@ The first string argument is the channel only when a later argument disambiguate
 - [Channels](docs/channels.md): ChannelDef XML, field reference, prefix resolution, built-in channels.
 - [Filter DSL](docs/filter-dsl.md): grammar and examples for the viewer's filter box.
 - [Custom sinks](docs/sinks.md): the `ILogSink` API, SinkDef XML, built-in sinks.
+- [Verse.Log analyzer](docs/analyzer.md): the `RIMLOG001` and `RIMLOG002` build warnings, and what to call instead.
 - [Settings and bug bundles](docs/settings.md): the mod settings page and the share-bundle payload.
 - [Bundle upload worker](worker/README.md): the Cloudflare Worker behind bug-report uploads.
 
