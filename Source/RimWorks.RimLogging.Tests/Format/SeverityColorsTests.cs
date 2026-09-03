@@ -9,8 +9,8 @@ public class SeverityColorsTests
     [Theory]
     [InlineData(LogLevel.Trace, "808080")]
     [InlineData(LogLevel.Debug, "8AA9C8")]
-    [InlineData(LogLevel.Info,  "A5C2A5")]
-    [InlineData(LogLevel.Warn,  "D8C36C")]
+    [InlineData(LogLevel.Info, "A5C2A5")]
+    [InlineData(LogLevel.Warn, "D8C36C")]
     [InlineData(LogLevel.Error, "C97373")]
     [InlineData(LogLevel.Fatal, "9F4FBF")]
     public void GetHex_KnownLevel_ReturnsDocumentedHex(LogLevel level, string expectedHex)

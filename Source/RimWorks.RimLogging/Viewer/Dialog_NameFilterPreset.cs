@@ -9,13 +9,15 @@ namespace RimWorks.RimLogging.Viewer;
 /// Asks for a name to save the current filter under. Vanilla's Dialog_Rename needs an
 /// IRenameable and force-pauses the game, neither of which suits a dev window.
 /// </summary>
-internal sealed class Dialog_NameFilterPreset : Window {
+internal sealed class Dialog_NameFilterPreset : Window
+{
     private const int MaxNameLength = 40;
     private readonly Action<string> onAccepted;
     private bool focused;
     private string name = string.Empty;
 
-    internal Dialog_NameFilterPreset(Action<string> onAccepted) {
+    internal Dialog_NameFilterPreset(Action<string> onAccepted)
+    {
         this.onAccepted = onAccepted;
         doCloseX = true;
         closeOnAccept = false;
@@ -25,10 +27,12 @@ internal sealed class Dialog_NameFilterPreset : Window {
 
     public override Vector2 InitialSize => new Vector2(320f, 150f);
 
-    public override void DoWindowContents(Rect inRect) {
+    public override void DoWindowContents(Rect inRect)
+    {
         bool submitted = Event.current.type == EventType.KeyDown
             && (Event.current.keyCode == KeyCode.Return || Event.current.keyCode == KeyCode.KeypadEnter);
-        if (submitted) {
+        if (submitted)
+        {
             Event.current.Use();
         }
 
@@ -37,18 +41,22 @@ internal sealed class Dialog_NameFilterPreset : Window {
 
         GUI.SetNextControlName("PresetName");
         string typed = Widgets.TextField(new Rect(0f, 32f, inRect.width, 32f), name);
-        if (typed.Length <= MaxNameLength) {
+        if (typed.Length <= MaxNameLength)
+        {
             name = typed;
         }
-        if (!focused) {
+        if (!focused)
+        {
             UI.FocusControl("PresetName", this);
             focused = true;
         }
 
-        if (!Widgets.ButtonText(new Rect(0f, inRect.height - 36f, inRect.width, 32f), "OK".Translate()) && !submitted) {
+        if (!Widgets.ButtonText(new Rect(0f, inRect.height - 36f, inRect.width, 32f), "OK".Translate()) && !submitted)
+        {
             return;
         }
-        if (name.Trim().Length == 0) {
+        if (name.Trim().Length == 0)
+        {
             Messages.Message("CRL_LogViewer_PresetNameEmpty".Translate(), MessageTypeDefOf.RejectInput, false);
             return;
         }

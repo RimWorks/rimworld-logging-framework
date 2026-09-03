@@ -34,11 +34,11 @@ internal static class Compiler
                 LogLevel rv = lc.RightValue;
                 return lc.Op switch
                 {
-                    TokenKind.OpEq  => e => e.Level == rv,
+                    TokenKind.OpEq => e => e.Level == rv,
                     TokenKind.OpNeq => e => e.Level != rv,
-                    TokenKind.OpLt  => e => e.Level <  rv,
+                    TokenKind.OpLt => e => e.Level < rv,
                     TokenKind.OpLte => e => e.Level <= rv,
-                    TokenKind.OpGt  => e => e.Level >  rv,
+                    TokenKind.OpGt => e => e.Level > rv,
                     TokenKind.OpGte => e => e.Level >= rv,
                     _ => throw new InvalidOperationException("Unknown level comparison operator: " + lc.Op),
                 };

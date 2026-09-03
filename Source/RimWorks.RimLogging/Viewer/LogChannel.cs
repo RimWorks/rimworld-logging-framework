@@ -1,6 +1,7 @@
 namespace RimWorks.RimLogging.Viewer;
 
-internal readonly struct LogChannel {
+internal readonly struct LogChannel
+{
     public readonly string Id;
     public readonly string Name;
     public readonly int Count;
@@ -9,7 +10,8 @@ internal readonly struct LogChannel {
     public readonly bool HasChildren;
     public readonly bool Expanded;
 
-    public LogChannel(string id, string name, int count, int depth, bool hasError, bool hasChildren, bool expanded) {
+    public LogChannel(string id, string name, int count, int depth, bool hasError, bool hasChildren, bool expanded)
+    {
         Id = id;
         Name = name;
         Count = count;

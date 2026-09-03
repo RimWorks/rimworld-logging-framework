@@ -6,17 +6,20 @@ using Verse;
 namespace RimWorks.RimLogging.Viewer;
 
 /// <summary>Draws the detail body for one entry. Shared by the inline pane and the popout window.</summary>
-internal static class LogDetailView {
+internal static class LogDetailView
+{
     private const float RowHeight = 20f;
     private const float LabelWidth = 86f;
     private const float Pad = 6f;
     private const float ScrollbarWidth = 18f;
     private const float CopyButtonWidth = 92f;
 
-    public static void Draw(Rect rect, LogEntry? entry, ref Vector2 scroll, bool combined) {
+    public static void Draw(Rect rect, LogEntry? entry, ref Vector2 scroll, bool combined)
+    {
         Widgets.DrawBoxSolid(rect, new Color(1f, 1f, 1f, 0.02f));
 
-        if (entry == null) {
+        if (entry == null)
+        {
             DrawEmpty(rect);
             return;
         }
@@ -31,29 +34,36 @@ internal static class LogDetailView {
         float y = 0f;
         DrawRow(ref y, contentWidth, "CRL_LogViewer_Detail_Level", entry.Level.ToString().ToUpperInvariant(), LevelColors.For(entry.Level));
         DrawRow(ref y, contentWidth, "CRL_LogViewer_Detail_Channel", entry.Channel, LevelColors.ForChannel(entry.Channel));
-        if (!string.IsNullOrEmpty(entry.Mod)) {
+        if (!string.IsNullOrEmpty(entry.Mod))
+        {
             DrawRow(ref y, contentWidth, "CRL_LogViewer_Detail_Mod", entry.Mod!, LevelColors.ForChannel(entry.Mod!));
         }
-        if (entry.PatchedBy == null) {
+        if (entry.PatchedBy == null)
+        {
             DrawRow(ref y, contentWidth, "CRL_LogViewer_Detail_PatchedBy",
                 "CRL_LogViewer_Detail_PatchedByUnavailable".Translate(), new Color(0.45f, 0.45f, 0.45f));
         }
-        else if (entry.PatchedBy.Count > 0) {
+        else if (entry.PatchedBy.Count > 0)
+        {
             DrawRow(ref y, contentWidth, "CRL_LogViewer_Detail_PatchedBy", string.Join(", ", entry.PatchedBy), Color.gray);
         }
         DrawRow(ref y, contentWidth, "CRL_LogViewer_Detail_Source", SourceText(entry), Color.gray);
 
-        if (entry.Context != null) {
-            foreach (KeyValuePair<string, object?> pair in entry.Context) {
+        if (entry.Context != null)
+        {
+            foreach (KeyValuePair<string, object?> pair in entry.Context)
+            {
                 DrawRow(ref y, contentWidth, null, pair.Value?.ToString() ?? "null", Color.gray, pair.Key.ToUpperInvariant());
             }
         }
 
-        if (combined) {
+        if (combined)
+        {
             string both = string.IsNullOrEmpty(trace) ? entry.RenderedMessage : entry.RenderedMessage + "\n\n" + trace;
             DrawBlock(ref y, contentWidth, "CRL_LogViewer_Detail_MessageAndStack", both);
         }
-        else {
+        else
+        {
             DrawBlock(ref y, contentWidth, "CRL_LogViewer_Detail_Message", entry.RenderedMessage);
             DrawBlock(ref y, contentWidth, "CRL_LogViewer_Detail_Stack",
                 string.IsNullOrEmpty(trace) ? (string)"CRL_LogViewer_Detail_NoStack".Translate() : trace);
@@ -63,7 +73,8 @@ internal static class LogDetailView {
         DrawCopyButton(rect, entry);
     }
 
-    private static void DrawCopyButton(Rect rect, LogEntry? entry) {
+    private static void DrawCopyButton(Rect rect, LogEntry? entry)
+    {
         // allocated even with nothing selected, so the control id count does not move with the
         // selection. IMGUI derives ids from allocation order.
         Rect copy = entry == null
@@ -71,30 +82,35 @@ internal static class LogDetailView {
             : new Rect(rect.xMax - Pad - ScrollbarWidth - Pad - CopyButtonWidth, rect.y + Pad, CopyButtonWidth, 22f);
 
         Text.Font = GameFont.Tiny;
-        if (Widgets.ButtonText(copy, "CRL_LogViewer_Detail_CopyAll".Translate()) && entry != null) {
+        if (Widgets.ButtonText(copy, "CRL_LogViewer_Detail_CopyAll".Translate()) && entry != null)
+        {
             GUIUtility.systemCopyBuffer = EntryText.Full(entry);
             Messages.Message("CRL_LogViewer_Copy".Translate(), MessageTypeDefOf.TaskCompletion, false);
         }
         Text.Font = GameFont.Small;
     }
 
-    private static float MeasureHeight(LogEntry entry, string trace, bool combined, float width) {
+    private static float MeasureHeight(LogEntry entry, string trace, bool combined, float width)
+    {
         int rows = 3 + (string.IsNullOrEmpty(entry.Mod) ? 0 : 1) + (entry.PatchedBy is null or { Count: > 0 } ? 1 : 0) + (entry.Context?.Count ?? 0);
         float h = rows * RowHeight + 6f;
 
         Text.Font = GameFont.Small;
-        if (combined) {
+        if (combined)
+        {
             string both = string.IsNullOrEmpty(trace) ? entry.RenderedMessage : entry.RenderedMessage + "\n\n" + trace;
             h += RowHeight + BlockHeight(both, width) + 6f;
         }
-        else {
+        else
+        {
             h += RowHeight + BlockHeight(entry.RenderedMessage, width) + 6f;
             h += RowHeight + BlockHeight(string.IsNullOrEmpty(trace) ? " " : trace, width) + 6f;
         }
         return h;
     }
 
-    private static void DrawRow(ref float y, float width, string? labelKey, string value, Color valueColor, string? rawLabel = null) {
+    private static void DrawRow(ref float y, float width, string? labelKey, string value, Color valueColor, string? rawLabel = null)
+    {
         Rect row = new Rect(0f, y, width, RowHeight);
 
         Text.Font = GameFont.Tiny;
@@ -109,7 +125,8 @@ internal static class LogDetailView {
         y += RowHeight;
     }
 
-    private static void DrawBlock(ref float y, float width, string labelKey, string body) {
+    private static void DrawBlock(ref float y, float width, string labelKey, string body)
+    {
         y += 6f;
 
         Text.Font = GameFont.Tiny;
@@ -129,17 +146,20 @@ internal static class LogDetailView {
 
     // measured with the TextArea style, not Text.CalcHeight: the field's padding wraps text
     // narrower than a Label, so measuring with the wrong style clips the last few lines
-    private static float BlockHeight(string body, float width) {
+    private static float BlockHeight(string body, float width)
+    {
         return Text.CurTextAreaReadOnlyStyle.CalcHeight(new GUIContent(body), width);
     }
 
-    private static string SourceText(LogEntry entry) {
+    private static string SourceText(LogEntry entry)
+    {
         return entry.Source.IsCallerProvided
             ? entry.Source.File + ":" + entry.Source.Line
             : (string)"CRL_LogViewer_Detail_NoSource".Translate();
     }
 
-    private static void DrawEmpty(Rect rect) {
+    private static void DrawEmpty(Rect rect)
+    {
         Text.Font = GameFont.Small;
         Text.Anchor = TextAnchor.MiddleCenter;
         GUI.color = new Color(0.54f, 0.56f, 0.58f);

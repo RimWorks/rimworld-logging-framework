@@ -61,8 +61,8 @@ public class BundlerTests
     [Theory]
     [InlineData(LogLevel.Trace, "Trace")]
     [InlineData(LogLevel.Debug, "Debug")]
-    [InlineData(LogLevel.Info,  "Info")]
-    [InlineData(LogLevel.Warn,  "Warning")]
+    [InlineData(LogLevel.Info, "Info")]
+    [InlineData(LogLevel.Warn, "Warning")]
     [InlineData(LogLevel.Error, "Error")]
     [InlineData(LogLevel.Fatal, "Critical")]
     public void Build_LevelString_UsesWorkerCanonicalNames(LogLevel level, string expected)

@@ -83,12 +83,12 @@ internal static class Lexer
         return lower switch
         {
             "and" => new Token(TokenKind.And, word, pos),
-            "or"  => new Token(TokenKind.Or, word, pos),
+            "or" => new Token(TokenKind.Or, word, pos),
             "not" => new Token(TokenKind.Not, word, pos),
-            "level"   => new Token(TokenKind.LevelIdent, word, pos),
+            "level" => new Token(TokenKind.LevelIdent, word, pos),
             "channel" => new Token(TokenKind.ChannelIdent, word, pos),
-            "text"    => new Token(TokenKind.TextIdent, word, pos),
-            "mod"     => new Token(TokenKind.ModIdent, word, pos),
+            "text" => new Token(TokenKind.TextIdent, word, pos),
+            "mod" => new Token(TokenKind.ModIdent, word, pos),
             "trace" or "debug" or "info" or "warn" or "error" or "fatal"
                   => new Token(TokenKind.LevelLiteral, word, pos),
             _ => throw new FormatException($"Unknown identifier '{word}' at {pos}"),

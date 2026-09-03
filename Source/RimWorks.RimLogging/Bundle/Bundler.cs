@@ -56,11 +56,11 @@ public static class Bundler
     {
         LogLevel.Trace => "Trace",
         LogLevel.Debug => "Debug",
-        LogLevel.Info  => "Info",
-        LogLevel.Warn  => "Warning",
+        LogLevel.Info => "Info",
+        LogLevel.Warn => "Warning",
         LogLevel.Error => "Error",
         LogLevel.Fatal => "Critical",
-        _              => level.ToString(),
+        _ => level.ToString(),
     };
 
     private static Dictionary<string, object?>? CopyContext(IReadOnlyDictionary<string, object?>? source, IReadOnlyList<string>? patchedBy)

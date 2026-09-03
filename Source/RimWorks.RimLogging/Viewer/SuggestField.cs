@@ -5,7 +5,8 @@ namespace RimWorks.RimLogging.Viewer;
 
 /// <summary>A text field with placeholder text and a completion dropdown.</summary>
 /// <remarks>Draw the field, draw the panes, then call <see cref="DrawOverlay"/> so the list paints on top.</remarks>
-internal sealed class SuggestField {
+internal sealed class SuggestField
+{
     private const float RowHeight = 20f;
     private const int MaxRows = 8;
 
@@ -18,7 +19,8 @@ internal sealed class SuggestField {
     private bool dismissed;
     private int pendingAccept = -1;
 
-    public SuggestField(string controlName) {
+    public SuggestField(string controlName)
+    {
         this.controlName = controlName;
     }
 
@@ -28,25 +30,31 @@ internal sealed class SuggestField {
 
     private int VisibleRows => Mathf.Min(suggestions.Items.Count, MaxRows);
 
-    private Rect DropdownRect() {
+    private Rect DropdownRect()
+    {
         return new Rect(fieldRect.x, fieldRect.yMax + 1f, fieldRect.width, VisibleRows * RowHeight);
     }
 
     /// <summary>Claims mouse events over the dropdown before the panes below can consume them.</summary>
-    public void ReserveClicks() {
-        if (!IsOpen || !Mouse.IsOver(DropdownRect())) {
+    public void ReserveClicks()
+    {
+        if (!IsOpen || !Mouse.IsOver(DropdownRect()))
+        {
             return;
         }
 
         EventType type = Event.current.type;
-        if (type != EventType.MouseDown && type != EventType.MouseUp && type != EventType.MouseDrag) {
+        if (type != EventType.MouseDown && type != EventType.MouseUp && type != EventType.MouseDrag)
+        {
             return;
         }
 
-        if (type == EventType.MouseUp) {
+        if (type == EventType.MouseUp)
+        {
             Rect box = DropdownRect();
             int index = Mathf.FloorToInt((Event.current.mousePosition.y - box.y) / RowHeight);
-            if (index >= 0 && index < VisibleRows) {
+            if (index >= 0 && index < VisibleRows)
+            {
                 pendingAccept = index;
             }
         }
@@ -55,11 +63,13 @@ internal sealed class SuggestField {
     }
 
 
-    public string Draw(Rect rect, string value, string placeholderKey, Suggestions suggest) {
+    public string Draw(Rect rect, string value, string placeholderKey, Suggestions suggest)
+    {
         fieldRect = rect;
         suggestions = suggest;
 
-        if (highlight >= suggest.Items.Count) {
+        if (highlight >= suggest.Items.Count)
+        {
             highlight = 0;
         }
 
@@ -70,7 +80,8 @@ internal sealed class SuggestField {
 
         GUI.SetNextControlName(controlName);
         string next = Widgets.TextField(rect, keysChanged ? afterKeys : value);
-        if (!keysChanged && next != value) {
+        if (!keysChanged && next != value)
+        {
             dismissed = false;
             highlight = 0;
         }
@@ -82,8 +93,10 @@ internal sealed class SuggestField {
     }
 
     /// <summary>Paints the dropdown and returns an accepted value, or <c>null</c> when nothing was picked.</summary>
-    public string? DrawOverlay() {
-        if (!IsOpen) {
+    public string? DrawOverlay()
+    {
+        if (!IsOpen)
+        {
             return null;
         }
 
@@ -95,12 +108,15 @@ internal sealed class SuggestField {
 
         Text.Font = GameFont.Small;
 
-        for (int i = 0; i < rows; i++) {
+        for (int i = 0; i < rows; i++)
+        {
             Rect row = new Rect(box.x, box.y + i * RowHeight, box.width, RowHeight);
-            if (i == highlight) {
+            if (i == highlight)
+            {
                 Widgets.DrawHighlightSelected(row);
             }
-            else if (Mouse.IsOver(row)) {
+            else if (Mouse.IsOver(row))
+            {
                 Widgets.DrawHighlight(row);
             }
 
@@ -108,12 +124,14 @@ internal sealed class SuggestField {
         }
 
         string? accepted = null;
-        if (pendingAccept >= 0 && pendingAccept < suggestions.Items.Count) {
+        if (pendingAccept >= 0 && pendingAccept < suggestions.Items.Count)
+        {
             accepted = Accept(pendingAccept);
         }
         pendingAccept = -1;
 
-        if (suggestions.Items.Count > rows) {
+        if (suggestions.Items.Count > rows)
+        {
             Text.Font = GameFont.Tiny;
             GUI.color = new Color(0.42f, 0.44f, 0.46f);
             Widgets.Label(new Rect(box.x + 5f, box.yMax, box.width, 16f), "+" + (suggestions.Items.Count - rows));
@@ -124,12 +142,15 @@ internal sealed class SuggestField {
         return accepted;
     }
 
-    private string HandleKeys(string value) {
-        if (!IsOpen || Event.current.type != EventType.KeyDown) {
+    private string HandleKeys(string value)
+    {
+        if (!IsOpen || Event.current.type != EventType.KeyDown)
+        {
             return value;
         }
 
-        switch (Event.current.keyCode) {
+        switch (Event.current.keyCode)
+        {
             case KeyCode.Tab:
                 Event.current.Use();
                 return Accept(highlight);
@@ -150,7 +171,8 @@ internal sealed class SuggestField {
         }
     }
 
-    private string Accept(int index) {
+    private string Accept(int index)
+    {
         string next = suggestions.Apply(current, suggestions.Items[index]);
         dismissed = true;
         highlight = 0;
@@ -160,12 +182,15 @@ internal sealed class SuggestField {
     }
 
     /// <summary>The live TextEditor caches its own copy, so a programmatic edit has to be pushed into it.</summary>
-    private static void SyncEditorCaret(string next) {
-        if (GUIUtility.keyboardControl == 0) {
+    private static void SyncEditorCaret(string next)
+    {
+        if (GUIUtility.keyboardControl == 0)
+        {
             return;
         }
 
-        if (GUIUtility.GetStateObject(typeof(TextEditor), GUIUtility.keyboardControl) is not TextEditor editor) {
+        if (GUIUtility.GetStateObject(typeof(TextEditor), GUIUtility.keyboardControl) is not TextEditor editor)
+        {
             return;
         }
 
@@ -174,8 +199,10 @@ internal sealed class SuggestField {
         editor.MoveTextEnd();
     }
 
-    private static void DrawPlaceholder(Rect rect, string value, string placeholderKey) {
-        if (!string.IsNullOrEmpty(value)) {
+    private static void DrawPlaceholder(Rect rect, string value, string placeholderKey)
+    {
+        if (!string.IsNullOrEmpty(value))
+        {
             return;
         }
 

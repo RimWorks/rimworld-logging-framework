@@ -101,9 +101,9 @@ internal static class Parser
         switch (kind)
         {
             case TokenKind.ChannelIdent: field = MatchField.Channel; return true;
-            case TokenKind.TextIdent:    field = MatchField.Text;    return true;
-            case TokenKind.ModIdent:     field = MatchField.Mod;     return true;
-            default:                     field = default;            return false;
+            case TokenKind.TextIdent: field = MatchField.Text; return true;
+            case TokenKind.ModIdent: field = MatchField.Mod; return true;
+            default: field = default; return false;
         }
     }
 
@@ -115,8 +115,8 @@ internal static class Parser
     {
         "trace" => LogLevel.Trace,
         "debug" => LogLevel.Debug,
-        "info"  => LogLevel.Info,
-        "warn"  => LogLevel.Warn,
+        "info" => LogLevel.Info,
+        "warn" => LogLevel.Warn,
         "error" => LogLevel.Error,
         "fatal" => LogLevel.Fatal,
         _ => throw new FormatException($"Unknown level '{s}'"),

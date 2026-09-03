@@ -10,9 +10,15 @@ public class ErrorJumpTests
 {
     private static LogEntry At(LogLevel level) => new LogEntry
     {
-        Timestamp = DateTime.UtcNow, Level = level, Channel = "c",
-        MessageTemplate = "m", RenderedMessage = "m", Context = null,
-        Source = SourceLocation.Empty, StackTrace = null, Exception = null,
+        Timestamp = DateTime.UtcNow,
+        Level = level,
+        Channel = "c",
+        MessageTemplate = "m",
+        RenderedMessage = "m",
+        Context = null,
+        Source = SourceLocation.Empty,
+        StackTrace = null,
+        Exception = null,
     };
 
     private static List<LogEntry> List(params LogLevel[] levels)

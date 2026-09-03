@@ -38,20 +38,20 @@ public class CompilerTests
 
     // 2. Each comparison op yields correct predicate
     [Theory]
-    [InlineData(TokenKind.OpEq,  LogLevel.Warn, LogLevel.Warn,  true)]
-    [InlineData(TokenKind.OpEq,  LogLevel.Warn, LogLevel.Error, false)]
-    [InlineData(TokenKind.OpNeq, LogLevel.Warn, LogLevel.Warn,  false)]
+    [InlineData(TokenKind.OpEq, LogLevel.Warn, LogLevel.Warn, true)]
+    [InlineData(TokenKind.OpEq, LogLevel.Warn, LogLevel.Error, false)]
+    [InlineData(TokenKind.OpNeq, LogLevel.Warn, LogLevel.Warn, false)]
     [InlineData(TokenKind.OpNeq, LogLevel.Warn, LogLevel.Error, true)]
-    [InlineData(TokenKind.OpLt,  LogLevel.Warn, LogLevel.Info,  true)]   // Info < Warn = 2 < 3 = true
-    [InlineData(TokenKind.OpLt,  LogLevel.Info, LogLevel.Warn,  false)]  // Warn < Info = 3 < 2 = false
-    [InlineData(TokenKind.OpLte, LogLevel.Warn, LogLevel.Warn,  true)]   // Warn <= Warn = true
-    [InlineData(TokenKind.OpLte, LogLevel.Warn, LogLevel.Info,  true)]   // Info <= Warn = 2 <= 3 = true
-    [InlineData(TokenKind.OpLte, LogLevel.Info, LogLevel.Warn,  false)]  // Warn <= Info = 3 <= 2 = false
-    [InlineData(TokenKind.OpGt,  LogLevel.Info, LogLevel.Warn,  true)]   // Warn > Info = 3 > 2 = true
-    [InlineData(TokenKind.OpGt,  LogLevel.Warn, LogLevel.Info,  false)]  // Info > Warn = 2 > 3 = false
-    [InlineData(TokenKind.OpGte, LogLevel.Warn, LogLevel.Warn,  true)]   // Warn >= Warn = true
-    [InlineData(TokenKind.OpGte, LogLevel.Info, LogLevel.Warn,  true)]   // Warn >= Info = 3 >= 2 = true
-    [InlineData(TokenKind.OpGte, LogLevel.Warn, LogLevel.Info,  false)]  // Info >= Warn = 2 >= 3 = false
+    [InlineData(TokenKind.OpLt, LogLevel.Warn, LogLevel.Info, true)]   // Info < Warn = 2 < 3 = true
+    [InlineData(TokenKind.OpLt, LogLevel.Info, LogLevel.Warn, false)]  // Warn < Info = 3 < 2 = false
+    [InlineData(TokenKind.OpLte, LogLevel.Warn, LogLevel.Warn, true)]   // Warn <= Warn = true
+    [InlineData(TokenKind.OpLte, LogLevel.Warn, LogLevel.Info, true)]   // Info <= Warn = 2 <= 3 = true
+    [InlineData(TokenKind.OpLte, LogLevel.Info, LogLevel.Warn, false)]  // Warn <= Info = 3 <= 2 = false
+    [InlineData(TokenKind.OpGt, LogLevel.Info, LogLevel.Warn, true)]   // Warn > Info = 3 > 2 = true
+    [InlineData(TokenKind.OpGt, LogLevel.Warn, LogLevel.Info, false)]  // Info > Warn = 2 > 3 = false
+    [InlineData(TokenKind.OpGte, LogLevel.Warn, LogLevel.Warn, true)]   // Warn >= Warn = true
+    [InlineData(TokenKind.OpGte, LogLevel.Info, LogLevel.Warn, true)]   // Warn >= Info = 3 >= 2 = true
+    [InlineData(TokenKind.OpGte, LogLevel.Warn, LogLevel.Info, false)]  // Info >= Warn = 2 >= 3 = false
     public void AllComparisonOps_CorrectResult(TokenKind op, LogLevel rightValue, LogLevel entryLevel, bool expected)
     {
         Func<LogEntry, bool> pred = Compiler.Compile(
@@ -76,10 +76,10 @@ public class CompilerTests
 
     // 4. AndNode: both conditions must hold
     [Theory]
-    [InlineData(LogLevel.Warn,  "Cosmere.X", true)]
-    [InlineData(LogLevel.Warn,  "Unity",     false)]
-    [InlineData(LogLevel.Info,  "Cosmere.X", false)]
-    [InlineData(LogLevel.Debug, "Unity",     false)]
+    [InlineData(LogLevel.Warn, "Cosmere.X", true)]
+    [InlineData(LogLevel.Warn, "Unity", false)]
+    [InlineData(LogLevel.Info, "Cosmere.X", false)]
+    [InlineData(LogLevel.Debug, "Unity", false)]
     public void AndNode_BothMustHold(LogLevel lvl, string channel, bool expected)
     {
         Func<LogEntry, bool> pred = Compiler.Compile(new AndNode(
@@ -91,12 +91,12 @@ public class CompilerTests
 
     // 5. OrNode: either condition suffices
     [Theory]
-    [InlineData(LogLevel.Error, "anything",   true)]
-    [InlineData(LogLevel.Fatal, "other",      true)]
-    [InlineData(LogLevel.Info,  "Unity",      true)]
-    [InlineData(LogLevel.Debug, "Unity",      true)]
-    [InlineData(LogLevel.Info,  "Cosmere.X",  false)]
-    [InlineData(LogLevel.Debug, "default",    false)]
+    [InlineData(LogLevel.Error, "anything", true)]
+    [InlineData(LogLevel.Fatal, "other", true)]
+    [InlineData(LogLevel.Info, "Unity", true)]
+    [InlineData(LogLevel.Debug, "Unity", true)]
+    [InlineData(LogLevel.Info, "Cosmere.X", false)]
+    [InlineData(LogLevel.Debug, "default", false)]
     public void OrNode_EitherSuffices(LogLevel lvl, string channel, bool expected)
     {
         Func<LogEntry, bool> pred = Compiler.Compile(new OrNode(
@@ -108,10 +108,10 @@ public class CompilerTests
 
     // 6. NotNode: inverts child predicate
     [Theory]
-    [InlineData(LogLevel.Info,  true)]
+    [InlineData(LogLevel.Info, true)]
     [InlineData(LogLevel.Debug, true)]
     [InlineData(LogLevel.Trace, true)]
-    [InlineData(LogLevel.Warn,  false)]
+    [InlineData(LogLevel.Warn, false)]
     [InlineData(LogLevel.Error, false)]
     [InlineData(LogLevel.Fatal, false)]
     public void NotNode_InvertsChild(LogLevel lvl, bool expected)

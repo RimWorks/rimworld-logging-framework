@@ -76,7 +76,8 @@ public sealed class LoggingSettings : ModSettings
     }
 
     /// <summary>Copies the upload-related settings into the Verse-free shape the publishers take.</summary>
-    internal PublishOptions ToPublishOptions() => new PublishOptions {
+    internal PublishOptions ToPublishOptions() => new PublishOptions
+    {
         Publisher = publisher,
         DocbinUrl = docbinUrl,
         DocbinApiKey = docbinApiKey,

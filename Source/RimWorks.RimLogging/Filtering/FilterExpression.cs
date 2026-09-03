@@ -67,8 +67,8 @@ public sealed class FilterExpression
 
     private static string Stringify(AstNode n) => n switch
     {
-        AndNode a  => "(" + Stringify(a.Left) + " AND " + Stringify(a.Right) + ")",
-        OrNode o   => "(" + Stringify(o.Left) + " OR " + Stringify(o.Right) + ")",
+        AndNode a => "(" + Stringify(a.Left) + " AND " + Stringify(a.Right) + ")",
+        OrNode o => "(" + Stringify(o.Left) + " OR " + Stringify(o.Right) + ")",
         NotNode nt => "NOT " + Stringify(nt.Operand),
         LevelCompareNode lc => "level " + OpToString(lc.Op) + " " + lc.RightValue,
         FieldMatchNode fm => FieldName(fm.Field) + (fm.Negated ? " != " : " = ") + "\"" + fm.Pattern + "\"",
@@ -78,17 +78,17 @@ public sealed class FilterExpression
     private static string FieldName(MatchField field) => field switch
     {
         MatchField.Text => "text",
-        MatchField.Mod  => "mod",
-        _               => "channel",
+        MatchField.Mod => "mod",
+        _ => "channel",
     };
 
     private static string OpToString(TokenKind op) => op switch
     {
-        TokenKind.OpEq  => "=",
+        TokenKind.OpEq => "=",
         TokenKind.OpNeq => "!=",
-        TokenKind.OpLt  => "<",
+        TokenKind.OpLt => "<",
         TokenKind.OpLte => "<=",
-        TokenKind.OpGt  => ">",
+        TokenKind.OpGt => ">",
         TokenKind.OpGte => ">=",
         _ => "?",
     };

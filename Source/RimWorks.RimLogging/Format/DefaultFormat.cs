@@ -100,15 +100,15 @@ public static class DefaultFormat
     {
         switch (token)
         {
-            case "ts":      return e.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff", System.Globalization.CultureInfo.InvariantCulture);
-            case "level":   return e.Level.ToString().ToUpperInvariant();
+            case "ts": return e.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff", System.Globalization.CultureInfo.InvariantCulture);
+            case "level": return e.Level.ToString().ToUpperInvariant();
             case "channel": return e.Channel;
-            case "mod":     return e.Mod ?? string.Empty;
-            case "source":  return e.Source.IsCallerProvided ? e.Source.File + ":" + e.Source.Line : string.Empty;
+            case "mod": return e.Mod ?? string.Empty;
+            case "source": return e.Source.IsCallerProvided ? e.Source.File + ":" + e.Source.Line : string.Empty;
             case "message": return strip ? RichText.Strip(e.RenderedMessage) : e.RenderedMessage;
-            case "ctx":     return RenderUnconsumedContext(e);
-            case "exc":     return e.Exception != null ? "\n" + e.Exception.ToString() : string.Empty;
-            default:        return "{" + token + "}";
+            case "ctx": return RenderUnconsumedContext(e);
+            case "exc": return e.Exception != null ? "\n" + e.Exception.ToString() : string.Empty;
+            default: return "{" + token + "}";
         }
     }
 

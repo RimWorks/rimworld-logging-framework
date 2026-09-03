@@ -9,11 +9,11 @@ public class LexerTests
 {
     // 1. Each operator emits the correct TokenKind
     [Theory]
-    [InlineData("=",  TokenKind.OpEq)]
+    [InlineData("=", TokenKind.OpEq)]
     [InlineData("!=", TokenKind.OpNeq)]
-    [InlineData("<",  TokenKind.OpLt)]
+    [InlineData("<", TokenKind.OpLt)]
     [InlineData("<=", TokenKind.OpLte)]
-    [InlineData(">",  TokenKind.OpGt)]
+    [InlineData(">", TokenKind.OpGt)]
     [InlineData(">=", TokenKind.OpGte)]
     public void Operator_EmitsCorrectKind(string input, TokenKind expected)
     {
@@ -233,21 +233,21 @@ public class LexerTests
         List<Token> tokens = Lexer.Tokenize("level >= Info AND channel = \"Cosmere.*\"");
 
         Assert.Equal(8, tokens.Count);
-        Assert.Equal(TokenKind.LevelIdent,    tokens[0].Kind);
-        Assert.Equal(TokenKind.OpGte,         tokens[1].Kind);
-        Assert.Equal(TokenKind.LevelLiteral,  tokens[2].Kind);
-        Assert.Equal(TokenKind.And,           tokens[3].Kind);
-        Assert.Equal(TokenKind.ChannelIdent,  tokens[4].Kind);
-        Assert.Equal(TokenKind.OpEq,          tokens[5].Kind);
+        Assert.Equal(TokenKind.LevelIdent, tokens[0].Kind);
+        Assert.Equal(TokenKind.OpGte, tokens[1].Kind);
+        Assert.Equal(TokenKind.LevelLiteral, tokens[2].Kind);
+        Assert.Equal(TokenKind.And, tokens[3].Kind);
+        Assert.Equal(TokenKind.ChannelIdent, tokens[4].Kind);
+        Assert.Equal(TokenKind.OpEq, tokens[5].Kind);
         Assert.Equal(TokenKind.StringLiteral, tokens[6].Kind);
-        Assert.Equal(TokenKind.End,           tokens[7].Kind);
+        Assert.Equal(TokenKind.End, tokens[7].Kind);
 
-        Assert.Equal("level",    tokens[0].Text);
-        Assert.Equal(">=",       tokens[1].Text);
-        Assert.Equal("Info",     tokens[2].Text);
-        Assert.Equal("AND",      tokens[3].Text);
-        Assert.Equal("channel",  tokens[4].Text);
-        Assert.Equal("=",        tokens[5].Text);
+        Assert.Equal("level", tokens[0].Text);
+        Assert.Equal(">=", tokens[1].Text);
+        Assert.Equal("Info", tokens[2].Text);
+        Assert.Equal("AND", tokens[3].Text);
+        Assert.Equal("channel", tokens[4].Text);
+        Assert.Equal("=", tokens[5].Text);
         Assert.Equal("Cosmere.*", tokens[6].Text);
     }
 
