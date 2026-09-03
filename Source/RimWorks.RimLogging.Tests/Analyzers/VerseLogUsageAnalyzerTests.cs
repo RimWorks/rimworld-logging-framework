@@ -41,6 +41,8 @@ namespace RimWorks.RimLogging
     public static class Log
     {
         public static void ErrorTo(string channel, string message) { }
+        public static void ErrorOnce(string key, string message) { }
+        public static void ErrorOnceTo(string channel, string key, string message) { }
     }
 }";
 
@@ -106,9 +108,34 @@ namespace RimWorks.RimLogging
         Assert.Equal("Verse.Log.Error", flagged);
     }
 
-    private static ImmutableArray<Diagnostic> Diagnose(string statement, bool withRimLogging = true)
+    [Fact]
+    public void AliasedRimLoggingLog_WithTheSameMethodName_ReportsNothing()
     {
-        string caller = "class Caller { void Run() { " + statement + " } }";
+        // a mod that aliases Log globally writes Log.ErrorOnce for RimLogging's own method, and
+        // matching on the name alone would flag every one of those
+        string caller = @"
+using Log = RimWorks.RimLogging.Log;
+class Caller { void Run() { Log.ErrorOnce(""some-key"", ""boom""); } }";
+
+        Assert.Empty(Diagnose(caller, asWholeFile: true));
+    }
+
+    [Fact]
+    public void AliasedRimLoggingLog_OnTheChannelOverload_ReportsNothing()
+    {
+        string caller = @"
+using Log = RimWorks.RimLogging.Log;
+class Caller { void Run() { Log.ErrorOnceTo(""MPF.Worldgen"", ""some-key"", ""boom""); } }";
+
+        Assert.Empty(Diagnose(caller, asWholeFile: true));
+    }
+
+    private static ImmutableArray<Diagnostic> Diagnose(
+        string statement,
+        bool withRimLogging = true,
+        bool asWholeFile = false)
+    {
+        string caller = asWholeFile ? statement : "class Caller { void Run() { " + statement + " } }";
         string[] sources = withRimLogging
             ? new[] { VerseStub, RimLoggingStub, caller }
             : new[] { VerseStub, caller };
