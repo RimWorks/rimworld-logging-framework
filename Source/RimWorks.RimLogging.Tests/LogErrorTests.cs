@@ -80,4 +80,37 @@ public class LogErrorTests : LogSinkFixtureBase
         Assert.Equal("error-audit", entry!.Channel);
         Assert.Equal(LogLevel.Error, entry.Level);
     }
+
+    [Fact]
+    public void ErrorOnceTo_ExplicitChannel_KeepsChannel()
+    {
+        Log.ErrorOnceTo("error-once-chan", "error-once-channel-key", "error-once-channel-sentinel");
+
+        LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
+        Assert.NotNull(entry);
+        Assert.Equal("error-once-chan", entry!.Channel);
+        Assert.Equal(LogLevel.Error, entry.Level);
+    }
+
+    [Fact]
+    public void ErrorOnceTo_SameKeyTwice_EmitsOnlyOnce()
+    {
+        Log.ErrorOnceTo("error-once-repeat-chan", "error-once-repeat-key", "first");
+        int countAfterFirst = _sink.Entries.Count;
+
+        Log.ErrorOnceTo("error-once-repeat-chan", "error-once-repeat-key", "second");
+
+        Assert.Equal(countAfterFirst, _sink.Entries.Count);
+    }
+
+    [Fact]
+    public void ErrorOnce_WithoutChannel_StillLandsOnDefault()
+    {
+        Log.ErrorOnce("error-once-default-key", "error-once-default-sentinel");
+
+        LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
+        Assert.NotNull(entry);
+        Assert.Equal("default", entry!.Channel);
+        Assert.Equal(LogLevel.Error, entry.Level);
+    }
 }

@@ -280,9 +280,21 @@ public static class Log
         string message,
         [CallerLineNumber] int line = 0,
         [CallerFilePath] string file = "")
+        => WarnOnceTo(DefaultChannel, key, message, line, file);
+
+    /// <summary>
+    /// Log at Warn only the first time this key is seen, on an explicit channel. The key is
+    /// global, so the same key on two channels still only fires once.
+    /// </summary>
+    public static void WarnOnceTo(
+        string channel,
+        string key,
+        string message,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
     {
         if (!Throttle.Once(key, DateTime.UtcNow)) return;
-        EmitInternal(LogLevel.Warn, DefaultChannel, message, null, null, null, new CallSite(SourceLocation.Empty, line, file));
+        EmitInternal(LogLevel.Warn, channel, message, null, null, null, new CallSite(SourceLocation.Empty, line, file));
     }
 
     /// <summary>Log at Error using a templated message and positional args (default channel).</summary>
@@ -356,9 +368,21 @@ public static class Log
         string message,
         [CallerLineNumber] int line = 0,
         [CallerFilePath] string file = "")
+        => ErrorOnceTo(DefaultChannel, key, message, line, file);
+
+    /// <summary>
+    /// Log at Error only the first time this key is seen, on an explicit channel. The key is
+    /// global, so the same key on two channels still only fires once.
+    /// </summary>
+    public static void ErrorOnceTo(
+        string channel,
+        string key,
+        string message,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
     {
         if (!Throttle.Once(key, DateTime.UtcNow)) return;
-        EmitInternal(LogLevel.Error, DefaultChannel, message, null, null, null, new CallSite(SourceLocation.Empty, line, file));
+        EmitInternal(LogLevel.Error, channel, message, null, null, null, new CallSite(SourceLocation.Empty, line, file));
     }
 
     /// <summary>Log at Fatal using a templated message and positional args (default channel).</summary>
