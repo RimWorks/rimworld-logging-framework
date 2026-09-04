@@ -31,3 +31,7 @@ jobs:
 
       - name: dotnet test
         run: dotnet test RimWorks.RimLogging.sln -c Release --nologo --no-build --logger "console;verbosity=normal"
+
+      # last, so a formatting nit never hides a real test failure
+      - name: dotnet format
+        run: dotnet format RimWorks.RimLogging.sln --verify-no-changes --no-restore
