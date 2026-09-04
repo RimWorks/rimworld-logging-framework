@@ -107,7 +107,7 @@ public static class DefaultFormat
 
     /// <summary>
     /// Yields every well-formed <c>{token}</c> in order, stopping at the first unclosed brace.
-    /// <see cref="Render"/> and <see cref="IndexOfToken"/> share it so they cannot drift apart.
+    /// <see cref="Render"/> and <see cref="FindToken"/> share it so they cannot drift apart.
     /// </summary>
     private static IEnumerable<(int OpenIndex, int CloseIndex, string Token)> ScanTokens(string template)
     {
