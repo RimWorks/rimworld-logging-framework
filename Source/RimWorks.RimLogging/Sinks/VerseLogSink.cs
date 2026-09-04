@@ -38,10 +38,8 @@ public sealed class VerseLogSink : ILogSink
         ChannelDef? def = ChannelRegistry.TryResolve(entry.Channel);
         string colorHex = def?.ColorHex ?? SeverityColors.GetHex(entry.Level);
         string template = Logging.SettingsFor(entry.Channel).TemplateOr(FormatTemplate);
-        string prefix = DefaultFormat.RenderPrefixOnly(template, entry, stripRichText: false);
-        string colored = "<color=#" + colorHex + ">" + prefix + "</color> " + entry.RenderedMessage;
 
-        VanillaWriter?.Invoke(entry.Level, colored);
+        VanillaWriter?.Invoke(entry.Level, DefaultFormat.RenderWithColoredPrefix(template, entry, colorHex));
     }
 
     /// <inheritdoc/>

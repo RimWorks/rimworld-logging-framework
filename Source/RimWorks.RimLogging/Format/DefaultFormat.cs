@@ -60,22 +60,49 @@ public static class DefaultFormat
     /// <returns>The rendered prefix up to (but excluding) the <c>{message}</c> token, or the full template if no such token exists.</returns>
     public static string RenderPrefixOnly(string template, LogEntry entry, bool stripRichText)
     {
-        int messageStart = IndexOfToken(template, "message");
-        string prefix = messageStart < 0 ? template : template.Substring(0, messageStart);
+        (int open, _) = FindToken(template, "message");
+        string prefix = open < 0 ? template : template.Substring(0, open);
         return Render(prefix, entry, stripRichText);
     }
 
     /// <summary>
-    /// Returns the index of the opening brace of the <c>{token}</c> occurrence in
-    /// <paramref name="template"/>, or -1 if absent. Tokenizes identically to
-    /// <see cref="Render"/> so only a whole-token match (e.g. <c>{message}</c>, not
-    /// <c>{messagebody}</c>) is reported.
+    /// Renders everything after <c>{message}</c>, which is where <c>{ctx}</c> and <c>{exc}</c>
+    /// sit in the default template. Returns empty when the template has no <c>{message}</c>.
     /// </summary>
-    private static int IndexOfToken(string template, string token)
+    /// <param name="template">The format template string.</param>
+    /// <param name="entry">The log entry supplying token values.</param>
+    /// <param name="stripRichText">When <c>true</c>, rich-text tags are stripped from token values.</param>
+    /// <returns>The rendered tail after the <c>{message}</c> token.</returns>
+    public static string RenderSuffixOnly(string template, LogEntry entry, bool stripRichText)
     {
-        foreach ((int open, _, string t) in ScanTokens(template))
-            if (t == token) return open;
-        return -1;
+        (_, int close) = FindToken(template, "message");
+        return close < 0 ? string.Empty : Render(template.Substring(close + 1), entry, stripRichText);
+    }
+
+    /// <summary>
+    /// Builds a line whose prefix is wrapped in a Unity colour tag and whose message and tail
+    /// are not, for sinks that colour the prefix alone.
+    /// </summary>
+    /// <param name="template">The format template string.</param>
+    /// <param name="entry">The log entry supplying token values.</param>
+    /// <param name="colorHex">Six-digit hex colour applied to the prefix.</param>
+    /// <returns>The rendered line, exception and context included.</returns>
+    public static string RenderWithColoredPrefix(string template, LogEntry entry, string colorHex)
+        => "<color=#" + colorHex + ">"
+           + RenderPrefixOnly(template, entry, stripRichText: false)
+           + "</color>"
+           + entry.RenderedMessage
+           + RenderSuffixOnly(template, entry, stripRichText: false);
+
+    /// <summary>
+    /// Returns the brace positions of the <c>{token}</c> occurrence, or (-1, -1) if absent.
+    /// Tokenizes through <see cref="ScanTokens"/> so only a whole-token match counts.
+    /// </summary>
+    private static (int Open, int Close) FindToken(string template, string token)
+    {
+        foreach ((int open, int close, string t) in ScanTokens(template))
+            if (t == token) return (open, close);
+        return (-1, -1);
     }
 
     /// <summary>
