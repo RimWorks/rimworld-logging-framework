@@ -53,6 +53,11 @@ public sealed class RollingJsonFileSink : RollingFileSink
             ["ctx"] = BuildCtx(entry.Context),
             ["stack"] = entry.StackTrace,
             ["exc"] = BuildExc(entry.Exception),
+            ["mod"] = entry.Mod,
+            ["tick"] = entry.Tick,
+            ["repeats"] = entry.Repeats,
+            // null and empty are different claims: null means attribution never ran
+            ["patched"] = entry.PatchedBy,
         };
 
         return JsonSerializer.Serialize(row, _jsonOptions);

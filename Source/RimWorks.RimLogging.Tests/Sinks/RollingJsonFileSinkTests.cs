@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using RimWorks.RimLogging.Capture;
 using RimWorks.RimLogging.Sinks;
@@ -31,7 +32,11 @@ public class RollingJsonFileSinkTests : IDisposable
         IReadOnlyDictionary<string, object?>? context = null,
         SourceLocation source = default,
         Exception? exception = null,
-        string? stackTrace = null)
+        string? stackTrace = null,
+        string? mod = null,
+        int? tick = null,
+        int repeats = 1,
+        IReadOnlyList<string>? patchedBy = null)
     {
         return new LogEntry
         {
@@ -44,6 +49,10 @@ public class RollingJsonFileSinkTests : IDisposable
             Source = source,
             StackTrace = stackTrace,
             Exception = exception,
+            Mod = mod,
+            Tick = tick,
+            Repeats = repeats,
+            PatchedBy = patchedBy,
         };
     }
 
@@ -222,6 +231,76 @@ public class RollingJsonFileSinkTests : IDisposable
         string[] lines = File.ReadAllLines(sink.FilePath);
         using JsonDocument doc = JsonDocument.Parse(lines[0]);
         Assert.Equal(JsonValueKind.Null, doc.RootElement.GetProperty("ctx").ValueKind);
+    }
+
+    [Fact]
+    public void Write_ModTickAndRepeats_LandInTheRow()
+    {
+        // the row used to carry nine keys and drop four LogEntry fields on the floor, so anything
+        // reading these files back saw an entry with no mod, no tick and no repeat count
+        RollingJsonFileSink sink = new RollingJsonFileSink(_tempDir);
+        sink.Write(MakeEntry(LogLevel.Info, "msg", mod: "Some Mod", tick: 1234, repeats: 7));
+        sink.Dispose();
+
+        string[] lines = File.ReadAllLines(sink.FilePath);
+        using JsonDocument doc = JsonDocument.Parse(lines[0]);
+        Assert.Equal("Some Mod", doc.RootElement.GetProperty("mod").GetString());
+        Assert.Equal(1234, doc.RootElement.GetProperty("tick").GetInt32());
+        Assert.Equal(7, doc.RootElement.GetProperty("repeats").GetInt32());
+    }
+
+    [Fact]
+    public void Write_PatchedBy_LandsAsAnArray()
+    {
+        RollingJsonFileSink sink = new RollingJsonFileSink(_tempDir);
+        sink.Write(MakeEntry(LogLevel.Error, "msg", patchedBy: new[] { "a.mod", "b.mod" }));
+        sink.Dispose();
+
+        string[] lines = File.ReadAllLines(sink.FilePath);
+        using JsonDocument doc = JsonDocument.Parse(lines[0]);
+        JsonElement patched = doc.RootElement.GetProperty("patched");
+        Assert.Equal(JsonValueKind.Array, patched.ValueKind);
+        Assert.Equal(new[] { "a.mod", "b.mod" }, patched.EnumerateArray().Select(e => e.GetString()));
+    }
+
+    [Fact]
+    public void Write_PatchedByNull_StaysNullRatherThanBecomingAnEmptyArray()
+    {
+        // null means attribution never ran, empty means nothing patched it. a reader has to be
+        // able to tell those apart.
+        RollingJsonFileSink sink = new RollingJsonFileSink(_tempDir);
+        sink.Write(MakeEntry(LogLevel.Error, "msg", patchedBy: null));
+        sink.Dispose();
+
+        string[] lines = File.ReadAllLines(sink.FilePath);
+        using JsonDocument doc = JsonDocument.Parse(lines[0]);
+        Assert.Equal(JsonValueKind.Null, doc.RootElement.GetProperty("patched").ValueKind);
+    }
+
+    [Fact]
+    public void Write_PatchedByEmpty_IsAnEmptyArray()
+    {
+        RollingJsonFileSink sink = new RollingJsonFileSink(_tempDir);
+        sink.Write(MakeEntry(LogLevel.Error, "msg", patchedBy: Array.Empty<string>()));
+        sink.Dispose();
+
+        string[] lines = File.ReadAllLines(sink.FilePath);
+        using JsonDocument doc = JsonDocument.Parse(lines[0]);
+        JsonElement patched = doc.RootElement.GetProperty("patched");
+        Assert.Equal(JsonValueKind.Array, patched.ValueKind);
+        Assert.Equal(0, patched.GetArrayLength());
+    }
+
+    [Fact]
+    public void Write_NoTick_TickIsJsonNull()
+    {
+        RollingJsonFileSink sink = new RollingJsonFileSink(_tempDir);
+        sink.Write(MakeEntry(LogLevel.Info, "msg", tick: null));
+        sink.Dispose();
+
+        string[] lines = File.ReadAllLines(sink.FilePath);
+        using JsonDocument doc = JsonDocument.Parse(lines[0]);
+        Assert.Equal(JsonValueKind.Null, doc.RootElement.GetProperty("tick").ValueKind);
     }
 
     [Fact]
