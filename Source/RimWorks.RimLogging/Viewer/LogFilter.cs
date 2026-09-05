@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using RimWorks.RimLogging.Filtering;
 using LogEntry = RimWorks.RimLogging.LogEntry;
@@ -218,6 +219,22 @@ internal static class LogFilter
             return vanillaLabel;
         }
         return acc.Name;
+    }
+
+    /// <summary>Channel tallies walked from a snapshot, for a loaded file with no live sink behind it.</summary>
+    internal static IReadOnlyDictionary<string, ChannelTally> TalliesFrom(IReadOnlyList<LogEntry> snapshot)
+    {
+        Dictionary<string, ChannelTally> tallies = new Dictionary<string, ChannelTally>(StringComparer.Ordinal);
+        for (int i = 0; i < snapshot.Count; i++)
+        {
+            LogEntry entry = snapshot[i];
+            string key = KeyFor(entry.Channel);
+            tallies.TryGetValue(key, out ChannelTally tally);
+            tally.Count++;
+            if (entry.Level >= LogLevel.Error) tally.ErrorCount++;
+            tallies[key] = tally;
+        }
+        return tallies;
     }
 
     public static List<LogEntry> Apply(IReadOnlyList<LogEntry> snapshot, LogViewerState state)

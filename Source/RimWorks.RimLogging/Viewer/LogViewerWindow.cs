@@ -117,6 +117,10 @@ internal sealed class LogViewerWindow : EditWindow
     private int cachedRevision = -1;
     private string cachedSignature = string.Empty;
     private List<LogEntry> filtered = new List<LogEntry>();
+
+    // non-null means we are showing a file. the sink keeps buffering live entries underneath.
+    private IReadOnlyList<LogEntry>? loaded;
+    private string? loadedName;
     private List<LogChannel> channels = new List<LogChannel>();
     private LevelCounts levelCounts;
 
@@ -130,6 +134,8 @@ internal sealed class LogViewerWindow : EditWindow
         selectNewestPending = selectNewest;
         optionalTitle = "CRL_LogViewer_Title".Translate();
         onlyOneOfTypeAllowed = true;
+        // the filter box swallows Enter as "apply", and Window would otherwise read it as accept
+        closeOnAccept = false;
     }
 
     public LogViewerWindow() : this(LogViewerBoot.Sink ?? new ViewerLogSink())
@@ -319,7 +325,20 @@ internal sealed class LogViewerWindow : EditWindow
             options.Add(new FloatMenuOption("CRL_LogViewer_NextError".Translate(), JumpToNextError));
         }
         options.Add(new FloatMenuOption("CRL_LogViewer_LoadFile".Translate(), OpenLogFileMenu));
+        if (loaded != null)
+        {
+            options.Add(new FloatMenuOption("CRL_LogViewer_BackToLive".Translate(), BackToLive));
+        }
         Find.WindowStack.Add(new FloatMenu(options));
+    }
+
+    private void BackToLive()
+    {
+        loaded = null;
+        loadedName = null;
+        state.Selected = null;
+        cachedRevision = -1;
+        Messages.Message("CRL_LogViewer_BackToLiveDone".Translate(), MessageTypeDefOf.TaskCompletion, false);
     }
 
     private void OpenLogFileMenu()
@@ -344,10 +363,10 @@ internal sealed class LogViewerWindow : EditWindow
 
     private void LoadLogFile(string path)
     {
-        IReadOnlyList<LogEntry> loaded;
+        IReadOnlyList<LogEntry> read;
         try
         {
-            loaded = NdjsonLogReader.ReadFile(path);
+            read = NdjsonLogReader.ReadFile(path);
         }
         catch (System.IO.IOException ex)
         {
@@ -355,13 +374,12 @@ internal sealed class LogViewerWindow : EditWindow
             return;
         }
 
-        // replay through Write so tallies, repeat collapsing and the revision bump all still apply
-        sink.Clear();
-        foreach (LogEntry entry in loaded) sink.Write(entry);
-
+        this.loaded = read;
+        loadedName = System.IO.Path.GetFileName(path);
         state.Selected = null;
+        cachedRevision = -1;
         Messages.Message(
-            "CRL_LogViewer_LoadedFile".Translate(System.IO.Path.GetFileName(path).Named("FILE"), loaded.Count.Named("COUNT")),
+            "CRL_LogViewer_LoadedFile".Translate(loadedName.Named("FILE"), read.Count.Named("COUNT")),
             MessageTypeDefOf.PositiveEvent,
             false);
     }
@@ -936,23 +954,26 @@ internal sealed class LogViewerWindow : EditWindow
             LevelSignature(),
             state.ExpandedChannels.Count.ToString());
 
-        if (sink.Revision == cachedRevision && signature == cachedSignature)
+        int revision = loaded != null ? int.MinValue : sink.Revision;
+        if (revision == cachedRevision && signature == cachedSignature)
         {
             return;
         }
 
-        IReadOnlyList<LogEntry> snapshot = sink.Snapshot();
+        IReadOnlyList<LogEntry> snapshot = loaded ?? sink.Snapshot();
         filtered = LogFilter.Apply(snapshot, state);
 
-        // tree and channel list come from the sink's running tallies, so neither walks the buffer
-        IReadOnlyDictionary<string, ChannelTally> tallies = sink.ChannelTallies();
+        // live mode reads the sink's running tallies so nothing walks the buffer; a loaded file
+        // has no sink behind it, so its tallies are walked once per load
+        IReadOnlyDictionary<string, ChannelTally> tallies =
+            loaded != null ? LogFilter.TalliesFrom(loaded) : sink.ChannelTallies();
         channels = LogFilter.BuildChannels(tallies, snapshot.Count, state, new ChannelLabels(
             "CRL_LogViewer_AllChannels".Translate(),
             "CRL_LogViewer_Group_Mod".Translate(),
             "CRL_LogViewer_Group_Vanilla".Translate()));
         channelNames = SortedChannelNames(tallies);
-        levelCounts = sink.LevelTallies();
-        cachedRevision = sink.Revision;
+        levelCounts = loaded != null ? LevelCounts.FromSnapshot(loaded) : sink.LevelTallies();
+        cachedRevision = revision;
         cachedSignature = signature;
 
         if (selectNewestPending && filtered.Count > 0)

@@ -97,4 +97,8 @@
     <CRL_LogViewer_LoadFile>Load a log file...</CRL_LogViewer_LoadFile>
     <CRL_LogViewer_LoadedFile>Loaded {COUNT} entries from {FILE}</CRL_LogViewer_LoadedFile>
     <CRL_LogViewer_NoLogFiles>No log files in {DIR}. Turn on "Rolling JSON File" on the Destinations tab of this mod's settings.</CRL_LogViewer_NoLogFiles>
+    <CRL_LogViewer_Detail_Link>LINK</CRL_LogViewer_Detail_Link>
+    <CRL_LogViewer_Detail_LinkCopied>Copied {URL}</CRL_LogViewer_Detail_LinkCopied>
+    <CRL_LogViewer_BackToLive>Back to the live log</CRL_LogViewer_BackToLive>
+    <CRL_LogViewer_BackToLiveDone>Showing the live log again</CRL_LogViewer_BackToLiveDone>
 </LanguageData>

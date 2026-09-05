@@ -14,6 +14,12 @@ internal static class LogDetailView
     private const float ScrollbarWidth = 18f;
     private const float CopyButtonWidth = 92f;
 
+    private static readonly Color LinkColor = new Color(0.44f, 0.68f, 0.90f);
+    private static readonly Color LinkHover = new Color(0.62f, 0.81f, 1f);
+
+    private static Vector2 dragMouse;
+    private static int dragControl;
+
     public static void Draw(Rect rect, LogEntry? entry, ref Vector2 scroll, bool combined)
     {
         Widgets.DrawBoxSolid(rect, new Color(1f, 1f, 1f, 0.02f));
@@ -48,6 +54,7 @@ internal static class LogDetailView
             DrawRow(ref y, contentWidth, "CRL_LogViewer_Detail_PatchedBy", string.Join(", ", entry.PatchedBy), Color.gray);
         }
         DrawRow(ref y, contentWidth, "CRL_LogViewer_Detail_Source", SourceText(entry), Color.gray);
+        DrawLinks(ref y, contentWidth, entry, trace);
 
         if (entry.Context != null)
         {
@@ -92,7 +99,8 @@ internal static class LogDetailView
 
     private static float MeasureHeight(LogEntry entry, string trace, bool combined, float width)
     {
-        int rows = 3 + (string.IsNullOrEmpty(entry.Mod) ? 0 : 1) + (entry.PatchedBy is null or { Count: > 0 } ? 1 : 0) + (entry.Context?.Count ?? 0);
+        int rows = 3 + (string.IsNullOrEmpty(entry.Mod) ? 0 : 1) + (entry.PatchedBy is null or { Count: > 0 } ? 1 : 0)
+            + (entry.Context?.Count ?? 0) + UrlScanner.ForEntry(entry, trace).Count;
         float h = rows * RowHeight + 6f;
 
         Text.Font = GameFont.Small;
@@ -125,6 +133,37 @@ internal static class LogDetailView
         y += RowHeight;
     }
 
+    /// <summary>One clickable row per link, so a url can be copied without dragging across it.</summary>
+    private static void DrawLinks(ref float y, float width, LogEntry entry, string trace)
+    {
+        foreach (string url in UrlScanner.ForEntry(entry, trace))
+        {
+            Rect row = new Rect(0f, y, width, RowHeight);
+
+            Text.Font = GameFont.Tiny;
+            GUI.color = new Color(0.54f, 0.56f, 0.58f);
+            Widgets.Label(new Rect(row.x, row.y, LabelWidth, RowHeight), "CRL_LogViewer_Detail_Link".Translate());
+
+            Rect link = new Rect(row.x + LabelWidth, row.y - 1f, width - LabelWidth, RowHeight);
+            Text.Font = GameFont.Small;
+            GUI.color = Mouse.IsOver(link) ? LinkHover : LinkColor;
+            Widgets.Label(link, url);
+            GUI.color = Color.white;
+
+            // no ButtonInvisible: it would allocate a control id, and the link count varies per
+            // entry, which would shift the text area ids underneath and break their selection
+            if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && Mouse.IsOver(link))
+            {
+                GUIUtility.systemCopyBuffer = url;
+                Messages.Message("CRL_LogViewer_Detail_LinkCopied".Translate(url.Named("URL")),
+                    MessageTypeDefOf.TaskCompletion, false);
+                Event.current.Use();
+            }
+
+            y += RowHeight;
+        }
+    }
+
     private static void DrawBlock(ref float y, float width, string labelKey, string body)
     {
         y += 6f;
@@ -137,11 +176,47 @@ internal static class LogDetailView
         Text.Font = GameFont.Small;
         GUI.color = new Color(0.94f, 0.94f, 0.91f);
         float h = BlockHeight(body, width);
+        Rect area = new Rect(0f, y, width, h);
         // read-only TextArea rather than Label so the text can be selected and copied
-        Widgets.TextArea(new Rect(0f, y, width, h), body, readOnly: true);
+        Widgets.TextArea(area, body, readOnly: true);
+        ExtendSlowDrag(area);
         GUI.color = Color.white;
 
         y += h;
+    }
+
+    /// <summary>
+    /// Keeps a slow drag selecting. Unity grows the selection only on <c>MouseDrag</c>, and below
+    /// about a pixel of travel per frame it emits none at all, so the selection stops part way.
+    /// Measured at 233fps: a 13 second drag across 218px produced zero drag events.
+    /// </summary>
+    private static void ExtendSlowDrag(Rect rect)
+    {
+        int hot = GUIUtility.hotControl;
+        int keyboard = GUIUtility.keyboardControl;
+        bool repaint = Event.current.type == EventType.Repaint;
+
+        // GetStateObject allocates an editor for whatever id it is handed, so screen out the
+        // controls that cannot be a focused text field before asking for one
+        if (!repaint || hot == 0 || hot != keyboard) return;
+        if (GUIUtility.GetStateObject(typeof(TextEditor), hot) is not TextEditor editor) return;
+
+        Vector2 mouse = Event.current.mousePosition;
+        if (hot != dragControl)
+        {
+            dragControl = hot;
+            dragMouse = mouse;
+            return;
+        }
+
+        if (!DragSelectPolicy.ShouldExtend(repaint, hot, keyboard, editor.position == rect,
+            mouse.x - dragMouse.x, mouse.y - dragMouse.y))
+        {
+            return;
+        }
+
+        dragMouse = mouse;
+        editor.SelectToPosition(mouse);
     }
 
     // measured with the TextArea style, not Text.CalcHeight: the field's padding wraps text
