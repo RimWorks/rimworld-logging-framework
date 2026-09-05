@@ -322,7 +322,8 @@ internal sealed class LogViewerWindow : EditWindow
 
     private void JumpToNextError()
     {
-        int from = state.Selected == null ? -1 : filtered.IndexOf(state.Selected);
+        // by instance, not by value: LogEntry is a record now, and two rows can hold equal values
+        int from = state.Selected == null ? -1 : filtered.FindIndex(e => ReferenceEquals(e, state.Selected));
         int next = ErrorJump.Next(filtered, from, LogLevel.Error);
         if (next < 0)
         {

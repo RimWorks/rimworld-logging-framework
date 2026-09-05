@@ -8,7 +8,7 @@ namespace RimWorks.RimLogging;
 /// Immutable payload delivered to every sink. Carries the template and the rendered string,
 /// so structured sinks can read <see cref="Context"/> and text sinks just write the message.
 /// </summary>
-public sealed class LogEntry
+public sealed record LogEntry
 {
     private readonly string _channel = string.Empty;
     private readonly string _messageTemplate = string.Empty;

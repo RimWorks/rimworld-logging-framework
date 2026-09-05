@@ -156,25 +156,12 @@ public sealed class ViewerLogSink : ILogSink
 
     private static LogEntry Repeated(LogEntry previous)
     {
-        return new LogEntry
-        {
-            Timestamp = previous.Timestamp,
-            Level = previous.Level,
-            Channel = previous.Channel,
-            MessageTemplate = previous.MessageTemplate,
-            RenderedMessage = previous.RenderedMessage,
-            Context = previous.Context,
-            Source = previous.Source,
-            StackTrace = previous.StackTrace,
-            Exception = previous.Exception,
-            Mod = previous.Mod,
-            Repeats = previous.Repeats + 1,
-        };
+        return previous with { Repeats = previous.Repeats + 1 };
     }
 
     private static bool RepeatsPrevious(LogEntry previous, LogEntry entry)
     {
-        return previous != null
+        return previous is not null
             && previous.Level == entry.Level
             && string.Equals(previous.Channel, entry.Channel, StringComparison.Ordinal)
             && string.Equals(previous.RenderedMessage, entry.RenderedMessage, StringComparison.Ordinal);

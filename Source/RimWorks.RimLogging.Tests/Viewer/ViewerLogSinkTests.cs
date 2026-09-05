@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Reflection;
 using RimWorks.RimLogging.Viewer;
 using Xunit;
 
@@ -8,7 +9,12 @@ public class ViewerLogSinkTests
 {
     private const int RingCapacity = 20000;
 
-    private static LogEntry Entry(LogLevel level, string message, string channel = "Test")
+    private static LogEntry Entry(
+        LogLevel level,
+        string message,
+        string channel = "Test",
+        int? tick = null,
+        IReadOnlyList<string>? patchedBy = null)
     {
         return new LogEntry
         {
@@ -17,6 +23,8 @@ public class ViewerLogSinkTests
             Channel = channel,
             MessageTemplate = message,
             RenderedMessage = message,
+            Tick = tick,
+            PatchedBy = patchedBy,
         };
     }
 
@@ -176,6 +184,62 @@ public class ViewerLogSinkTests
         Assert.Equal(LogLevel.Warn, collapsed.Level);
         Assert.Equal("same", collapsed.RenderedMessage);
         Assert.Equal(2, collapsed.Repeats);
+    }
+
+    [Fact]
+    public void Write_CollapsingARepeat_CopiesEveryPropertyExceptRepeats()
+    {
+        // regression: the hand-rolled clone dropped whichever property was added last, which is
+        // how Tick and PatchedBy went missing. reflection so a new one cannot slip past.
+        ViewerLogSink sink = new ViewerLogSink();
+        LogEntry original = FullyPopulated();
+        sink.Write(original);
+        sink.Write(original);
+
+        LogEntry collapsed = sink.Snapshot()[0];
+
+        foreach (PropertyInfo prop in typeof(LogEntry).GetProperties())
+        {
+            // a value left at its default would match by accident and prove nothing
+            Assert.NotNull(prop.GetValue(original));
+            if (prop.Name == nameof(LogEntry.Repeats)) continue;
+            Assert.Equal(prop.GetValue(original), prop.GetValue(collapsed));
+        }
+
+        Assert.Equal(2, collapsed.Repeats);
+    }
+
+    private static LogEntry FullyPopulated()
+    {
+        return new LogEntry
+        {
+            Timestamp = new System.DateTime(2026, 3, 4, 5, 6, 7, System.DateTimeKind.Utc),
+            Level = LogLevel.Error,
+            Channel = "Cosmere.Roshar",
+            MessageTemplate = "bond formed with {Spren}",
+            RenderedMessage = "bond formed with Syl",
+            Context = new Dictionary<string, object?> { ["Spren"] = "Syl" },
+            Source = new RimWorks.RimLogging.Capture.SourceLocation("Surgebinding.cs", 42, "Bond"),
+            StackTrace = "at Surgebinding.Bond()",
+            Exception = new System.InvalidOperationException("boom"),
+            Mod = "Stormlight",
+            Tick = 999,
+            PatchedBy = new[] { "some.mod" },
+            Repeats = 1,
+        };
+    }
+
+    [Fact]
+    public void Write_CollapsingARepeat_KeepsPatchedByNullWhenAttributionCouldNotRun()
+    {
+        // null means attribution never ran, empty means nothing patched it. dropping the field
+        // defaulted it to empty, turning "we do not know" into "nobody did".
+        ViewerLogSink sink = new ViewerLogSink();
+        LogEntry entry = Entry(LogLevel.Error, "boom", patchedBy: null);
+        sink.Write(entry);
+        sink.Write(entry);
+
+        Assert.Null(sink.Snapshot()[0].PatchedBy);
     }
 
     [Fact]
