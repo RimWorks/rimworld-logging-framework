@@ -4,6 +4,7 @@ using LudeonTK;
 using RimWorld;
 using RimWorks.RimLogging.Filtering;
 using RimWorks.RimLogging.Settings;
+using RimWorks.RimLogging.Sinks;
 using UnityEngine;
 using Verse;
 
@@ -317,7 +318,52 @@ internal sealed class LogViewerWindow : EditWindow
         {
             options.Add(new FloatMenuOption("CRL_LogViewer_NextError".Translate(), JumpToNextError));
         }
+        options.Add(new FloatMenuOption("CRL_LogViewer_LoadFile".Translate(), OpenLogFileMenu));
         Find.WindowStack.Add(new FloatMenu(options));
+    }
+
+    private void OpenLogFileMenu()
+    {
+        string directory = LogDirectoryResolver.Normalize(LoggingMod.Settings.logDirectory, UnityEngine.Application.persistentDataPath);
+        IReadOnlyList<LogFileEntry> files = LogFileList.InDirectory(directory);
+        if (files.Count == 0)
+        {
+            Messages.Message("CRL_LogViewer_NoLogFiles".Translate(directory.Named("DIR")),
+                MessageTypeDefOf.RejectInput, false);
+            return;
+        }
+
+        List<FloatMenuOption> options = new List<FloatMenuOption>(files.Count);
+        foreach (LogFileEntry file in files)
+        {
+            string path = file.Path;
+            options.Add(new FloatMenuOption(file.Label, () => LoadLogFile(path)));
+        }
+        Find.WindowStack.Add(new FloatMenu(options));
+    }
+
+    private void LoadLogFile(string path)
+    {
+        IReadOnlyList<LogEntry> loaded;
+        try
+        {
+            loaded = NdjsonLogReader.ReadFile(path);
+        }
+        catch (System.IO.IOException ex)
+        {
+            Log.Error(ex, "could not read " + path);
+            return;
+        }
+
+        // replay through Write so tallies, repeat collapsing and the revision bump all still apply
+        sink.Clear();
+        foreach (LogEntry entry in loaded) sink.Write(entry);
+
+        state.Selected = null;
+        Messages.Message(
+            "CRL_LogViewer_LoadedFile".Translate(System.IO.Path.GetFileName(path).Named("FILE"), loaded.Count.Named("COUNT")),
+            MessageTypeDefOf.PositiveEvent,
+            false);
     }
 
     private void JumpToNextError()

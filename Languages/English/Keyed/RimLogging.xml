@@ -88,4 +88,7 @@
     <CRL_Tip_VanillaLog>Open the vanilla log (Shift+`)</CRL_Tip_VanillaLog>
     <CRL_Tip_More>More: channels, detail pane, auto-open</CRL_Tip_More>
     <CRL_Tip_Tailing>Following new entries. Scroll up to stop</CRL_Tip_Tailing>
+    <CRL_LogViewer_LoadFile>Load a log file...</CRL_LogViewer_LoadFile>
+    <CRL_LogViewer_LoadedFile>Loaded {COUNT} entries from {FILE}</CRL_LogViewer_LoadedFile>
+    <CRL_LogViewer_NoLogFiles>No log files in {DIR}. Enable the RollingJson sink to write them.</CRL_LogViewer_NoLogFiles>
 </LanguageData>
