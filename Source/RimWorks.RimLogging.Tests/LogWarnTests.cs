@@ -98,4 +98,59 @@ public class LogWarnTests : LogSinkFixtureBase
         Assert.Equal("default", entry!.Channel);
         Assert.Equal(LogLevel.Warn, entry.Level);
     }
+
+    [Fact]
+    public void WarnEveryTo_SameKeyInsideTheInterval_EmitsOnlyOnce()
+    {
+        Log.WarnEveryTo("warn-every-chan", "warn-every-repeat-key", TimeSpan.FromHours(1), "first");
+        int countAfterFirst = _sink.Entries.Count;
+
+        Log.WarnEveryTo("warn-every-chan", "warn-every-repeat-key", TimeSpan.FromHours(1), "second");
+
+        Assert.Equal(countAfterFirst, _sink.Entries.Count);
+    }
+
+    [Fact]
+    public void WarnEveryTo_ZeroInterval_EmitsEveryTime()
+    {
+        Log.WarnEveryTo("warn-every-zero-chan", "warn-every-zero-key", TimeSpan.Zero, "first");
+        int countAfterFirst = _sink.Entries.Count;
+
+        Log.WarnEveryTo("warn-every-zero-chan", "warn-every-zero-key", TimeSpan.Zero, "second");
+
+        Assert.Equal(countAfterFirst + 1, _sink.Entries.Count);
+    }
+
+    [Fact]
+    public void WarnEveryTo_DistinctKeys_DoNotSuppressEachOther()
+    {
+        Log.WarnEveryTo("warn-every-distinct-chan", "warn-every-key-a", TimeSpan.FromHours(1), "a");
+        int countAfterFirst = _sink.Entries.Count;
+
+        Log.WarnEveryTo("warn-every-distinct-chan", "warn-every-key-b", TimeSpan.FromHours(1), "b");
+
+        Assert.Equal(countAfterFirst + 1, _sink.Entries.Count);
+    }
+
+    [Fact]
+    public void WarnEvery_WithoutChannel_StillLandsOnDefault()
+    {
+        Log.WarnEvery("warn-every-default-key", TimeSpan.FromHours(1), "warn-every-default-sentinel");
+
+        LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
+        Assert.NotNull(entry);
+        Assert.Equal("default", entry!.Channel);
+        Assert.Equal(LogLevel.Warn, entry.Level);
+    }
+
+    [Fact]
+    public void WarnEvery_AndWarnEveryTo_ShareOneKeyWindow()
+    {
+        Log.WarnEvery("warn-every-shared-key", TimeSpan.FromHours(1), "default channel");
+        int countAfterFirst = _sink.Entries.Count;
+
+        Log.WarnEveryTo("warn-every-shared-chan", "warn-every-shared-key", TimeSpan.FromHours(1), "other channel");
+
+        Assert.Equal(countAfterFirst, _sink.Entries.Count);
+    }
 }

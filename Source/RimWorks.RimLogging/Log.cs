@@ -297,6 +297,28 @@ public static class Log
         EmitInternal(LogLevel.Warn, channel, message, null, null, null, new CallSite(SourceLocation.Empty, line, file));
     }
 
+    /// <summary>Log at Warn at most once per interval for this key, for a tick-loop heartbeat.</summary>
+    public static void WarnEvery(
+        string key,
+        TimeSpan interval,
+        string message,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => WarnEveryTo(DefaultChannel, key, interval, message, line, file);
+
+    /// <summary>Log at Warn once per interval on an explicit channel. The key is global across channels.</summary>
+    public static void WarnEveryTo(
+        string channel,
+        string key,
+        TimeSpan interval,
+        string message,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+    {
+        if (!Throttle.Every(key, interval, DateTime.UtcNow)) return;
+        EmitInternal(LogLevel.Warn, channel, message, null, null, null, new CallSite(SourceLocation.Empty, line, file));
+    }
+
     /// <summary>Log at Error using a templated message and positional args (default channel).</summary>
     public static void Error(
         string template,
@@ -382,6 +404,28 @@ public static class Log
         [CallerFilePath] string file = "")
     {
         if (!Throttle.Once(key, DateTime.UtcNow)) return;
+        EmitInternal(LogLevel.Error, channel, message, null, null, null, new CallSite(SourceLocation.Empty, line, file));
+    }
+
+    /// <summary>Log at Error at most once per interval for this key, for a tick-loop heartbeat.</summary>
+    public static void ErrorEvery(
+        string key,
+        TimeSpan interval,
+        string message,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => ErrorEveryTo(DefaultChannel, key, interval, message, line, file);
+
+    /// <summary>Log at Error once per interval on an explicit channel. The key is global across channels.</summary>
+    public static void ErrorEveryTo(
+        string channel,
+        string key,
+        TimeSpan interval,
+        string message,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+    {
+        if (!Throttle.Every(key, interval, DateTime.UtcNow)) return;
         EmitInternal(LogLevel.Error, channel, message, null, null, null, new CallSite(SourceLocation.Empty, line, file));
     }
 

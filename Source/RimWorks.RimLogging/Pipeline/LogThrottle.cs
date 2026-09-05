@@ -12,6 +12,9 @@ internal sealed class LogThrottle
     private readonly object gate = new object();
     private readonly Dictionary<string, DateTime> lastFired = new Dictionary<string, DateTime>(StringComparer.Ordinal);
 
+    /// <summary>Key ceiling. Callers that build keys per pawn or per thing would otherwise grow it forever.</summary>
+    internal const int MaxKeys = 4096;
+
     /// <summary>Returns <c>true</c> the first time a key is offered, and <c>false</c> after that.</summary>
     internal bool Once(string? key, DateTime now) => Every(key, TimeSpan.MaxValue, now);
 
@@ -23,7 +26,16 @@ internal sealed class LogThrottle
 
         lock (gate)
         {
-            if (lastFired.TryGetValue(key!, out DateTime last) && now - last < interval) return false;
+            if (lastFired.TryGetValue(key!, out DateTime last))
+            {
+                if (now - last < interval) return false;
+            }
+            else if (lastFired.Count >= MaxKeys)
+            {
+                // dropping the table costs one extra emit per key; an LRU would cost a walk per call
+                lastFired.Clear();
+            }
+
             lastFired[key!] = now;
             return true;
         }

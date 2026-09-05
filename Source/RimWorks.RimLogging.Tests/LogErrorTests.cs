@@ -113,4 +113,37 @@ public class LogErrorTests : LogSinkFixtureBase
         Assert.Equal("default", entry!.Channel);
         Assert.Equal(LogLevel.Error, entry.Level);
     }
+
+    [Fact]
+    public void ErrorEveryTo_SameKeyInsideTheInterval_EmitsOnlyOnce()
+    {
+        Log.ErrorEveryTo("error-every-chan", "error-every-repeat-key", TimeSpan.FromHours(1), "first");
+        int countAfterFirst = _sink.Entries.Count;
+
+        Log.ErrorEveryTo("error-every-chan", "error-every-repeat-key", TimeSpan.FromHours(1), "second");
+
+        Assert.Equal(countAfterFirst, _sink.Entries.Count);
+    }
+
+    [Fact]
+    public void ErrorEveryTo_ExplicitChannel_KeepsChannelAndLevel()
+    {
+        Log.ErrorEveryTo("error-every-keep-chan", "error-every-keep-key", TimeSpan.FromHours(1), "sentinel");
+
+        LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
+        Assert.NotNull(entry);
+        Assert.Equal("error-every-keep-chan", entry!.Channel);
+        Assert.Equal(LogLevel.Error, entry.Level);
+    }
+
+    [Fact]
+    public void ErrorEvery_WithoutChannel_StillLandsOnDefault()
+    {
+        Log.ErrorEvery("error-every-default-key", TimeSpan.FromHours(1), "error-every-default-sentinel");
+
+        LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
+        Assert.NotNull(entry);
+        Assert.Equal("default", entry!.Channel);
+        Assert.Equal(LogLevel.Error, entry.Level);
+    }
 }

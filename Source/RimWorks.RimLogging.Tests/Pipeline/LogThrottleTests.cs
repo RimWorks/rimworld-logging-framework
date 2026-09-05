@@ -66,4 +66,34 @@ public class LogThrottleTests
         Assert.True(t.Every(key, TimeSpan.FromHours(1), T0));
         Assert.True(t.Every(key, TimeSpan.FromHours(1), T0));
     }
+
+    [Fact]
+    public void Every_PastTheKeyCeiling_DropsTheTableSoItCannotGrowForever()
+    {
+        LogThrottle t = new LogThrottle();
+        TimeSpan hour = TimeSpan.FromHours(1);
+        t.Every("first", hour, T0);
+        for (int i = 0; i < LogThrottle.MaxKeys; i++)
+        {
+            t.Every("k" + i, hour, T0);
+        }
+
+        Assert.True(t.Every("first", hour, T0));
+    }
+
+    [Fact]
+    public void Every_RefreshingAnExistingKey_DoesNotDropTheTable()
+    {
+        LogThrottle t = new LogThrottle();
+        TimeSpan day = TimeSpan.FromDays(1);
+        for (int i = 0; i < LogThrottle.MaxKeys; i++)
+        {
+            t.Every("k" + i, day, T0);
+        }
+
+        // a zero interval always fires, so this refreshes k0 instead of adding a key
+        t.Every("k0", TimeSpan.Zero, T0);
+
+        Assert.False(t.Every("k1", day, T0));
+    }
 }
