@@ -716,7 +716,7 @@ internal sealed class LogViewerWindow : EditWindow
         {
             return null;
         }
-        return FilterExpression.TryParse(source, out _, out string? error) ? null : error;
+        return FilterExpression.TryParseOrSearch(source, out _, out string? error) ? null : error;
     }
 
     private void DrawList(Rect rect)

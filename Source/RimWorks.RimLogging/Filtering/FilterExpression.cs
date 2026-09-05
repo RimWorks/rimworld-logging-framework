@@ -52,6 +52,42 @@ public sealed class FilterExpression
         }
     }
 
+    /// <summary>An expression that matches the message text, for input that is not an expression at all.</summary>
+    public static FilterExpression Search(string text)
+        => new FilterExpression(text, new FieldMatchNode(MatchField.Text, text ?? string.Empty, false));
+
+    /// <summary>
+    /// Whether the input is trying to be an expression. Anything without an operator, a quote or a
+    /// bracket is a plain phrase, so a typo inside a real expression still reports as an error.
+    /// </summary>
+    public static bool LooksStructured(string input)
+        => !string.IsNullOrEmpty(input) && input.IndexOfAny(StructuralChars) >= 0;
+
+    private static readonly char[] StructuralChars = { '=', '<', '>', '!', '"', '(', ')' };
+
+    /// <summary>
+    /// Parses as the DSL, falling back to a message-text search when the input is a plain phrase.
+    /// </summary>
+    /// <param name="input">The filter box contents.</param>
+    /// <param name="result">The compiled expression, or <c>null</c> when the input was empty or bad.</param>
+    /// <param name="error">The parse error, only ever set for input that looked structured.</param>
+    /// <returns><c>true</c> when <paramref name="result"/> is usable.</returns>
+    public static bool TryParseOrSearch(string input, out FilterExpression? result, out string? error)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            result = null;
+            error = null;
+            return false;
+        }
+
+        if (LooksStructured(input)) return TryParse(input, out result, out error);
+
+        result = Search(input);
+        error = null;
+        return true;
+    }
+
     /// <summary>
     /// Evaluates the expression against a log entry.
     /// </summary>

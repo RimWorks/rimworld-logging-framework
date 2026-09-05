@@ -33,6 +33,16 @@ ctx.pawn = "Randy*"
 level >= Warn AND ctx.days_left = "2"
 ```
 
+## Plain text search
+
+Anything without an operator, a quote or a bracket is treated as a phrase to find in the message,
+not as an expression. Typing `exception` is the same as typing `text = "exception"`.
+
+That rule is deliberate rather than a blanket fallback. An input that *does* contain `=`, `<`,
+`>`, `!`, `"`, `(` or `)` was clearly meant to be an expression, so a mistake in one still reports
+a parse error. `level >= Warnn` is an error, not a silent search for that literal string, which
+would look identical to a filter that simply matched nothing.
+
 ## Context keys
 
 `ctx.<key>` reads the structured context attached to an entry, from either an anonymous-object

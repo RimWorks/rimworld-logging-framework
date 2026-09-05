@@ -226,7 +226,7 @@ internal static class LogFilter
         bool useDsl = false;
         if (!string.IsNullOrEmpty(state.DslSource) && state.DslError == null)
         {
-            useDsl = FilterExpression.TryParse(state.DslSource, out dsl, out _);
+            useDsl = FilterExpression.TryParseOrSearch(state.DslSource, out dsl, out _);
         }
 
         bool allChannels = state.ActiveChannel == LogViewerState.AllChannels;
