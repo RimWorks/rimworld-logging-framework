@@ -27,7 +27,9 @@ internal readonly struct Suggestions
     {
         string head = source.Substring(0, ReplaceStart);
         string tail = source.Substring(ReplaceStart + ReplaceLength);
-        string joiner = item == "(" || tail.StartsWith(" ", StringComparison.Ordinal) ? "" : " ";
+        // "(" and the "ctx." prefix both continue the same term, so they take no trailing space
+        string joiner = item == "(" || item.EndsWith(".", StringComparison.Ordinal)
+            || tail.StartsWith(" ", StringComparison.Ordinal) ? "" : " ";
         return head + item + joiner + tail;
     }
 }
@@ -37,7 +39,7 @@ internal readonly struct Suggestions
 internal static class FilterSuggest
 {
     private static readonly string[] Levels = { "Trace", "Debug", "Info", "Warn", "Error", "Fatal" };
-    private static readonly string[] TermStarts = { "level", "channel", "text", "mod", "NOT", "(" };
+    private static readonly string[] TermStarts = { "level", "channel", "text", "mod", "ctx.", "NOT", "(" };
     private static readonly string[] LevelOps = { "=", "!=", "<", "<=", ">", ">=" };
     private static readonly string[] StringOps = { "=", "!=" };
     private static readonly string[] Connectors = { "AND", "OR" };
@@ -106,6 +108,9 @@ internal static class FilterSuggest
                 return LevelOps;
 
             case TokenKind.ChannelIdent:
+            case TokenKind.TextIdent:
+            case TokenKind.ModIdent:
+            case TokenKind.CtxIdent:
                 return StringOps;
 
             case TokenKind.LevelLiteral:
@@ -125,7 +130,14 @@ internal static class FilterSuggest
         {
             return Array.Empty<string>();
         }
-        return tokens[opIndex - 1].Kind == TokenKind.ChannelIdent ? QuotedChannels(channels) : Levels;
+
+        // text, mod and ctx take free-form strings, so there is no pool to offer
+        return tokens[opIndex - 1].Kind switch
+        {
+            TokenKind.ChannelIdent => QuotedChannels(channels),
+            TokenKind.LevelIdent => Levels,
+            _ => Array.Empty<string>(),
+        };
     }
 
     private static bool IsOperator(TokenKind kind)

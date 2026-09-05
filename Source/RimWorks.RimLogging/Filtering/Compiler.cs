@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 
 namespace RimWorks.RimLogging.Filtering;
 
@@ -46,9 +48,10 @@ internal static class Compiler
                 string pat = fm.Pattern;
                 bool neg = fm.Negated;
                 MatchField field = fm.Field;
+                string? key = fm.Key;
                 return e =>
                 {
-                    bool match = Matches(field, pat, e);
+                    bool match = Matches(field, pat, key, e);
                     return neg ? !match : match;
                 };
             default:
@@ -56,7 +59,7 @@ internal static class Compiler
         }
     }
 
-    private static bool Matches(MatchField field, string pattern, LogEntry e)
+    private static bool Matches(MatchField field, string pattern, string? key, LogEntry e)
     {
         switch (field)
         {
@@ -65,8 +68,24 @@ internal static class Compiler
                 return e.RenderedMessage.IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0;
             case MatchField.Mod:
                 return e.Mod != null && WildcardMatcher.Match(pattern, e.Mod);
+            case MatchField.Context:
+                return MatchesContext(e.Context, key, pattern);
             default:
                 return WildcardMatcher.Match(pattern, e.Channel);
         }
+    }
+
+    /// <summary>Finds the key case-insensitively; a missing key never matches.</summary>
+    private static bool MatchesContext(IReadOnlyDictionary<string, object?>? context, string? key, string pattern)
+    {
+        if (context == null || key == null) return false;
+        foreach (KeyValuePair<string, object?> pair in context)
+        {
+            // keys come from template placeholders and property names, so the author rarely matches casing
+            if (!string.Equals(pair.Key, key, StringComparison.OrdinalIgnoreCase)) continue;
+            string text = Convert.ToString(pair.Value, CultureInfo.InvariantCulture) ?? string.Empty;
+            return WildcardMatcher.Match(pattern, text);
+        }
+        return false;
     }
 }

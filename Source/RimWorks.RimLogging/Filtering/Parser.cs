@@ -80,7 +80,7 @@ internal static class Parser
             p++;
             return new LevelCompareNode(op, lv);
         }
-        if (TryMatchField(ts[p].Kind, out MatchField field))
+        if (TryMatchField(ts[p], out MatchField field, out string? key))
         {
             p++;
             bool neg;
@@ -91,18 +91,20 @@ internal static class Parser
             if (ts[p].Kind != TokenKind.StringLiteral) throw new FormatException($"Expected string literal at {ts[p].Pos}");
             string pat = ts[p].Text;
             p++;
-            return new FieldMatchNode(field, pat, neg);
+            return new FieldMatchNode(field, pat, neg, key);
         }
         throw new FormatException($"Unexpected token '{ts[p].Text}' at {ts[p].Pos}");
     }
 
-    private static bool TryMatchField(TokenKind kind, out MatchField field)
+    private static bool TryMatchField(Token token, out MatchField field, out string? key)
     {
-        switch (kind)
+        key = null;
+        switch (token.Kind)
         {
             case TokenKind.ChannelIdent: field = MatchField.Channel; return true;
             case TokenKind.TextIdent: field = MatchField.Text; return true;
             case TokenKind.ModIdent: field = MatchField.Mod; return true;
+            case TokenKind.CtxIdent: field = MatchField.Context; key = token.Text; return true;
             default: field = default; return false;
         }
     }

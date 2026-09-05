@@ -19,7 +19,7 @@ public class FilterSuggestTests
     [Fact]
     public void For_EmptyInput_OffersTheThingsThatCanOpenATerm()
     {
-        Assert.Equal(["level", "channel", "text", "mod", "NOT", "("], Items(""));
+        Assert.Equal(["level", "channel", "text", "mod", "ctx.", "NOT", "("], Items(""));
     }
 
     [Fact]
@@ -73,13 +73,13 @@ public class FilterSuggestTests
     [Fact]
     public void For_AfterAConnector_GoesBackToTermStarts()
     {
-        Assert.Equal(["level", "channel", "text", "mod", "NOT", "("], Items("level >= Warn OR "));
+        Assert.Equal(["level", "channel", "text", "mod", "ctx.", "NOT", "("], Items("level >= Warn OR "));
     }
 
     [Fact]
     public void For_AfterNot_GoesBackToTermStarts()
     {
-        Assert.Equal(["level", "channel", "text", "mod", "NOT", "("], Items("NOT "));
+        Assert.Equal(["level", "channel", "text", "mod", "ctx.", "NOT", "("], Items("NOT "));
     }
 
     [Fact]
@@ -150,5 +150,38 @@ public class FilterSuggestTests
         Suggestions s = FilterSuggest.ForChannelFilter("van", Channels);
 
         Assert.Equal("Vanilla ", s.Apply("van", "Vanilla"));
+    }
+
+    [Fact]
+    public void For_AfterACtxKeyword_OffersTheStringOperators()
+    {
+        Assert.Equal(["=", "!="], Items("ctx.pawn "));
+    }
+
+    [Theory]
+    [InlineData("text ")]
+    [InlineData("mod ")]
+    public void For_AfterAStringKeyword_OffersTheStringOperators(string source)
+    {
+        // these used to fall through to the default arm and offer nothing at all
+        Assert.Equal(["=", "!="], Items(source));
+    }
+
+    [Theory]
+    [InlineData("text = ")]
+    [InlineData("mod = ")]
+    [InlineData("ctx.pawn = ")]
+    public void For_AfterAFreeFormOperator_OffersNothingRatherThanLevels(string source)
+    {
+        // the operand pool used to default to level literals for every non-channel keyword
+        Assert.Empty(Items(source));
+    }
+
+    [Fact]
+    public void Apply_CtxPrefix_DoesNotAddASeparatorAfterIt()
+    {
+        Suggestions s = FilterSuggest.For("", Channels);
+
+        Assert.Equal("ctx.", s.Apply("", "ctx."));
     }
 }

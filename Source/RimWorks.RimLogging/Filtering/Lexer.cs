@@ -72,7 +72,8 @@ internal static class Lexer
     private static int ScanIdentifier(string input, int i, List<Token> tokens)
     {
         int start = i;
-        while (i < input.Length && (char.IsLetterOrDigit(input[i]) || input[i] == '_')) i++;
+        // '.' is in the set so "ctx.pawn" lexes as one word; no other keyword contains a dot
+        while (i < input.Length && (char.IsLetterOrDigit(input[i]) || input[i] == '_' || input[i] == '.')) i++;
         tokens.Add(ClassifyIdent(input.Substring(start, i - start), start));
         return i;
     }
@@ -80,6 +81,7 @@ internal static class Lexer
     private static Token ClassifyIdent(string word, int pos)
     {
         string lower = word.ToLowerInvariant();
+        if (lower.StartsWith("ctx.", StringComparison.Ordinal)) return ContextIdent(word, pos);
         return lower switch
         {
             "and" => new Token(TokenKind.And, word, pos),
@@ -93,5 +95,14 @@ internal static class Lexer
                   => new Token(TokenKind.LevelLiteral, word, pos),
             _ => throw new FormatException($"Unknown identifier '{word}' at {pos}"),
         };
+    }
+
+    /// <summary>Carries the key from <c>ctx.&lt;key&gt;</c> as the token text, keeping the caller's casing.</summary>
+    private static Token ContextIdent(string word, int pos)
+    {
+        string key = word.Substring(4);
+        if (key.Length == 0) throw new FormatException($"Expected a context key after 'ctx.' at {pos}");
+        if (key.IndexOf('.') >= 0) throw new FormatException($"Context key '{key}' cannot contain a dot, at {pos}");
+        return new Token(TokenKind.CtxIdent, key, pos);
     }
 }

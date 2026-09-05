@@ -13,6 +13,8 @@ public enum TokenKind
     TextIdent,
     /// <summary>The <c>mod</c> keyword introducing a mod match.</summary>
     ModIdent,
+    /// <summary>A <c>ctx.&lt;key&gt;</c> term; the token text is the key alone.</summary>
+    CtxIdent,
     /// <summary>The <c>and</c> logical conjunction keyword.</summary>
     And,
     /// <summary>The <c>or</c> logical disjunction keyword.</summary>

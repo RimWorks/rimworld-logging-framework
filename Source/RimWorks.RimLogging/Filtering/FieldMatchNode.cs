@@ -11,6 +11,9 @@ internal enum MatchField
 
     /// <summary>The owning mod, matched as a wildcard pattern.</summary>
     Mod,
+
+    /// <summary>A structured-context value, found by key and matched as a wildcard pattern.</summary>
+    Context,
 }
 
 /// <summary>
@@ -22,10 +25,14 @@ internal sealed class FieldMatchNode : AstNode
     public readonly bool Negated;
     public readonly string Pattern;
 
-    public FieldMatchNode(MatchField field, string pattern, bool negated)
+    /// <summary>The context key, for <see cref="MatchField.Context"/> only. Null for every other field.</summary>
+    public readonly string? Key;
+
+    public FieldMatchNode(MatchField field, string pattern, bool negated, string? key = null)
     {
         Field = field;
         Pattern = pattern;
         Negated = negated;
+        Key = key;
     }
 }
