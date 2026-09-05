@@ -23,6 +23,40 @@ public static class Log
     /// <returns>A handle that removes the pair when disposed.</returns>
     public static IDisposable PushContext(string key, object? value) => Pipeline.LogScope.Push(key, value);
 
+    /// <summary>Times the using-block and logs it at Debug with an elapsed_ms context value.</summary>
+    public static Pipeline.TimedScope Timed(
+        string message,
+        LogLevel level = LogLevel.Debug,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => TimedTo(DefaultChannel, message, level, line, file);
+
+    /// <summary>Times the using-block on an explicit channel. Returns a no-op scope when the level is gated out.</summary>
+    public static Pipeline.TimedScope TimedTo(
+        string channel,
+        string message,
+        LogLevel level = LogLevel.Debug,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+    {
+        string resolved = channel ?? DefaultChannel;
+        // default(TimedScope) is unarmed, so a gated scope never reads the clock or emits
+        return IsEnabled(level, resolved)
+            ? new Pipeline.TimedScope(level, resolved, message, line, file)
+            : default;
+    }
+
+    /// <summary>Whether an entry at this level on this channel would survive both gates.</summary>
+    internal static bool IsEnabled(LogLevel level, string channel)
+    {
+        if (level < Logging.GlobalMinLevel) return false;
+        return level >= Logging.SettingsFor(channel).MinLevelOr(Logging.GlobalMinLevel);
+    }
+
+    internal static void EmitTimed(LogLevel level, string channel, string message, double elapsedMs, int line, string file)
+        => EmitInternal(level, channel, message, null, new { elapsed_ms = elapsedMs }, null,
+                    new CallSite(SourceLocation.Empty, line, file));
+
     /// <summary>Log at Trace using a templated message and positional args (default channel).</summary>
     public static void Trace(
         string template,

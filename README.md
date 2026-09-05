@@ -58,6 +58,9 @@ Log.Error(ex, "save failed");
 Log.WarnOnce("no-power", "the reactor has no power");
 Log.WarnEvery("no-power", TimeSpan.FromMinutes(1), "the reactor still has no power");
 
+// Timing: logs the message with an elapsed_ms context value when the block closes.
+using (Log.Timed("worldgen")) { GenerateWorld(); }
+
 // Explicit channel.
 Log.Info("Cosmere.Roshar.Surgebinding", "bond formed", new { spren = spren.Label });
 
