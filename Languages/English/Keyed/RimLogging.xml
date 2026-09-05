@@ -15,7 +15,6 @@
     <CRL_Settings_Visibility_Unlisted>Unlisted</CRL_Settings_Visibility_Unlisted>
     <CRL_Settings_ProxyUrl>Bundle upload proxy URL</CRL_Settings_ProxyUrl>
     <CRL_Settings_CaptureStackTraces>Capture stack traces for every entry</CRL_Settings_CaptureStackTraces>
-    <CRL_Settings_LogViewerCombinedDetail>Combine message and stack trace in the log viewer</CRL_Settings_LogViewerCombinedDetail>
     <CRL_Settings_GitHubToken>GitHub personal access token (optional)</CRL_Settings_GitHubToken>
     <CRL_Settings_GitHubToken_Note>Stored in plain text in this mod's settings. Only needs the 'gist' scope. When set, uploaded bundles are created under your GitHub account.</CRL_Settings_GitHubToken_Note>
     <CRL_Settings_UploadBundle>Upload log bundle</CRL_Settings_UploadBundle>
@@ -66,11 +65,8 @@
     <CRL_LogViewer_Detail_PatchedByUnavailable>unavailable, this patch library cannot report owners</CRL_LogViewer_Detail_PatchedByUnavailable>
     <CRL_LogViewer_Detail_PatchedBy>Patched by</CRL_LogViewer_Detail_PatchedBy>
     <CRL_LogViewer_Detail_Source>Source</CRL_LogViewer_Detail_Source>
-    <CRL_LogViewer_Detail_Message>Message</CRL_LogViewer_Detail_Message>
-    <CRL_LogViewer_Detail_Stack>Stack trace</CRL_LogViewer_Detail_Stack>
-<CRL_LogViewer_Detail_MessageAndStack>Message &amp; stack trace</CRL_LogViewer_Detail_MessageAndStack>
+    <CRL_LogViewer_Detail_MessageAndStack>Message &amp; stack trace</CRL_LogViewer_Detail_MessageAndStack>
     <CRL_LogViewer_Detail_NoSource>(no source)</CRL_LogViewer_Detail_NoSource>
-    <CRL_LogViewer_Detail_NoStack>(no stack trace)</CRL_LogViewer_Detail_NoStack>
     <CRL_LogViewer_Deselect>Deselect</CRL_LogViewer_Deselect>
     <CRL_LogViewer_Copy>Copy</CRL_LogViewer_Copy>
     <CRL_LogViewer_BundleShared>Bug bundle shared. URL copied to clipboard: {URL}</CRL_LogViewer_BundleShared>

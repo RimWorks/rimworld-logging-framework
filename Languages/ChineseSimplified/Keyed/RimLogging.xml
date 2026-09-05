@@ -5,7 +5,6 @@
     <CRL_Settings_Retention>保留的日志文件数</CRL_Settings_Retention>
     <CRL_Settings_ProxyUrl>日志包上传代理 URL</CRL_Settings_ProxyUrl>
     <CRL_Settings_CaptureStackTraces>为每条记录捕获堆栈跟踪</CRL_Settings_CaptureStackTraces>
-    <CRL_Settings_LogViewerCombinedDetail>在日志查看器中合并消息和堆栈跟踪</CRL_Settings_LogViewerCombinedDetail>
     <CRL_Settings_GitHubToken>GitHub 个人访问令牌（可选）</CRL_Settings_GitHubToken>
     <CRL_Settings_GitHubToken_Note>以明文形式存储在此模组的设置中。仅需要“gist”权限。设置后，上传的日志包将创建在你的 GitHub 账户下。</CRL_Settings_GitHubToken_Note>
     <CRL_Settings_UploadBundle>上传日志包</CRL_Settings_UploadBundle>
@@ -48,11 +47,8 @@
     <CRL_LogViewer_Detail_Mod>模组</CRL_LogViewer_Detail_Mod>
     <CRL_LogViewer_Detail_PatchedBy>补丁来源</CRL_LogViewer_Detail_PatchedBy>
     <CRL_LogViewer_Detail_Source>来源</CRL_LogViewer_Detail_Source>
-    <CRL_LogViewer_Detail_Message>消息</CRL_LogViewer_Detail_Message>
-    <CRL_LogViewer_Detail_Stack>堆栈跟踪</CRL_LogViewer_Detail_Stack>
     <CRL_LogViewer_Detail_MessageAndStack>消息和堆栈跟踪</CRL_LogViewer_Detail_MessageAndStack>
     <CRL_LogViewer_Detail_NoSource>（无来源）</CRL_LogViewer_Detail_NoSource>
-    <CRL_LogViewer_Detail_NoStack>（无堆栈跟踪）</CRL_LogViewer_Detail_NoStack>
     <CRL_LogViewer_Deselect>取消选择</CRL_LogViewer_Deselect>
     <CRL_LogViewer_Copy>复制</CRL_LogViewer_Copy>
     <CRL_LogViewer_BundleShared>错误报告包已分享。URL 已复制到剪贴板：{URL}</CRL_LogViewer_BundleShared>

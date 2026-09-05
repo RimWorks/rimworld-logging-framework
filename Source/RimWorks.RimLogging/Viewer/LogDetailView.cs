@@ -19,8 +19,9 @@ internal static class LogDetailView
 
     private static Vector2 dragMouse;
     private static int dragControl;
+    private static Vector2 linkDown;
 
-    public static void Draw(Rect rect, LogEntry? entry, ref Vector2 scroll, bool combined)
+    public static void Draw(Rect rect, LogEntry? entry, ref Vector2 scroll)
     {
         Widgets.DrawBoxSolid(rect, new Color(1f, 1f, 1f, 0.02f));
 
@@ -34,7 +35,7 @@ internal static class LogDetailView
         float contentWidth = inner.width - ScrollbarWidth;
         string trace = EntryText.Trace(entry);
 
-        Rect view = new Rect(0f, 0f, contentWidth, MeasureHeight(entry, trace, combined, contentWidth));
+        Rect view = new Rect(0f, 0f, contentWidth, MeasureHeight(entry, trace, contentWidth));
         Widgets.BeginScrollView(inner, ref scroll, view);
 
         float y = 0f;
@@ -64,17 +65,7 @@ internal static class LogDetailView
             }
         }
 
-        if (combined)
-        {
-            string both = string.IsNullOrEmpty(trace) ? entry.RenderedMessage : entry.RenderedMessage + "\n\n" + trace;
-            DrawBlock(ref y, contentWidth, "CRL_LogViewer_Detail_MessageAndStack", both);
-        }
-        else
-        {
-            DrawBlock(ref y, contentWidth, "CRL_LogViewer_Detail_Message", entry.RenderedMessage);
-            DrawBlock(ref y, contentWidth, "CRL_LogViewer_Detail_Stack",
-                string.IsNullOrEmpty(trace) ? (string)"CRL_LogViewer_Detail_NoStack".Translate() : trace);
-        }
+        DrawBlock(ref y, contentWidth, "CRL_LogViewer_Detail_MessageAndStack", MessageAndStack(entry, trace));
 
         Widgets.EndScrollView();
         DrawCopyButton(rect, entry);
@@ -97,24 +88,19 @@ internal static class LogDetailView
         Text.Font = GameFont.Small;
     }
 
-    private static float MeasureHeight(LogEntry entry, string trace, bool combined, float width)
+    private static float MeasureHeight(LogEntry entry, string trace, float width)
     {
         int rows = 3 + (string.IsNullOrEmpty(entry.Mod) ? 0 : 1) + (entry.PatchedBy is null or { Count: > 0 } ? 1 : 0)
             + (entry.Context?.Count ?? 0) + UrlScanner.ForEntry(entry, trace).Count;
         float h = rows * RowHeight + 6f;
 
         Text.Font = GameFont.Small;
-        if (combined)
-        {
-            string both = string.IsNullOrEmpty(trace) ? entry.RenderedMessage : entry.RenderedMessage + "\n\n" + trace;
-            h += RowHeight + BlockHeight(both, width) + 6f;
-        }
-        else
-        {
-            h += RowHeight + BlockHeight(entry.RenderedMessage, width) + 6f;
-            h += RowHeight + BlockHeight(string.IsNullOrEmpty(trace) ? " " : trace, width) + 6f;
-        }
-        return h;
+        return h + RowHeight + BlockHeight(MessageAndStack(entry, trace), width) + 6f;
+    }
+
+    private static string MessageAndStack(LogEntry entry, string trace)
+    {
+        return string.IsNullOrEmpty(trace) ? entry.RenderedMessage : entry.RenderedMessage + "\n\n" + trace;
     }
 
     private static void DrawRow(ref float y, float width, string? labelKey, string value, Color valueColor, string? rawLabel = null)
@@ -127,13 +113,13 @@ internal static class LogDetailView
 
         Text.Font = GameFont.Small;
         GUI.color = valueColor;
-        Widgets.Label(new Rect(row.x + LabelWidth, row.y - 1f, width - LabelWidth, RowHeight), value);
+        DrawSelectable(FieldRect(ValueRect(row)), value);
 
         GUI.color = Color.white;
         y += RowHeight;
     }
 
-    /// <summary>One clickable row per link, so a url can be copied without dragging across it.</summary>
+    /// <summary>One row per link. The url selects like any other row, and a click that never drags copies it.</summary>
     private static void DrawLinks(ref float y, float width, LogEntry entry, string trace)
     {
         foreach (string url in UrlScanner.ForEntry(entry, trace))
@@ -144,24 +130,55 @@ internal static class LogDetailView
             GUI.color = new Color(0.54f, 0.56f, 0.58f);
             Widgets.Label(new Rect(row.x, row.y, LabelWidth, RowHeight), "CRL_LogViewer_Detail_Link".Translate());
 
-            Rect link = new Rect(row.x + LabelWidth, row.y - 1f, width - LabelWidth, RowHeight);
+            Rect link = ValueRect(row);
+
+            // the text area takes the mouse event and marks it used, so read it before drawing
+            EventType type = Event.current.type;
+            bool left = Event.current.button == 0;
+            Vector2 mouse = Event.current.mousePosition;
+
             Text.Font = GameFont.Small;
             GUI.color = Mouse.IsOver(link) ? LinkHover : LinkColor;
-            Widgets.Label(link, url);
+            DrawSelectable(FieldRect(link), url);
             GUI.color = Color.white;
 
             // no ButtonInvisible: it would allocate a control id, and the link count varies per
             // entry, which would shift the text area ids underneath and break their selection
-            if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && Mouse.IsOver(link))
+            if (left && type == EventType.MouseDown)
+            {
+                linkDown = mouse;
+            }
+            else if (left && type == EventType.MouseUp && link.Contains(mouse) && link.Contains(linkDown)
+                && LinkClickPolicy.IsClick(mouse.x - linkDown.x, mouse.y - linkDown.y))
             {
                 GUIUtility.systemCopyBuffer = url;
                 Messages.Message("CRL_LogViewer_Detail_LinkCopied".Translate(url.Named("URL")),
                     MessageTypeDefOf.TaskCompletion, false);
-                Event.current.Use();
             }
 
             y += RowHeight;
         }
+    }
+
+    private static Rect ValueRect(Rect row)
+    {
+        return new Rect(row.x + LabelWidth, row.y - 1f, row.width - LabelWidth, RowHeight);
+    }
+
+    // a text area insets its own content, so grow the rect by that padding to leave the glyphs
+    // where the label used to draw them
+    private static Rect FieldRect(Rect content)
+    {
+        RectOffset pad = Text.CurTextAreaReadOnlyStyle.padding;
+        return new Rect(content.x - pad.left, content.y - pad.top,
+            content.width + pad.horizontal, content.height + pad.vertical);
+    }
+
+    // read-only TextArea rather than Label so the text can be selected and copied
+    private static void DrawSelectable(Rect rect, string text)
+    {
+        Widgets.TextArea(rect, text, readOnly: true);
+        ExtendSlowDrag(rect);
     }
 
     private static void DrawBlock(ref float y, float width, string labelKey, string body)
@@ -176,10 +193,7 @@ internal static class LogDetailView
         Text.Font = GameFont.Small;
         GUI.color = new Color(0.94f, 0.94f, 0.91f);
         float h = BlockHeight(body, width);
-        Rect area = new Rect(0f, y, width, h);
-        // read-only TextArea rather than Label so the text can be selected and copied
-        Widgets.TextArea(area, body, readOnly: true);
-        ExtendSlowDrag(area);
+        DrawSelectable(new Rect(0f, y, width, h), body);
         GUI.color = Color.white;
 
         y += h;

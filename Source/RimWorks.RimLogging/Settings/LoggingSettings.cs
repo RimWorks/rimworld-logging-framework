@@ -50,9 +50,6 @@ public sealed class LoggingSettings : ModSettings
     /// <summary>Visibility applied to authenticated Docbin pastes.</summary>
     public string docbinVisibility = LoggingSettingsDefaults.DocbinVisibility;
 
-    /// <summary>When <c>true</c>, the log viewer detail pane combines message and stack trace into one scroll area instead of separate panes.</summary>
-    public bool logViewerCombinedDetail;
-
     /// <summary>Where the log viewer draws the detail pane. Cycled from the viewer's own toolbar.</summary>
     internal Viewer.DetailPlacement logViewerDetailPlacement = Viewer.DetailPlacement.Bottom;
 
@@ -69,7 +66,6 @@ public sealed class LoggingSettings : ModSettings
         Scribe_Values.Look(ref docbinUrl, "docbinUrl", LoggingSettingsDefaults.DocbinUrl);
         Scribe_Values.Look(ref docbinApiKey, "docbinApiKey", LoggingSettingsDefaults.DocbinApiKey);
         Scribe_Values.Look(ref docbinVisibility, "docbinVisibility", LoggingSettingsDefaults.DocbinVisibility);
-        Scribe_Values.Look(ref logViewerCombinedDetail, "logViewerCombinedDetail", false);
         Scribe_Values.Look(ref logViewerDetailPlacement, "logViewerDetailPlacement", Viewer.DetailPlacement.Bottom);
         Scribe_Collections.Look(ref filterPresetNames, "filterPresetNames", LookMode.Value);
         Scribe_Collections.Look(ref filterPresetExpressions, "filterPresetExpressions", LookMode.Value);

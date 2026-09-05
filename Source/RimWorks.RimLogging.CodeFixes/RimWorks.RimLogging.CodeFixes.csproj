@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <!-- Roslyn loads analyzers and code fixes as netstandard2.0, whatever the consuming project targets. -->
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFrameworks></TargetFrameworks>
+        <RootNamespace>RimWorks.RimLogging.CodeFixes</RootNamespace>
+        <AssemblyName>RimWorks.RimLogging.CodeFixes</AssemblyName>
+        <IsPackable>false</IsPackable>
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <!-- release tracking files buy nothing for a fix shipped inside another package -->
+        <NoWarn>$(NoWarn);RS2008</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- linked, not referenced: a ProjectReference would load the analyzer's DiagnosticAnalyzer
+             a second time out of this DLL when both sit in analyzers/dotnet/cs together -->
+        <Compile Include="..\RimWorks.RimLogging.Analyzers\VerseLogMethods.cs" LinkBase="LinkedSource" />
+    </ItemGroup>
+</Project>

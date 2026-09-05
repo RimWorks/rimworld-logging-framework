@@ -5,7 +5,6 @@
     <CRL_Settings_Retention>Aufbewahrte Protokolldateien</CRL_Settings_Retention>
     <CRL_Settings_ProxyUrl>Proxy-URL für Paket-Upload</CRL_Settings_ProxyUrl>
     <CRL_Settings_CaptureStackTraces>Stacktrace für jeden Eintrag erfassen</CRL_Settings_CaptureStackTraces>
-    <CRL_Settings_LogViewerCombinedDetail>Nachricht und Stacktrace im Protokoll-Viewer zusammenführen</CRL_Settings_LogViewerCombinedDetail>
     <CRL_Settings_GitHubToken>GitHub-Personal-Access-Token (optional)</CRL_Settings_GitHubToken>
     <CRL_Settings_GitHubToken_Note>Wird im Klartext in den Einstellungen dieses Mods gespeichert. Benötigt nur den „gist“-Bereich. Wenn gesetzt, werden hochgeladene Pakete unter deinem GitHub-Konto erstellt.</CRL_Settings_GitHubToken_Note>
     <CRL_Settings_UploadBundle>Protokollpaket hochladen</CRL_Settings_UploadBundle>
@@ -48,11 +47,8 @@
     <CRL_LogViewer_Detail_Mod>Mod</CRL_LogViewer_Detail_Mod>
     <CRL_LogViewer_Detail_PatchedBy>Gepatcht von</CRL_LogViewer_Detail_PatchedBy>
     <CRL_LogViewer_Detail_Source>Quelle</CRL_LogViewer_Detail_Source>
-    <CRL_LogViewer_Detail_Message>Nachricht</CRL_LogViewer_Detail_Message>
-    <CRL_LogViewer_Detail_Stack>Stacktrace</CRL_LogViewer_Detail_Stack>
     <CRL_LogViewer_Detail_MessageAndStack>Nachricht und Stacktrace</CRL_LogViewer_Detail_MessageAndStack>
     <CRL_LogViewer_Detail_NoSource>(keine Quelle)</CRL_LogViewer_Detail_NoSource>
-    <CRL_LogViewer_Detail_NoStack>(kein Stacktrace)</CRL_LogViewer_Detail_NoStack>
     <CRL_LogViewer_Deselect>Abwählen</CRL_LogViewer_Deselect>
     <CRL_LogViewer_Copy>Kopieren</CRL_LogViewer_Copy>
     <CRL_LogViewer_BundleShared>Fehlerpaket geteilt. URL in die Zwischenablage kopiert: {URL}</CRL_LogViewer_BundleShared>

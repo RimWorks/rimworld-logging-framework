@@ -137,9 +137,6 @@ public static class LoggingSettingsWindow
         l.CheckboxLabeled("CRL_Settings_CaptureStackTraces".Translate(), ref s.captureStackTraces);
 
         l.Gap();
-        l.CheckboxLabeled("CRL_Settings_LogViewerCombinedDetail".Translate(), ref s.logViewerCombinedDetail);
-
-        l.Gap();
         if (l.ButtonText("CRL_Settings_Reset".Translate())) Reset(s);
     }
 
@@ -208,7 +205,6 @@ public static class LoggingSettingsWindow
         s.docbinUrl = LoggingSettingsDefaults.DocbinUrl;
         s.docbinApiKey = LoggingSettingsDefaults.DocbinApiKey;
         s.docbinVisibility = LoggingSettingsDefaults.DocbinVisibility;
-        s.logViewerCombinedDetail = false;
         s.sinkOverrideNames.Clear();
         s.sinkOverrideStates.Clear();
         SinkLoader.Reload();

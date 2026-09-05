@@ -709,7 +709,7 @@ internal sealed class LogViewerWindow : EditWindow
 
         if (Placement != DetailPlacement.Popout)
         {
-            LogDetailView.Draw(detailArea, state.Selected, ref detailScroll, LoggingMod.Settings.logViewerCombinedDetail);
+            LogDetailView.Draw(detailArea, state.Selected, ref detailScroll);
         }
     }
 

@@ -55,6 +55,36 @@ Log.ErrorOnceTo("MPF.Worldgen", "worldgen-blew-up", "worldgen blew up");
 
 The once-key is global across channels. The same key on two channels still fires once in total.
 
+## Applying the fix automatically
+
+Every squiggle has a code fix attached, in both the IDE lightbulb and `dotnet format` style
+fix-all tools. It rewrites the call in place:
+
+| Vanilla | Fixed to |
+|---|---|
+| `Log.Message(text)` | `Log.Info(text)` |
+| `Log.Warning(text)` | `Log.Warn(text)` |
+| `Log.Error(text)` | `Log.Error(text)` |
+| `Log.ErrorOnce(text, key)` | `Log.ErrorOnce(key, text)` |
+| `Log.WarningOnce(text, key)` | `Log.WarnOnce(key, text)` |
+
+The fix always writes the fully qualified `RimWorks.RimLogging.Log`, then lets Roslyn shorten it
+to `Log` where that stays unambiguous. It never adds a `using` alias, so a file that also calls
+`Log.Clear()` or another vanilla-only method keeps compiling.
+
+The fix always targets the default-channel overload, since that is the only rewrite that
+preserves behavior without guessing. Pick a channel by hand afterward with `Log.InfoTo`,
+`Log.WarnTo`, `Log.ErrorTo`, or the `*OnceTo` equivalents.
+
+Three call shapes get no fix, and stay squiggled for a human to handle:
+
+- a named argument, like `Log.ErrorOnce(text: msg, key: 1)`
+- the `Log.Message(object)` overload, which has no string to move
+- anything the fix can't tell apart from those two at the call site
+
+Fix-all only ever touches call sites that already carry the diagnostic. It never removes an
+unused `using Verse;`, since the file almost certainly uses Verse for other things too.
+
 ## Changing the severity
 
 Set either rule in `.editorconfig`:

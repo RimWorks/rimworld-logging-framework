@@ -1,5 +1,4 @@
 using LudeonTK;
-using RimWorks.RimLogging.Settings;
 using UnityEngine;
 using Verse;
 
@@ -23,6 +22,6 @@ internal sealed class LogDetailWindow : EditWindow
     public override void DoWindowContents(Rect inRect)
     {
         Text.Font = GameFont.Small;
-        LogDetailView.Draw(inRect, state.Selected, ref scroll, LoggingMod.Settings.logViewerCombinedDetail);
+        LogDetailView.Draw(inRect, state.Selected, ref scroll);
     }
 }

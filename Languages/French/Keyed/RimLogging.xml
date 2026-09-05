@@ -5,7 +5,6 @@
     <CRL_Settings_Retention>Fichiers journaux conservés</CRL_Settings_Retention>
     <CRL_Settings_ProxyUrl>URL du proxy de téléversement des lots</CRL_Settings_ProxyUrl>
     <CRL_Settings_CaptureStackTraces>Capturer la pile d'appels pour chaque entrée</CRL_Settings_CaptureStackTraces>
-    <CRL_Settings_LogViewerCombinedDetail>Combiner le message et la pile d'appels dans la visionneuse de journaux</CRL_Settings_LogViewerCombinedDetail>
     <CRL_Settings_GitHubToken>Jeton d'accès personnel GitHub (facultatif)</CRL_Settings_GitHubToken>
     <CRL_Settings_GitHubToken_Note>Stocké en clair dans les paramètres de ce mod. Nécessite uniquement la portée « gist ». Lorsqu'il est défini, les lots téléversés sont créés sous votre compte GitHub.</CRL_Settings_GitHubToken_Note>
     <CRL_Settings_UploadBundle>Téléverser le lot de journaux</CRL_Settings_UploadBundle>
@@ -48,11 +47,8 @@
     <CRL_LogViewer_Detail_Mod>Mod</CRL_LogViewer_Detail_Mod>
     <CRL_LogViewer_Detail_PatchedBy>Modifié par</CRL_LogViewer_Detail_PatchedBy>
     <CRL_LogViewer_Detail_Source>Source</CRL_LogViewer_Detail_Source>
-    <CRL_LogViewer_Detail_Message>Message</CRL_LogViewer_Detail_Message>
-    <CRL_LogViewer_Detail_Stack>Pile d'appels</CRL_LogViewer_Detail_Stack>
     <CRL_LogViewer_Detail_MessageAndStack>Message et pile d'appels</CRL_LogViewer_Detail_MessageAndStack>
     <CRL_LogViewer_Detail_NoSource>(aucune source)</CRL_LogViewer_Detail_NoSource>
-    <CRL_LogViewer_Detail_NoStack>(aucune pile d'appels)</CRL_LogViewer_Detail_NoStack>
     <CRL_LogViewer_Deselect>Désélectionner</CRL_LogViewer_Deselect>
     <CRL_LogViewer_Copy>Copier</CRL_LogViewer_Copy>
     <CRL_LogViewer_BundleShared>Lot de rapport partagé. URL copiée dans le presse-papiers : {URL}</CRL_LogViewer_BundleShared>

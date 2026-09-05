@@ -5,7 +5,6 @@
     <CRL_Settings_Retention>Archivos de registro conservados</CRL_Settings_Retention>
     <CRL_Settings_ProxyUrl>URL del proxy de subida de paquetes</CRL_Settings_ProxyUrl>
     <CRL_Settings_CaptureStackTraces>Capturar la traza de pila en cada entrada</CRL_Settings_CaptureStackTraces>
-    <CRL_Settings_LogViewerCombinedDetail>Combinar el mensaje y la traza de pila en el visor de registros</CRL_Settings_LogViewerCombinedDetail>
     <CRL_Settings_GitHubToken>Token de acceso personal de GitHub (opcional)</CRL_Settings_GitHubToken>
     <CRL_Settings_GitHubToken_Note>Se almacena en texto plano en los ajustes de este mod. Solo necesita el ámbito «gist». Cuando se establece, los paquetes subidos se crean en tu cuenta de GitHub.</CRL_Settings_GitHubToken_Note>
     <CRL_Settings_UploadBundle>Subir paquete de registros</CRL_Settings_UploadBundle>
@@ -48,11 +47,8 @@
     <CRL_LogViewer_Detail_Mod>Mod</CRL_LogViewer_Detail_Mod>
     <CRL_LogViewer_Detail_PatchedBy>Parcheado por</CRL_LogViewer_Detail_PatchedBy>
     <CRL_LogViewer_Detail_Source>Origen</CRL_LogViewer_Detail_Source>
-    <CRL_LogViewer_Detail_Message>Mensaje</CRL_LogViewer_Detail_Message>
-    <CRL_LogViewer_Detail_Stack>Traza de pila</CRL_LogViewer_Detail_Stack>
     <CRL_LogViewer_Detail_MessageAndStack>Mensaje y traza de pila</CRL_LogViewer_Detail_MessageAndStack>
     <CRL_LogViewer_Detail_NoSource>(sin origen)</CRL_LogViewer_Detail_NoSource>
-    <CRL_LogViewer_Detail_NoStack>(sin traza de pila)</CRL_LogViewer_Detail_NoStack>
     <CRL_LogViewer_Deselect>Deseleccionar</CRL_LogViewer_Deselect>
     <CRL_LogViewer_Copy>Copiar</CRL_LogViewer_Copy>
     <CRL_LogViewer_BundleShared>Paquete de error compartido. URL copiada al portapapeles: {URL}</CRL_LogViewer_BundleShared>
