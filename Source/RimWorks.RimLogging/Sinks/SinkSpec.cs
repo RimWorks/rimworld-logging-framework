@@ -2,16 +2,18 @@ namespace RimWorks.RimLogging.Sinks;
 
 internal readonly struct SinkSpec
 {
-    public SinkSpec(string defName, string sinkClass, LogLevel minLevel, bool enabledByDefault)
+    public SinkSpec(string defName, string sinkClass, LogLevel minLevel, bool enabled)
     {
         DefName = defName;
         SinkClass = sinkClass;
         MinLevel = minLevel;
-        EnabledByDefault = enabledByDefault;
+        Enabled = enabled;
     }
 
     public string DefName { get; }
     public string SinkClass { get; }
     public LogLevel MinLevel { get; }
-    public bool EnabledByDefault { get; }
+
+    /// <summary>The def default after the user's override is applied, not the raw XML flag.</summary>
+    public bool Enabled { get; }
 }

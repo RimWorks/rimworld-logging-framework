@@ -17,7 +17,7 @@ internal static class SinkPlan
         List<ILogSink> sinks = [];
         foreach (SinkSpec spec in specs)
         {
-            if (!spec.EnabledByDefault) continue;
+            if (!spec.Enabled) continue;
             ILogSink? sink = TryCreate(spec, factories, warn);
             if (sink == null) continue;
             sinks.Add(sink);

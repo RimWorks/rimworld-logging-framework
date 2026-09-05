@@ -9,6 +9,7 @@ The in-game mod settings page exposes:
 - **Combine message and stack trace** (`logViewerCombinedDetail`) - shows the message and stack trace as one block in the detail pane instead of two.
 - **Detail placement** (`logViewerDetailPlacement`) - `Bottom`, `Right`, or `Popout`. Cycled from the viewer's own toolbar, not from this page.
 - **Filter presets** - saved name/expression pairs for the viewer's filter DSL.
+- **Log destinations** - a checkbox per `SinkDef`. Toggling one rebuilds the sink set immediately, no restart. `Rolling JSON File` ships off; turn it on to get the NDJSON files the viewer can load back.
 
 All settings persist across restarts via RimWorld's Scribe system.
 

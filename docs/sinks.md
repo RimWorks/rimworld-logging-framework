@@ -34,6 +34,8 @@ Or load it from XML so the bootstrap phase instantiates it:
 
 `sinkClass` is an assembly-qualified type name. The implementation needs a public parameterless constructor for XML loading. Built-in sinks: `VerseLog`, `RollingText` (enabled by default), `RollingJson` (NDJSON, off by default).
 
+`enabledByDefault` is only the default. The mod settings page lists every `SinkDef` under **Log destinations**, and a user's choice there wins. Only sinks the user has actually touched are stored, so a sink you add later still starts on its own default.
+
 ## The NDJSON row
 
 `RollingJson` writes one JSON object per line to `RimLogging-<utc-stamp>-<pid>.ndjson`. Each row carries every `LogEntry` field:

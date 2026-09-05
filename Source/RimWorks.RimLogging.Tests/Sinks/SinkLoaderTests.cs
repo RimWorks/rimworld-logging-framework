@@ -15,7 +15,7 @@ public class SinkLoaderTests
         new SinkSpec("TestDef", sinkClass, minLevel, enabled);
 
     [Fact]
-    public void Build_SkipsSpecsWithEnabledByDefaultFalse()
+    public void Build_SkipsSpecsThatResolvedToDisabled()
     {
         List<string> warnings = [];
         List<ILogSink> result = SinkPlan.Build(
@@ -25,6 +25,25 @@ public class SinkLoaderTests
 
         Assert.Empty(result);
         Assert.Empty(warnings);
+    }
+
+    [Fact]
+    public void Build_UserOverride_DecidesWhetherASinkOffByDefaultIsBuilt()
+    {
+        // the composition SinkLoader.LoadFrom does: def default in, override applied, spec out
+        List<string> names = [];
+        List<bool> states = [];
+        string sinkClass = typeof(TestParameterlessSink).AssemblyQualifiedName!;
+
+        SinkSpec offByDefault = new SinkSpec("RollingJson", sinkClass, LogLevel.Trace,
+            SinkToggles.IsEnabled("RollingJson", false, names, states));
+        Assert.Empty(SinkPlan.Build([offByDefault], EmptyFactories, _ => { }));
+
+        SinkToggles.Set("RollingJson", true, names, states);
+        SinkSpec turnedOn = new SinkSpec("RollingJson", sinkClass, LogLevel.Trace,
+            SinkToggles.IsEnabled("RollingJson", false, names, states));
+
+        Assert.Single(SinkPlan.Build([turnedOn], EmptyFactories, _ => { }));
     }
 
     [Fact]
