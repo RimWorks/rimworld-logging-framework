@@ -25,4 +25,23 @@ public static class LogDirectoryResolver
         if (!string.IsNullOrWhiteSpace(current)) return current;
         return EnsureUnderBase(baseDir);
     }
+
+    /// <summary>A <c>file://</c> URL for a file manager, or empty when the path cannot be one.</summary>
+    public static string FolderUrl(string directory)
+    {
+        if (string.IsNullOrWhiteSpace(directory)) return string.Empty;
+        try
+        {
+            // via Uri, not string concat: the default path contains spaces and needs escaping
+            return new System.Uri(Path.GetFullPath(directory)).AbsoluteUri;
+        }
+        catch (System.ArgumentException)
+        {
+            return string.Empty;
+        }
+        catch (System.NotSupportedException)
+        {
+            return string.Empty;
+        }
+    }
 }

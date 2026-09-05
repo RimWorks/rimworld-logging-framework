@@ -3,7 +3,7 @@
 The in-game mod settings page exposes:
 
 - **Global minimum level** (`globalMinLevel`) - drops every entry below this level before any sink sees it.
-- **Log directory** (`logDirectory`) - where rolling files are written; normalized to a default under the game's persistent data path when left blank.
+- **Log directory** (`logDirectory`) - where rolling files are written; normalized to a default under the game's persistent data path when left blank. **Open folder** opens it in your file manager, creating it first if a hand-typed path has never been written to.
 - **Retention count** (`retentionCount`) - number of rotated log files kept.
 - **Bundle proxy URL** (`proxyUrl`) - upload endpoint for bug-report bundles.
 - **Combine message and stack trace** (`logViewerCombinedDetail`) - shows the message and stack trace as one block in the detail pane instead of two.

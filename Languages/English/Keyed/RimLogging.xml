@@ -88,6 +88,9 @@
     <CRL_Tip_VanillaLog>Open the vanilla log (Shift+`)</CRL_Tip_VanillaLog>
     <CRL_Tip_More>More: channels, detail pane, auto-open</CRL_Tip_More>
     <CRL_Tip_Tailing>Following new entries. Scroll up to stop</CRL_Tip_Tailing>
+    <CRL_Settings_LogDir_OpenButton>Open folder</CRL_Settings_LogDir_OpenButton>
+    <CRL_Settings_LogDir_OpenFailed>Could not open {DIR}</CRL_Settings_LogDir_OpenFailed>
+    <CRL_Settings_LogDir_Copied>Path copied to clipboard: {DIR}</CRL_Settings_LogDir_Copied>
     <CRL_Settings_Tab_Destinations>Destinations</CRL_Settings_Tab_Destinations>
     <CRL_Settings_Tab_Capture>Capture</CRL_Settings_Tab_Capture>
     <CRL_Settings_Tab_Reports>Bug reports</CRL_Settings_Tab_Reports>

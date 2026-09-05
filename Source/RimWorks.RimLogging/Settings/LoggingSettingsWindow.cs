@@ -80,11 +80,47 @@ public static class LoggingSettingsWindow
         l.Gap();
         l.Label("CRL_Settings_LogDir".Translate());
         s.logDirectory = l.TextEntry(s.logDirectory);
+        if (l.ButtonText("CRL_Settings_LogDir_OpenButton".Translate(), null, 0.3f)) OpenLogDirectory(s);
 
         l.Gap();
         l.Label("CRL_Settings_Retention".Translate() + ": " + s.retentionCount);
         s.retentionCount = (int)l.Slider(s.retentionCount, 1, 50);
     }
+
+    /// <summary>Opens the log directory in the file manager, and copies the path either way.</summary>
+    private static void OpenLogDirectory(LoggingSettings s)
+    {
+        string dir = LogDirectoryResolver.Normalize(s.logDirectory, Application.persistentDataPath);
+        string url = LogDirectoryResolver.FolderUrl(dir);
+        if (url.Length == 0)
+        {
+            Reject(dir);
+            return;
+        }
+
+        try
+        {
+            // a hand-typed directory has never been written to, so there may be nothing to open
+            System.IO.Directory.CreateDirectory(dir);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "could not create the log directory " + dir);
+            Reject(dir);
+            return;
+        }
+
+        // OpenURL forks and execs, so a machine with no file manager fails in the child where
+        // nothing here can catch it. the clipboard copy is what makes the click useful anyway.
+        GUIUtility.systemCopyBuffer = dir;
+        Application.OpenURL(url);
+        Messages.Message("CRL_Settings_LogDir_Copied".Translate(dir.Named("DIR")),
+            MessageTypeDefOf.PositiveEvent, false);
+    }
+
+    private static void Reject(string dir)
+        => Messages.Message("CRL_Settings_LogDir_OpenFailed".Translate(dir.Named("DIR")),
+            MessageTypeDefOf.RejectInput, false);
 
     private static void DrawCapture(LoggingSettings s, Listing_Standard l)
     {
