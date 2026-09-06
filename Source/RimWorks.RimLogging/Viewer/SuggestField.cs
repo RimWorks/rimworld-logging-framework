@@ -151,7 +151,10 @@ internal sealed class SuggestField
 
         switch (Event.current.keyCode)
         {
+            // only reached while the dropdown is open, so a closed one still lets enter apply
             case KeyCode.Tab:
+            case KeyCode.Return:
+            case KeyCode.KeypadEnter:
                 Event.current.Use();
                 return Accept(highlight);
             case KeyCode.DownArrow:
