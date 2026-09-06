@@ -32,11 +32,18 @@ internal static class LogDetailView
         }
 
         Rect inner = rect.ContractedBy(Pad);
-        float contentWidth = inner.width - ScrollbarWidth;
+
+        // the button gets its own strip. rows are text areas, and one drawn under the button
+        // would take the mouse down and mark it used before the button ever saw it
+        Rect header = new Rect(inner.x, inner.y, inner.width, DetailPaneLayout.ButtonHeight);
+        Rect body = new Rect(inner.x, DetailPaneLayout.BodyTop(inner.y), inner.width,
+            DetailPaneLayout.BodyHeight(inner.height));
+
+        float contentWidth = body.width - ScrollbarWidth;
         string trace = EntryText.Trace(entry);
 
         Rect view = new Rect(0f, 0f, contentWidth, MeasureHeight(entry, trace, contentWidth));
-        Widgets.BeginScrollView(inner, ref scroll, view);
+        Widgets.BeginScrollView(body, ref scroll, view);
 
         float y = 0f;
         DrawRow(ref y, contentWidth, "CRL_LogViewer_Detail_Level", entry.Level.ToString().ToUpperInvariant(), LevelColors.For(entry.Level));
@@ -68,19 +75,16 @@ internal static class LogDetailView
         DrawBlock(ref y, contentWidth, "CRL_LogViewer_Detail_MessageAndStack", MessageAndStack(entry, trace));
 
         Widgets.EndScrollView();
-        DrawCopyButton(rect, entry);
+        DrawCopyButton(header, entry);
     }
 
-    private static void DrawCopyButton(Rect rect, LogEntry? entry)
+    private static void DrawCopyButton(Rect header, LogEntry entry)
     {
-        // allocated even with nothing selected, so the control id count does not move with the
-        // selection. IMGUI derives ids from allocation order.
-        Rect copy = entry == null
-            ? new Rect(-4000f, -4000f, CopyButtonWidth, 22f)
-            : new Rect(rect.xMax - Pad - ScrollbarWidth - Pad - CopyButtonWidth, rect.y + Pad, CopyButtonWidth, 22f);
+        Rect copy = new Rect(header.xMax - ScrollbarWidth - CopyButtonWidth, header.y,
+            CopyButtonWidth, DetailPaneLayout.ButtonHeight);
 
         Text.Font = GameFont.Tiny;
-        if (Widgets.ButtonText(copy, "CRL_LogViewer_Detail_CopyAll".Translate()) && entry != null)
+        if (Widgets.ButtonText(copy, "CRL_LogViewer_Detail_CopyAll".Translate()))
         {
             GUIUtility.systemCopyBuffer = EntryText.Full(entry);
             Messages.Message("CRL_LogViewer_Copy".Translate(), MessageTypeDefOf.TaskCompletion, false);
