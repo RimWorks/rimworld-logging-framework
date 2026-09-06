@@ -101,7 +101,7 @@ internal static class FilterSuggest
     }
 
     /// <summary>Known context keys, offered as whole `ctx.key` terms.</summary>
-    private static IReadOnlyList<string> CtxKeys(ContextIndex context)
+    private static List<string> CtxKeys(ContextIndex context)
     {
         IReadOnlyList<string> keys = context.Keys();
         List<string> terms = new List<string>(keys.Count);

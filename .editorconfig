@@ -118,3 +118,8 @@ dotnet_diagnostic.S125.severity = none
 [*.cs]
 dotnet_diagnostic.S1135.severity = none
 
+# CA1861 targets an array rebuilt on every call of a hot method. An expected value in an
+# assertion runs once, and hoisting it away from the assert is harder to read.
+[Source/RimWorks.RimLogging.Tests/**.cs]
+dotnet_diagnostic.CA1861.severity = none
+

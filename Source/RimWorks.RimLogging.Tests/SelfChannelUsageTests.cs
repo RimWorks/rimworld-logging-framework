@@ -11,17 +11,15 @@ namespace RimWorks.RimLogging.Tests;
 /// RimLogging's own messages must name their channel. A default-channel overload files them
 /// under "default", which also costs them their mod_id, since the self stamp keys off the channel.
 /// </summary>
-public class SelfChannelUsageTests
+public partial class SelfChannelUsageTests
 {
     // Log.Info( but not Log.InfoTo( and not something.Log.Info(
-    private static readonly Regex DefaultChannelCall = new Regex(
-        @"(?<![.\w])Log\.(Trace|Debug|Info|Warn|Error|Fatal)\s*\(",
-        RegexOptions.Compiled);
+    [GeneratedRegex(@"(?<![.\w])Log\.(Trace|Debug|Info|Warn|Error|Fatal)\s*\(")]
+    private static partial Regex DefaultChannelCall();
 
     // real calls only. nameof(Verse.Log.Error) and Verse.Log.Messages have no paren after.
-    private static readonly Regex VerseLogWrite = new Regex(
-        @"Verse\.Log\.(Message|Warning|Error)\s*\(",
-        RegexOptions.Compiled);
+    [GeneratedRegex(@"Verse\.Log\.(Message|Warning|Error)\s*\(")]
+    private static partial Regex VerseLogWrite();
 
     /// <summary>The one file that writes to Verse.Log on purpose, pushing entries back into
     /// vanilla's own buffer so its log window still works.</summary>
@@ -47,7 +45,7 @@ public class SelfChannelUsageTests
             string[] lines = File.ReadAllLines(file);
             for (int i = 0; i < lines.Length; i++)
             {
-                if (DefaultChannelCall.IsMatch(lines[i]))
+                if (DefaultChannelCall().IsMatch(lines[i]))
                 {
                     offenders.Add($"{Path.GetFileName(file)}:{i + 1}  {lines[i].Trim()}");
                 }
@@ -69,7 +67,7 @@ public class SelfChannelUsageTests
             string[] lines = File.ReadAllLines(file);
             for (int i = 0; i < lines.Length; i++)
             {
-                if (VerseLogWrite.IsMatch(lines[i]))
+                if (VerseLogWrite().IsMatch(lines[i]))
                 {
                     offenders.Add($"{Path.GetFileName(file)}:{i + 1}  {lines[i].Trim()}");
                 }
