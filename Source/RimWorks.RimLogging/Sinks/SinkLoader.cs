@@ -42,7 +42,7 @@ internal static class SinkLoader
             new SinkSpec(def.defName, def.sinkClass, def.minLevel,
                 SinkToggles.IsEnabled(def.defName, def.enabledByDefault, overrideNames, overrideStates)));
 
-        foreach (ILogSink sink in SinkPlan.Build(specs, factories, Verse.Log.Warning))
+        foreach (ILogSink sink in SinkPlan.Build(specs, factories, Bootstrap.PanicLog.Warn))
         {
             Logging.RegisterSink(sink);
             Loaded.Add(sink);
@@ -62,7 +62,8 @@ internal static class SinkLoader
             }
             catch (Exception ex)
             {
-                Verse.Log.Warning($"[RimLogging] sink '{sink.Name}' threw while closing: {ex.Message}");
+                // the sink set is being swapped out, so this cannot go through our own sinks
+                Bootstrap.PanicLog.Warn($"[RimLogging] sink '{sink.Name}' threw while closing: {ex.Message}");
             }
         }
         Loaded.Clear();

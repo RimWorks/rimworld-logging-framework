@@ -44,21 +44,31 @@ internal static class FilterSuggest
     private static readonly string[] StringOps = { "=", "!=" };
     private static readonly string[] Connectors = { "AND", "OR" };
 
+    private const string CtxPrefix = "ctx.";
+
     private const string WordChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.*!=<>()";
 
     /// <summary>Candidates for the DSL box, assuming the caret sits at the end of <paramref name="source"/>.</summary>
-    public static Suggestions For(string source, IReadOnlyCollection<string> channels)
+    public static Suggestions For(string source, IReadOnlyCollection<string> channels, ContextIndex? context = null)
     {
         source ??= string.Empty;
 
         int quote = UnclosedQuoteIndex(source);
         if (quote >= 0)
         {
-            return Filtered(QuotedChannels(channels), source.Substring(quote), quote, source.Length - quote);
+            // which field opened the term decides the pool. offering channels for every quote is
+            // how ctx.mod_id = " used to list channel names.
+            return Filtered(QuotedOperands(source.Substring(0, quote), channels, context),
+                source.Substring(quote), quote, source.Length - quote);
         }
 
         int partialStart = PartialWordStart(source);
         string partial = source.Substring(partialStart);
+
+        if (partial.StartsWith(CtxPrefix, StringComparison.Ordinal) && context != null)
+        {
+            return Filtered(CtxKeys(context), partial, partialStart, partial.Length);
+        }
 
         List<Token>? tokens = TryTokenize(source.Substring(0, partialStart));
         if (tokens == null)
@@ -67,6 +77,36 @@ internal static class FilterSuggest
         }
 
         return Filtered(PoolAfter(tokens, channels), partial, partialStart, partial.Length);
+    }
+
+    /// <summary>The pool for an operand that has just opened a quote.</summary>
+    private static IReadOnlyList<string> QuotedOperands(
+        string committed,
+        IReadOnlyCollection<string> channels,
+        ContextIndex? context)
+    {
+        List<Token>? tokens = TryTokenize(committed);
+        if (tokens == null) return Array.Empty<string>();
+
+        // Tokenize appends End, and the operator sits before it, and the field before that
+        int op = tokens.Count - 2;
+        if (op < 1 || !IsOperator(tokens[op].Kind)) return Array.Empty<string>();
+
+        return tokens[op - 1].Kind switch
+        {
+            TokenKind.ChannelIdent => QuotedChannels(channels),
+            TokenKind.CtxIdent => Quoted(context?.ValuesFor(tokens[op - 1].Text)),
+            _ => Array.Empty<string>(),
+        };
+    }
+
+    /// <summary>Known context keys, offered as whole `ctx.key` terms.</summary>
+    private static IReadOnlyList<string> CtxKeys(ContextIndex context)
+    {
+        IReadOnlyList<string> keys = context.Keys();
+        List<string> terms = new List<string>(keys.Count);
+        for (int i = 0; i < keys.Count; i++) terms.Add(CtxPrefix + keys[i]);
+        return terms;
     }
 
     /// <summary>Candidates for the plain-substring channel box, which replaces the whole field.</summary>
@@ -144,6 +184,15 @@ internal static class FilterSuggest
     {
         return kind == TokenKind.OpEq || kind == TokenKind.OpNeq || kind == TokenKind.OpLt
             || kind == TokenKind.OpLte || kind == TokenKind.OpGt || kind == TokenKind.OpGte;
+    }
+
+    private static IReadOnlyList<string> Quoted(IReadOnlyList<string>? values)
+    {
+        if (values == null || values.Count == 0) return Array.Empty<string>();
+
+        List<string> quoted = new List<string>(values.Count);
+        for (int i = 0; i < values.Count; i++) quoted.Add("\"" + values[i] + "\"");
+        return quoted;
     }
 
     private static List<string> QuotedChannels(IReadOnlyCollection<string> channels)

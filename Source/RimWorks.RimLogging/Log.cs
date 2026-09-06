@@ -12,6 +12,9 @@ public static class Log
     /// <summary>Name of the default log channel used when no channel is specified.</summary>
     public const string DefaultChannel = "default";
 
+    /// <summary>Channel RimLogging files its own messages under.</summary>
+    public const string SelfChannel = "RimWorks.RimLogging";
+
     private static readonly Pipeline.LogThrottle Throttle = new Pipeline.LogThrottle();
 
     /// <summary>
@@ -549,7 +552,7 @@ public static class Log
         IReadOnlyList<string>? patchedBy = Array.Empty<string>();
         string? capturedTrace = walk != null ? Capture.StackWalker.FormatTrace(walk, out patchedBy) : null;
 
-        SourceLocation src = ResolveSource(site.Line, site.File, site.Source, walk, out string? mod);
+        SourceLocation src = ResolveSource(site.Line, site.File, site.Source, walk, out string? mod, out string? modId);
         (string rendered, IReadOnlyDictionary<string, object?>? ctx) = RenderMessage(template, args, structuredContext);
         ctx = Pipeline.LogScope.Merge(ctx);
 
@@ -560,7 +563,7 @@ public static class Log
             Channel = resolvedChannel,
             MessageTemplate = template ?? string.Empty,
             RenderedMessage = rendered,
-            Context = ctx,
+            Context = Capture.ModContext.WithModId(ctx, modId ?? SelfModId(resolvedChannel)),
             Source = src,
             Tick = Logging.CurrentTick(),
             StackTrace = string.IsNullOrEmpty(capturedTrace) ? null : capturedTrace,
@@ -594,9 +597,16 @@ public static class Log
     /// Resolves the source location for an entry: caller-info file/line first (also yielding the originating
     /// mod via ), then an explicit caller-provided location, then a single stack walk as the fallback.
     /// </summary>
-    private static SourceLocation ResolveSource(int line, string file, SourceLocation explicitSource, System.Diagnostics.StackTrace? walk, out string? mod)
+    // our own frames are skipped during caller resolution, so an entry we logged can never
+    // resolve its own packageId the way a third-party mod's entry does
+    private static string? SelfModId(string channel)
+        => Capture.ModContext.Fallback(channel, SelfChannel,
+            Capture.ModNameCache.PackageIdForAssembly(typeof(Log).Assembly));
+
+    private static SourceLocation ResolveSource(int line, string file, SourceLocation explicitSource, System.Diagnostics.StackTrace? walk, out string? mod, out string? modId)
     {
         mod = null;
+        modId = null;
         if (line > 0 && !string.IsNullOrEmpty(file))
         {
             // the caller attributes give a path but no Type, and normalisation needs the
@@ -606,6 +616,7 @@ public static class Log
             {
                 string shortPath = StackWalker.NormalizePath(file, callerType);
                 mod = ModNameCache.ForAssembly(callerType.Assembly);
+                modId = ModNameCache.PackageIdForAssembly(callerType.Assembly);
                 return new SourceLocation(shortPath, line, null);
             }
             (string fallbackPath, string? resolvedMod) = ModResolution.ResolveFromPath(file, ModNameCache.Map());
@@ -666,8 +677,16 @@ public static class Log
     /// Entry point for logs captured from outside our call sites, so the Unity bridge and the
     /// Verse.Log hijack. Source location is empty because file and line mean nothing here.
     /// </summary>
-    internal static void EmitCaptured(LogLevel level, string channel, string text, string? stackTrace = null, string? mod = null)
+    internal static void EmitCaptured(LogLevel level, string channel, string text, string? stackTrace = null, string? mod = null, string? modId = null)
     {
+        string? tagged = Capture.TaggedMessageChannel.Read(text, Capture.TaggedMessageChannel.ConcordRoot);
+        if (tagged != null)
+        {
+            channel = tagged;
+            mod ??= Capture.ModNameCache.NameForAssemblyName(Capture.TaggedMessageChannel.ConcordAssembly);
+            modId ??= Capture.ModNameCache.PackageIdForAssemblyName(Capture.TaggedMessageChannel.ConcordAssembly);
+        }
+
         if (level < Logging.GlobalMinLevel) return;
 
         Channels.ChannelSettings settings = Logging.SettingsFor(channel);
@@ -688,7 +707,7 @@ public static class Log
             MessageTemplate = text ?? string.Empty,
             RenderedMessage = text ?? string.Empty,
             Source = src,
-            Context = Pipeline.LogScope.Merge(null),
+            Context = Capture.ModContext.WithModId(Pipeline.LogScope.Merge(null), modId),
             Tick = Logging.CurrentTick(),
             StackTrace = string.IsNullOrEmpty(captured) ? null : captured,
             Mod = mod,

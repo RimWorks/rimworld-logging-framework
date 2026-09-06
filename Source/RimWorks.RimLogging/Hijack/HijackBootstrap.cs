@@ -8,6 +8,8 @@ internal static class HijackBootstrap
 {
     private static volatile bool _installed;
 
+    // the two provider hooks below report through Unity, not our own pipeline. they fire during
+    // channel and mod resolution, which an emit performs, so logging normally would recurse.
     internal static bool Install()
     {
         if (_installed) return true;
@@ -15,11 +17,12 @@ internal static class HijackBootstrap
 
         AssemblyChannelCache.ResolverHook = AssemblyChannelResolver.Resolve;
         AssemblyChannelCache.OnResolverError = (asm, ex) =>
-            Verse.Log.Warning($"[RimLogging] channel resolver failed for '{asm.GetName().Name}': {ex.GetType().Name}: {ex.Message}");
+            PanicLog.Warn($"[RimLogging] channel resolver failed for '{asm.GetName().Name}': {ex.GetType().Name}: {ex.Message}");
         ModNameCache.Provider = ModNameMapProvider.Build;
         ModNameCache.FolderProvider = ModNameMapProvider.BuildFolders;
+        ModNameCache.PackageIdProvider = ModNameMapProvider.BuildPackageIds;
         ModNameCache.OnProviderError = ex =>
-            Verse.Log.Warning($"[RimLogging] mod-name provider failed: {ex.GetType().Name}: {ex.Message}");
+            PanicLog.Warn($"[RimLogging] mod-name provider failed: {ex.GetType().Name}: {ex.Message}");
         Sinks.VerseLogSink.VanillaWriter = VanillaBufferWriteback.Write;
         VerseLogBackfill.Drain();
         PatchBackends.ApplyBest();

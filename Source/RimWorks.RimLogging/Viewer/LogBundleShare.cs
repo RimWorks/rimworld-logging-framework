@@ -34,12 +34,12 @@ internal static class LogBundleShare
             }
             else
             {
-                Log.Error($"Bug bundle upload failed: {result.ErrorMessage ?? "(no error message)"}");
+                Log.ErrorTo(Log.SelfChannel, $"Bug bundle upload failed: {result.ErrorMessage ?? "(no error message)"}");
             }
         }
         catch (Exception ex)
         {
-            Log.Error($"Bug bundle upload failed: {ex}");
+            Log.ErrorTo(Log.SelfChannel, $"Bug bundle upload failed: {ex}");
         }
         finally
         {

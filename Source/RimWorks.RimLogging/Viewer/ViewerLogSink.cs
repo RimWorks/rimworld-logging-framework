@@ -11,6 +11,7 @@ public sealed class ViewerLogSink : ILogSink
     private readonly LogEntry[] ring = new LogEntry[20000];
     private readonly Dictionary<string, ChannelTally> tallies = new Dictionary<string, ChannelTally>(StringComparer.Ordinal);
     private readonly int[] levelCounts = new int[LevelSlotCount];
+    private readonly ContextIndex contextIndex = new ContextIndex();
     private int writeIndex;
     private int count;
 
@@ -33,6 +34,15 @@ public sealed class ViewerLogSink : ILogSink
         lock (syncRoot)
         {
             return new Dictionary<string, ChannelTally>(tallies, StringComparer.Ordinal);
+        }
+    }
+
+    /// <summary>Context keys and values seen so far, for completing ctx. in the filter box.</summary>
+    internal ContextIndex Context()
+    {
+        lock (syncRoot)
+        {
+            return contextIndex;
         }
     }
 
@@ -73,6 +83,7 @@ public sealed class ViewerLogSink : ILogSink
         {
             Array.Clear(ring, 0, ring.Length);
             tallies.Clear();
+            contextIndex.Clear();
             Array.Clear(levelCounts, 0, levelCounts.Length);
             writeIndex = 0;
             count = 0;
@@ -107,6 +118,7 @@ public sealed class ViewerLogSink : ILogSink
                 }
                 ring[writeIndex] = entry;
                 Tally(entry);
+                contextIndex.Add(entry.Context);
                 writeIndex = (writeIndex + 1) % ring.Length;
                 if (count < ring.Length)
                 {

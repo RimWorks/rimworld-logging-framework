@@ -113,6 +113,7 @@ internal sealed class LogViewerWindow : EditWindow
     private readonly Dictionary<string, string> channelNameTruncation = new Dictionary<string, string>();
     private float lastMessageWidth = -1f;
     private float lastChannelNameWidth = -1f;
+    private ContextIndex? contextIndex;
 
     private int cachedRevision = -1;
     private string cachedSignature = string.Empty;
@@ -292,7 +293,7 @@ internal sealed class LogViewerWindow : EditWindow
             textRect,
             state.DslSource,
             "CRL_LogViewer_DslPlaceholder",
-            FilterSuggest.For(state.DslSource, channelNames));
+            FilterSuggest.For(state.DslSource, channelNames, contextIndex));
         if (nextDsl != state.DslSource)
         {
             state.DslSource = nextDsl;
@@ -370,7 +371,7 @@ internal sealed class LogViewerWindow : EditWindow
         }
         catch (System.IO.IOException ex)
         {
-            Log.Error(ex, "could not read " + path);
+            Log.ErrorTo(Log.SelfChannel, ex, "could not read " + path);
             return;
         }
 
@@ -805,7 +806,7 @@ internal sealed class LogViewerWindow : EditWindow
         GUI.color = LevelColors.ForChannel(entry.Channel);
         Widgets.Label(
             new Rect(rect.x + 4f + TimestampWidth, rect.y, ChannelColumnWidth, rect.height),
-            entry.Channel.Truncate(ChannelColumnWidth, channelTruncation));
+            EntryLabel.Channel(entry.Channel, entry.Mod).Truncate(ChannelColumnWidth, channelTruncation));
 
         Text.Font = GameFont.Small;
         GUI.color = LevelColors.For(entry.Level);
@@ -973,6 +974,7 @@ internal sealed class LogViewerWindow : EditWindow
             "CRL_LogViewer_Group_Vanilla".Translate()));
         channelNames = SortedChannelNames(tallies);
         levelCounts = loaded != null ? LevelCounts.FromSnapshot(loaded) : sink.LevelTallies();
+        contextIndex = loaded != null ? ContextIndex.FromSnapshot(loaded) : sink.Context();
         cachedRevision = revision;
         cachedSignature = signature;
 

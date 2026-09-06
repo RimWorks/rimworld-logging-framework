@@ -56,5 +56,20 @@ argument or a `{Placeholder}` in the message template.
   rule but catches people out.
 - The key cannot contain a dot. `ctx.a.b` is a parse error.
 
-The suggestion box offers `ctx.` but cannot complete the key, because the viewer does not track
-which context keys it has seen. Type the key yourself.
+### `ctx.mod_id`
+
+Every entry attributed to a mod carries `mod_id`, the mod's packageId, whether it came through
+RimLogging's own API or was captured from a `Verse.Log` call. It is the one context key you can
+rely on being there.
+
+```
+ctx.mod_id = "cebarks.rimworld.linuxmisc"
+level >= Warn AND ctx.mod_id = "brrainz.*"
+```
+
+A key you pass yourself wins. If your own context already has `mod_id`, RimLogging leaves it
+alone, so the value you filter on is the one you set.
+
+Typing `ctx.` completes against the keys the viewer has actually seen, and opening a quote after
+`ctx.<key> =` completes against that key's values. Both come from the entries in the buffer, so a
+key appears once something has logged it.

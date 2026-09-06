@@ -45,6 +45,23 @@ internal static class ModNameMapProvider
         return map;
     }
 
+    /// <summary>Maps assembly name to the mod's packageId, which is what ctx.mod_id reports.</summary>
+    internal static IReadOnlyDictionary<string, string> BuildPackageIds()
+    {
+        Dictionary<string, string> map = new Dictionary<string, string>();
+        foreach (Verse.ModContentPack mcp in Verse.LoadedModManager.RunningMods)
+        {
+            string packageId = mcp.PackageId;
+            if (string.IsNullOrEmpty(packageId)) continue;
+            foreach (Assembly asm in mcp.assemblies.loadedAssemblies)
+            {
+                string? name = asm.GetName().Name;
+                if (name != null) map[name] = packageId;
+            }
+        }
+        return map;
+    }
+
     private static string? ParseFolder(string? rootDir)
     {
         if (string.IsNullOrEmpty(rootDir)) return null;

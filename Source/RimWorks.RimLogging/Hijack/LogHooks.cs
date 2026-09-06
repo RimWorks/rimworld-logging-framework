@@ -21,8 +21,8 @@ internal static class LogHooks
         {
             return true;
         }
-        (string channel, string? mod) = VerseLogPatchHelpers.ResolveCaller();
-        Log.EmitCaptured(level, channel, text, mod: mod);
+        (string channel, string? mod, string? packageId) = VerseLogPatchHelpers.ResolveCaller();
+        Log.EmitCaptured(level, channel, text, mod: mod, modId: packageId);
         return false;
     }
 }

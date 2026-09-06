@@ -24,6 +24,9 @@ internal static class ModNameCache
     /// </summary>
     internal static Func<IReadOnlyDictionary<string, string>>? FolderProvider { get; set; }
 
+    /// <summary>Supplies assembly name to mod packageId, which is what ctx.mod_id reports.</summary>
+    internal static Func<IReadOnlyDictionary<string, string>>? PackageIdProvider { get; set; }
+
     /// <summary>
     /// Called when a provider throws, so a broken one warns instead of silently emptying the map.
     /// Mirrors <see cref="AssemblyChannelCache.OnResolverError"/>.
@@ -32,6 +35,7 @@ internal static class ModNameCache
 
     private static IReadOnlyDictionary<string, string>? _cached;
     private static IReadOnlyDictionary<string, string>? _cachedFolders;
+    private static IReadOnlyDictionary<string, string>? _cachedPackageIds;
 
     /// <summary>
     /// Builds the map via <see cref="Provider"/>, caching the first non-empty result. An empty
@@ -71,13 +75,43 @@ internal static class ModNameCache
         return map;
     }
 
+    /// <summary>Assembly name to packageId map. Same caching semantics as <see cref="Map"/>.</summary>
+    internal static IReadOnlyDictionary<string, string> PackageIdMap()
+    {
+        if (_cachedPackageIds != null) return _cachedPackageIds;
+        if (PackageIdProvider == null) return Empty;
+        IReadOnlyDictionary<string, string> map;
+        try { map = PackageIdProvider() ?? Empty; }
+        catch (Exception ex)
+        {
+            OnProviderError?.Invoke(ex);
+            return Empty;
+        }
+        if (map.Count > 0) _cachedPackageIds = map;
+        return map;
+    }
+
+    /// <summary>Returns the packageId for the given assembly, or <c>null</c> when unknown.</summary>
+    internal static string? PackageIdForAssembly(Assembly asm)
+    {
+        string? name = asm.GetName().Name;
+        return name == null ? null : PackageIdForAssemblyName(name);
+    }
+
+    /// <summary>PackageId for an assembly's simple name, for callers with no frame to walk.</summary>
+    internal static string? PackageIdForAssemblyName(string name)
+        => PackageIdMap().TryGetValue(name, out string? id) ? id : null;
+
     /// <summary>Returns the mod name for the given assembly, or <c>null</c> when unknown.</summary>
     internal static string? ForAssembly(Assembly asm)
     {
         string? name = asm.GetName().Name;
-        if (name == null) return null;
-        return Map().TryGetValue(name, out string? mod) ? mod : null;
+        return name == null ? null : NameForAssemblyName(name);
     }
+
+    /// <summary>Mod name for an assembly's simple name, for callers with no frame to walk.</summary>
+    internal static string? NameForAssemblyName(string name)
+        => Map().TryGetValue(name, out string? mod) ? mod : null;
 
     /// <summary>
     /// Returns the mod folder name (directory under <c>/Mods/</c>) for the given assembly,
@@ -94,8 +128,10 @@ internal static class ModNameCache
     {
         _cached = null;
         _cachedFolders = null;
+        _cachedPackageIds = null;
         Provider = null;
         FolderProvider = null;
+        PackageIdProvider = null;
         OnProviderError = null;
     }
 }

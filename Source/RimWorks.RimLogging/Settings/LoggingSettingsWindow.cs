@@ -105,7 +105,7 @@ public static class LoggingSettingsWindow
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "could not create the log directory " + dir);
+            Log.ErrorTo(Log.SelfChannel, ex, "could not create the log directory " + dir);
             Reject(dir);
             return;
         }

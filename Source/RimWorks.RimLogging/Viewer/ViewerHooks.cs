@@ -76,7 +76,7 @@ internal static class ViewerHooks
         {
             // vanilla's Log, not ours: ours feeds the window that just failed to open
             viewerBroken = true;
-            Verse.Log.Warning("RimLogging viewer failed to open, vanilla log window takes over: " + ex);
+            Log.WarnTo(Log.SelfChannel, "viewer failed to open, vanilla log window takes over: " + ex);
         }
     }
 }

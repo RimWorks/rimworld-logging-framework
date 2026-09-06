@@ -32,11 +32,11 @@ internal static class LogViewerBoot
             Logging.RegisterSink(sink);
             Sink = sink;
             reclaimPending = true;
-            Log.Info("Log viewer sink registered");
+            Log.InfoTo(Log.SelfChannel, "Log viewer sink registered");
         }
         catch (Exception ex)
         {
-            Log.Error("Failed to register log viewer sink: " + ex);
+            Log.ErrorTo(Log.SelfChannel, "Failed to register log viewer sink: " + ex);
         }
     }
 

@@ -10,4 +10,10 @@ internal static class PanicLog
     {
         UnityEngine.Debug.LogError(message);
     }
+
+    /// <summary>Same route at warning level, for a degraded part rather than a dead one.</summary>
+    internal static void Warn(string message)
+    {
+        UnityEngine.Debug.LogWarning(message);
+    }
 }

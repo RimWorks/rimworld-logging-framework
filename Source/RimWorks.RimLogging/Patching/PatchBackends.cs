@@ -42,7 +42,9 @@ internal static class PatchBackends
 
             InstallAttribution(found);
 
-            Verse.Log.Message($"[RimLogging] patched via {backend.Name}{IdleSuffix(found, backend)}");
+            // our own status line: routing it through Verse.Log made the hijack capture it, and
+            // the caller walk skips our frames, so it landed on Mod.Unknown blaming our own patch
+            Log.InfoTo(Log.SelfChannel, $"patched via {backend.Name}{IdleSuffix(found, backend)}");
             return;
         }
 
