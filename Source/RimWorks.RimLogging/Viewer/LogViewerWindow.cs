@@ -58,6 +58,7 @@ internal sealed class LogViewerWindow : EditWindow
 
     private const float FilterGroupFixed = (2f * GroupGap) + ButtonSize + ButtonGap;
 
+    private static readonly Color WindowBorder = new Color(0.29f, 0.31f, 0.32f);
     private static readonly Color GroupDivider = new Color(0.29f, 0.31f, 0.32f);
     private static readonly Color SegmentDivider = new Color(0.16f, 0.17f, 0.18f);
 
@@ -157,6 +158,16 @@ internal sealed class LogViewerWindow : EditWindow
     {
         base.PreClose();
         ClosePopout();
+    }
+
+    // DoWindowContents draws inside a group contracted by Margin, so the window edge is only
+    // reachable from here, after that group closes
+    protected override void LateWindowOnGUI(Rect inRect)
+    {
+        Color previous = GUI.color;
+        GUI.color = WindowBorder;
+        Widgets.DrawBox(windowRect.AtZero(), 1);
+        GUI.color = previous;
     }
 
     public override void DoWindowContents(Rect inRect)
