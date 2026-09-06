@@ -25,7 +25,7 @@
 
     <ItemGroup>
         <!-- ships to Assemblies/: Directory.Build.props excludes runtime assets by default -->
-        <PackageReference Include="System.Text.Json" Version="8.0.*" ExcludeAssets=""/>
+        <PackageReference Include="System.Text.Json" Version="10.0.*" ExcludeAssets=""/>
         <PackageReference Include="Concord.Ref" Version="0.16.*" PrivateAssets="all"/>
         <PackageReference Include="Concord.Analyzers" Version="0.16.*" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all">
