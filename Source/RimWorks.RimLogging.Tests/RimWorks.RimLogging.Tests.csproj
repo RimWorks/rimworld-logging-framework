@@ -24,8 +24,8 @@
     <ItemGroup>
         <ProjectReference Include="..\RimWorks.RimLogging.Analyzers\RimWorks.RimLogging.Analyzers.csproj" />
         <ProjectReference Include="..\RimWorks.RimLogging.CodeFixes\RimWorks.RimLogging.CodeFixes.csproj" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.9.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.9.0" />
     </ItemGroup>
 
     <ItemGroup>
