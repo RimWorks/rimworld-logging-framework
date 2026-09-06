@@ -19,19 +19,19 @@ jobs:
     name: verify against current RimWorld, then republish
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: |
             8.0.x
             10.0.x
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 20
 
@@ -67,7 +67,7 @@ jobs:
         run: dotnet format RimWorks.RimLogging.sln --verify-no-changes
 
       - name: Set up SteamCMD
-        uses: buildalon/setup-steamcmd@6766d78d7196d611bfa37c0dcad876d7b16a27ad # v1
+        uses: buildalon/setup-steamcmd@2a16e8f482192d9a5710a17f0119890ceb1f48a1 # v1
 
       - name: Restore Steam config
         env:
