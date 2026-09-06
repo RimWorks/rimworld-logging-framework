@@ -8,6 +8,7 @@ const execFileAsync = promisify(execFile);
 // build plumbing rather than anything the mod runs against
 const NOT_INTERESTING = [
   /^SonarAnalyzer\./,
+  /^StyleCop\./,
   /^Concord\.Analyzers$/,
   /^Microsoft\.CodeAnalysis\./,
   /^Microsoft\.NETFramework\.ReferenceAssemblies$/,
