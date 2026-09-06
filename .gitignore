@@ -28,3 +28,5 @@ worker/.wrangler/
 worker/dist/
 worker/.dev.vars
 
+# written at publish time; belongs in the release zip and Steam, never the repo
+About/PublishStamp.txt

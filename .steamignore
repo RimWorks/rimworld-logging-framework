@@ -20,6 +20,7 @@ Makefile
 package.json
 package-lock.json
 release.config.mjs
+scripts/
 RimWorks.RimLogging.sln
 Directory.Build.props
 README.md
