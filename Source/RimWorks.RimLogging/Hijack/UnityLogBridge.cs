@@ -32,6 +32,7 @@ internal static class UnityLogBridge
     {
         if (ReentryGuard.IsInsideSink) return;
         LogLevel level = UnityLevelMapping.FromUnityLogTypeId((int)type);
-        Log.EmitCaptured(level, "Unity", condition, stackTrace);
+        // the threaded callback runs on the thread that logged, so its caller is still below us
+        Log.EmitCaptured(level, "Unity", condition, stackTrace, callerOnStack: true);
     }
 }

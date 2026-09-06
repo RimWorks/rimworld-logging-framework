@@ -674,10 +674,10 @@ public static class Log
     }
 
     /// <summary>
-    /// Entry point for logs captured from outside our call sites, so the Unity bridge and the
-    /// Verse.Log hijack. Source location is empty because file and line mean nothing here.
+    /// Entry point for logs captured outside our call sites. Set <c>callerOnStack</c> for a live
+    /// capture, where the original caller is still below us; a replay must leave it false.
     /// </summary>
-    internal static void EmitCaptured(LogLevel level, string channel, string text, string? stackTrace = null, string? mod = null, string? modId = null)
+    internal static void EmitCaptured(LogLevel level, string channel, string text, string? stackTrace = null, string? mod = null, string? modId = null, bool callerOnStack = false)
     {
         string? tagged = Capture.TaggedMessageChannel.Read(text, Capture.TaggedMessageChannel.ConcordRoot);
         if (tagged != null)
@@ -692,12 +692,26 @@ public static class Log
         Channels.ChannelSettings settings = Logging.SettingsFor(channel);
         if (level < settings.MinLevelOr(Logging.GlobalMinLevel)) return;
 
-        System.Diagnostics.StackTrace? walk = (stackTrace == null && settings.ShouldCaptureStack(level, Logging.CaptureStackTraces))
+        bool wantStack = settings.ShouldCaptureStack(level, Logging.CaptureStackTraces);
+        System.Diagnostics.StackTrace? walk = stackTrace == null && wantStack
             ? new System.Diagnostics.StackTrace(1, true)
             : null;
         IReadOnlyList<string>? patchedBy = Array.Empty<string>();
         string? captured = stackTrace ?? (walk != null ? Capture.StackWalker.FormatTrace(walk, out patchedBy) : null);
-        SourceLocation src = walk != null ? Capture.StackWalker.FirstCallerFrame(walk) : SourceLocation.Empty;
+
+        // a supplied trace is Unity's string, which carries no file info
+        SourceLocation src = SourceLocation.Empty;
+        if (walk != null) src = Capture.StackWalker.FirstCallerFrame(walk);
+        else if (callerOnStack && wantStack) src = Capture.StackWalker.WalkOnce();
+
+        // the walk finds whoever caught the exception, so fall back to where it was thrown. the
+        // message is checked too: a Verse-captured error carries its trace in the text
+        if (!src.IsCallerProvided
+            && (Capture.ThrowSite.From(captured) ?? Capture.ThrowSite.From(text)) is { } thrown)
+        {
+            src = new SourceLocation(
+                Capture.StackWalker.NormalizePath(thrown.File), thrown.Line, thrown.Method);
+        }
 
         LogEntry e = new LogEntry
         {
