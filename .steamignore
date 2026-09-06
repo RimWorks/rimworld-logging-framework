@@ -13,6 +13,7 @@ bin/
 obj/
 node_modules/
 nupkgs/
+dist/
 out/
 worker/
 
