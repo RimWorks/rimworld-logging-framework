@@ -21,6 +21,6 @@
         "@semantic-release/release-notes-generator": "^14.0.1",
         "semantic-release": "^24.1.2",
         "semantic-release-replace-plugin": "^1.2.7",
-        "semantic-release-steam": "^2.0.0"
+        "semantic-release-steam": "^2.1.2"
     }
 }
