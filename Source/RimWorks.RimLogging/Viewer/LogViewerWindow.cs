@@ -121,7 +121,6 @@ internal sealed class LogViewerWindow : EditWindow
 
     // non-null means we are showing a file. the sink keeps buffering live entries underneath.
     private IReadOnlyList<LogEntry>? loaded;
-    private string? loadedName;
     private List<LogChannel> channels = new List<LogChannel>();
     private LevelCounts levelCounts;
 
@@ -336,7 +335,6 @@ internal sealed class LogViewerWindow : EditWindow
     private void BackToLive()
     {
         loaded = null;
-        loadedName = null;
         state.Selected = null;
         cachedRevision = -1;
         Messages.Message("CRL_LogViewer_BackToLiveDone".Translate(), MessageTypeDefOf.TaskCompletion, false);
@@ -376,7 +374,7 @@ internal sealed class LogViewerWindow : EditWindow
         }
 
         this.loaded = read;
-        loadedName = System.IO.Path.GetFileName(path);
+        string loadedName = System.IO.Path.GetFileName(path);
         state.Selected = null;
         cachedRevision = -1;
         Messages.Message(

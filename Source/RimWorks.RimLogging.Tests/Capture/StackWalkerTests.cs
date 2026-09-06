@@ -10,7 +10,11 @@ namespace RimLoggingTestsExternal.Capture;
 
 public class StackWalkerTests : System.IDisposable
 {
-    public void Dispose() => Logging.AttributionProvider = null;
+    public void Dispose()
+    {
+        Logging.AttributionProvider = null;
+        System.GC.SuppressFinalize(this);
+    }
 
     [Fact]
     public void WalkOnce_FromTest_ReturnsTestMethodName()
@@ -295,7 +299,7 @@ public class StackWalkerTests : System.IDisposable
 
         // with no provider the answer is a definite "nothing", not "could not tell"
         Assert.NotNull(patchedBy);
-        Assert.Empty(patchedBy!);
+        Assert.Empty(patchedBy);
     }
 
     [Fact]

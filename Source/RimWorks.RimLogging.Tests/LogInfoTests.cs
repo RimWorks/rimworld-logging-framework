@@ -18,7 +18,7 @@ public class LogInfoTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal("default", entry!.Channel);
+        Assert.Equal("default", entry.Channel);
         Assert.Equal(LogLevel.Info, entry.Level);
         Assert.Equal("user-info-test-A-sentinel", entry.RenderedMessage);
     }
@@ -34,7 +34,7 @@ public class LogInfoTests : LogSinkFixtureBase
         // Overload 2 uses CallerLineNumber/CallerFilePath so Source.IsCallerProvided == true.
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal("default", entry!.Channel);
+        Assert.Equal("default", entry.Channel);
         Assert.Equal("user alice did thing test-A2", entry.RenderedMessage);
         Assert.NotNull(entry.Context);
         Assert.Equal("alice", entry.Context!["Name"]);
@@ -49,7 +49,7 @@ public class LogInfoTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal("default", entry!.Channel);
+        Assert.Equal("default", entry.Channel);
         Assert.Equal("msg-test-B", entry.RenderedMessage);
         Assert.NotNull(entry.Context);
         Assert.Equal(1, entry.Context!["a"]);
@@ -64,7 +64,7 @@ public class LogInfoTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal("audit", entry!.Channel);
+        Assert.Equal("audit", entry.Channel);
         Assert.Equal("hello world test-C", entry.RenderedMessage);
     }
 
@@ -76,7 +76,7 @@ public class LogInfoTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.True(entry!.Source.IsCallerProvided);
+        Assert.True(entry.Source.IsCallerProvided);
         Assert.Equal(77, entry.Source.Line);
         // Caller-info paths now share StackWalker.NormalizePath: a path outside the RimWorld
         // layout keeps its relative dir structure (only the leading slash + trailing .cs go).
@@ -113,7 +113,7 @@ public class LogInfoTests : LogSinkFixtureBase
         Assert.Null(thrown);
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal(string.Empty, entry!.MessageTemplate);
+        Assert.Equal(string.Empty, entry.MessageTemplate);
         Assert.Equal(string.Empty, entry.RenderedMessage);
     }
 
@@ -125,7 +125,7 @@ public class LogInfoTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal("literal message test-H", entry!.RenderedMessage);
+        Assert.Equal("literal message test-H", entry.RenderedMessage);
         Assert.Null(entry.Context);
     }
 
@@ -139,7 +139,7 @@ public class LogInfoTests : LogSinkFixtureBase
         Assert.Null(thrown);
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal("hello alice test-I", entry!.RenderedMessage);
+        Assert.Equal("hello alice test-I", entry.RenderedMessage);
     }
 
     [Fact]
@@ -152,7 +152,7 @@ public class LogInfoTests : LogSinkFixtureBase
         Assert.Null(thrown);
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal("hi only-a {B} test-J", entry!.RenderedMessage);
+        Assert.Equal("hi only-a {B} test-J", entry.RenderedMessage);
     }
 
     [Fact]
@@ -170,7 +170,7 @@ public class LogInfoTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal(LogLevel.Info, entry!.Level);
+        Assert.Equal(LogLevel.Info, entry.Level);
     }
 
     [Fact]
@@ -181,7 +181,7 @@ public class LogInfoTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal("diagnostics", entry!.Channel);
+        Assert.Equal("diagnostics", entry.Channel);
         Assert.NotNull(entry.Context);
         Assert.Equal(99, entry.Context!["x"]);
     }
@@ -195,7 +195,7 @@ public class LogInfoTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal(LogLevel.Info, entry!.Level);
+        Assert.Equal(LogLevel.Info, entry.Level);
         Assert.Same(ex, entry.Exception);
     }
 
@@ -208,7 +208,7 @@ public class LogInfoTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal(LogLevel.Info, entry!.Level);
+        Assert.Equal(LogLevel.Info, entry.Level);
         Assert.Equal("info-chan", entry.Channel);
         Assert.Same(ex, entry.Exception);
     }

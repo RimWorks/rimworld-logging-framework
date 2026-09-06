@@ -128,41 +128,14 @@ public static class StackWalker
             System.Reflection.MethodBase? method = frame.GetMethod();
 
             // StackFrame, not MethodBase: Mono nulls GetMethod() on a Harmony replacement frame, and only the frame lets Harmony's native-address fallback resolve it.
-            if (attributionEnabled)
-            {
-                System.Collections.Generic.IReadOnlyList<string>? frameOwners =
-                    Patching.PatchAttributionGuard.OwnersFor(frame);
-                if (frameOwners == null)
-                {
-                    // flag only: this frame still belongs in the formatted trace
-                    attributionUnavailable = true;
-                }
-                else
-                {
-                    foreach (string owner in frameOwners)
-                    {
-                        owners ??= new System.Collections.Generic.List<string>();
-                        if (!owners.Contains(owner)) owners.Add(owner);
-                    }
-                }
-            }
+            // flag only: an unattributable frame still belongs in the formatted trace
+            if (attributionEnabled && !CollectOwners(frame, ref owners)) attributionUnavailable = true;
 
             System.Type? declaringType = method?.DeclaringType;
             string? declaring = declaringType?.FullName;
             string? assembly = declaringType?.Assembly.GetName().Name;
             if (CallerFrameClassifier.IsInternalFrame(declaring, assembly)) continue;
-            string typeName = declaring ?? "<unknown>";
-            string methodName = method?.Name ?? "<unknown>";
-            string? file = frame.GetFileName();
-            int line = frame.GetFileLineNumber();
-            sb.Append("at ").Append(typeName).Append('.').Append(methodName);
-            if (!string.IsNullOrEmpty(file))
-            {
-                sb.Append(" (").Append(NormalizePath(file, declaringType));
-                if (line > 0) sb.Append(':').Append(line);
-                sb.Append(')');
-            }
-            sb.Append('\n');
+            AppendFrame(sb, frame, method, declaringType, declaring);
         }
         if (sb.Length > 0 && sb[sb.Length - 1] == '\n') sb.Length--;
         // one unanswerable frame makes the entry unanswerable: claiming the owners we did find
@@ -171,6 +144,39 @@ public static class StackWalker
             ? null
             : (System.Collections.Generic.IReadOnlyList<string>?)owners ?? System.Array.Empty<string>();
         return sb.ToString();
+    }
+
+    /// <summary>Merges one frame's patch owners into <paramref name="owners"/>.</summary>
+    /// <returns><c>false</c> when the frame could not be attributed at all.</returns>
+    private static bool CollectOwners(System.Diagnostics.StackFrame frame,
+        ref System.Collections.Generic.List<string>? owners)
+    {
+        System.Collections.Generic.IReadOnlyList<string>? frameOwners =
+            Patching.PatchAttributionGuard.OwnersFor(frame);
+        if (frameOwners == null) return false;
+
+        foreach (string owner in frameOwners)
+        {
+            owners ??= new System.Collections.Generic.List<string>();
+            if (!owners.Contains(owner)) owners.Add(owner);
+        }
+        return true;
+    }
+
+    /// <summary>Writes one <c>at Type.Method (file:line)</c> line, newline included.</summary>
+    private static void AppendFrame(System.Text.StringBuilder sb, System.Diagnostics.StackFrame frame,
+        System.Reflection.MethodBase? method, System.Type? declaringType, string? declaring)
+    {
+        string? file = frame.GetFileName();
+        int line = frame.GetFileLineNumber();
+        sb.Append("at ").Append(declaring ?? "<unknown>").Append('.').Append(method?.Name ?? "<unknown>");
+        if (!string.IsNullOrEmpty(file))
+        {
+            sb.Append(" (").Append(NormalizePath(file, declaringType));
+            if (line > 0) sb.Append(':').Append(line);
+            sb.Append(')');
+        }
+        sb.Append('\n');
     }
 
     /// <summary>

@@ -110,7 +110,7 @@ public static class NdjsonLogReader
         foreach (JsonProperty pair in exc.EnumerateObject()) context["exception_" + pair.Name] = ValueOf(pair.Value);
     }
 
-    private static IReadOnlyList<string>? ReadPatchedBy(JsonElement row)
+    private static List<string>? ReadPatchedBy(JsonElement row)
     {
         // null means attribution never ran, which is a different claim from an empty list
         if (!row.TryGetProperty("patched", out JsonElement patched) || patched.ValueKind != JsonValueKind.Array)

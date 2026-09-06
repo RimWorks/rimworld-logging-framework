@@ -19,8 +19,14 @@ public abstract class LogSinkFixtureBase : IDisposable
         Logging.GlobalMinLevel = LogLevel.Trace;
     }
 
-    public virtual void Dispose()
+    /// <summary>Subclass cleanup, run before the fixture tears its own sink down.</summary>
+    protected virtual void OnDispose()
     {
+    }
+
+    public void Dispose()
+    {
+        OnDispose();
         Logging.GlobalMinLevel = _savedMin;
         SinkRegistry.Remove(_sink);
         _sink.Dispose();

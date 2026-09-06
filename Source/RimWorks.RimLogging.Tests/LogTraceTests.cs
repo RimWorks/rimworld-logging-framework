@@ -13,7 +13,7 @@ public class LogTraceTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal(LogLevel.Trace, entry!.Level);
+        Assert.Equal(LogLevel.Trace, entry.Level);
         Assert.Equal("default", entry.Channel);
     }
 
@@ -26,7 +26,7 @@ public class LogTraceTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal(LogLevel.Trace, entry!.Level);
+        Assert.Equal(LogLevel.Trace, entry.Level);
         Assert.Same(ex, entry.Exception);
     }
 
@@ -39,7 +39,7 @@ public class LogTraceTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal(LogLevel.Trace, entry!.Level);
+        Assert.Equal(LogLevel.Trace, entry.Level);
         Assert.Equal("trace-chan", entry.Channel);
         Assert.Same(ex, entry.Exception);
     }
@@ -62,7 +62,7 @@ public class LogTraceTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal("trace-audit", entry!.Channel);
+        Assert.Equal("trace-audit", entry.Channel);
         Assert.Equal(LogLevel.Trace, entry.Level);
     }
 }

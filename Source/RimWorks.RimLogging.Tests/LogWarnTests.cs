@@ -13,7 +13,7 @@ public class LogWarnTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal(LogLevel.Warn, entry!.Level);
+        Assert.Equal(LogLevel.Warn, entry.Level);
         Assert.Equal("default", entry.Channel);
     }
 
@@ -26,7 +26,7 @@ public class LogWarnTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal(LogLevel.Warn, entry!.Level);
+        Assert.Equal(LogLevel.Warn, entry.Level);
         Assert.Same(ex, entry.Exception);
     }
 
@@ -39,7 +39,7 @@ public class LogWarnTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal(LogLevel.Warn, entry!.Level);
+        Assert.Equal(LogLevel.Warn, entry.Level);
         Assert.Equal("warn-chan", entry.Channel);
         Assert.Same(ex, entry.Exception);
     }
@@ -62,7 +62,7 @@ public class LogWarnTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal("warn-audit", entry!.Channel);
+        Assert.Equal("warn-audit", entry.Channel);
         Assert.Equal(LogLevel.Warn, entry.Level);
     }
 
@@ -73,7 +73,7 @@ public class LogWarnTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal("warn-once-chan", entry!.Channel);
+        Assert.Equal("warn-once-chan", entry.Channel);
         Assert.Equal(LogLevel.Warn, entry.Level);
     }
 
@@ -95,7 +95,7 @@ public class LogWarnTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal("default", entry!.Channel);
+        Assert.Equal("default", entry.Channel);
         Assert.Equal(LogLevel.Warn, entry.Level);
     }
 
@@ -139,7 +139,7 @@ public class LogWarnTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal("default", entry!.Channel);
+        Assert.Equal("default", entry.Channel);
         Assert.Equal(LogLevel.Warn, entry.Level);
     }
 

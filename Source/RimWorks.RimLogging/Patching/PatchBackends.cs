@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using RimWorks.RimLogging.Bootstrap;
 
@@ -65,25 +66,27 @@ internal static class PatchBackends
         }
         if (sources.Count == 0) return;
 
-        Logging.AttributionProvider = frame =>
+        Logging.AttributionProvider = frame => MergeOwners(sources, frame);
+    }
+
+    private static IReadOnlyList<string>? MergeOwners(List<IPatchAttributionSource> sources, StackFrame frame)
+    {
+        List<string>? owners = null;
+        for (int i = 0; i < sources.Count; i++)
         {
-            List<string>? owners = null;
-            for (int i = 0; i < sources.Count; i++)
+            IReadOnlyList<string>? answer = sources[i].OwnersFor(frame);
+
+            // one source that could not answer makes the whole result unreliable: a partial
+            // list presented as complete is the same lie as claiming a method is clean
+            if (answer == null) return null;
+
+            for (int j = 0; j < answer.Count; j++)
             {
-                IReadOnlyList<string>? answer = sources[i].OwnersFor(frame);
-
-                // one source that could not answer makes the whole result unreliable: a partial
-                // list presented as complete is the same lie as claiming a method is clean
-                if (answer == null) return null;
-
-                for (int j = 0; j < answer.Count; j++)
-                {
-                    owners ??= new List<string>();
-                    if (!owners.Contains(answer[j])) owners.Add(answer[j]);
-                }
+                owners ??= new List<string>();
+                if (!owners.Contains(answer[j])) owners.Add(answer[j]);
             }
-            return (IReadOnlyList<string>?)owners ?? Array.Empty<string>();
-        };
+        }
+        return (IReadOnlyList<string>?)owners ?? Array.Empty<string>();
     }
 
     private static string IdleSuffix(List<IPatchBackend> found, IPatchBackend winner)
@@ -128,7 +131,7 @@ internal static class PatchBackends
         }
         catch (ReflectionTypeLoadException ex)
         {
-            return ex.Types.Where(type => type != null).Select(type => type!).ToList();
+            return ex.Types.Where(type => type != null).ToList();
         }
     }
 }

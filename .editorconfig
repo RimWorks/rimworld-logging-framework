@@ -47,6 +47,10 @@ dotnet_diagnostic.CA1865.severity = none
 dotnet_diagnostic.CA2249.severity = none
 dotnet_diagnostic.SYSLIB1045.severity = none
 
+# net472/net48 reference assemblies carry no [NotNullWhen] on IsNullOrEmpty and friends, so the
+# compiler cannot narrow and every ! S8969 flags here is load-bearing. Removing them is CS8602.
+dotnet_diagnostic.S8969.severity = none
+
 # Verse builds Defs from XML and Scribe_Values.Look binds by ref. Both need public fields, so
 # turning these into properties breaks def loading and settings save/load.
 [**/{ChannelDef,SinkDef,LoggingSettings}.cs]
@@ -78,3 +82,39 @@ dotnet_diagnostic.S3398.severity = none
 # one flag. a mirrored bool would drift the moment either side changed it.
 [**/Viewer/LogViewerBoot.cs]
 dotnet_diagnostic.S3011.severity = none
+
+# Dialog_ is RimWorld's own convention for Verse.Window subclasses (Dialog_Rename,
+# Dialog_MessageBox). Renaming it would break the name every RimWorld modder looks for.
+[**/Viewer/Dialog_NameFilterPreset.cs]
+dotnet_diagnostic.S101.severity = none
+
+# SonarAnalyzer runs a newer ruleset than the SonarCloud quality profile does, so these fire
+# locally and are never reported by CI. Test fixtures have no unmanaged state to dispose, their
+# timestamps are fixtures rather than instants, and their empty blocks are deliberate stubs.
+[Source/RimWorks.RimLogging.Tests/**.cs]
+dotnet_diagnostic.S3881.severity = none
+dotnet_diagnostic.S6562.severity = none
+dotnet_diagnostic.S108.severity = none
+dotnet_diagnostic.S3236.severity = none
+dotnet_diagnostic.S3877.severity = none
+dotnet_diagnostic.S1144.severity = none
+
+# The static swap is the point: readers take the dictionary without locking, and the lock only
+# guards replacing it. Assigning through an instance is what makes the copy-on-write work.
+[**/ConcordBackend.cs]
+dotnet_diagnostic.S2696.severity = none
+
+# These loops run once per log entry. A Where or Any there allocates a closure and an iterator
+# on the hot path to save three lines.
+[**/{ModContext,TaggedMessageChannel,HarmonyBackend}.cs]
+dotnet_diagnostic.S3267.severity = none
+
+# The comment quotes the broken expression the regression test guards, so it reads as code.
+[**/Viewer/ViewerLogSinkTests.cs]
+dotnet_diagnostic.S125.severity = none
+
+# TODO(<reason>): <what deletes this> is the house convention for a deliberate shortcut, so a
+# TODO here is a recorded decision rather than an unfinished one.
+[*.cs]
+dotnet_diagnostic.S1135.severity = none
+

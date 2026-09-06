@@ -13,7 +13,7 @@ public class LogErrorTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal(LogLevel.Error, entry!.Level);
+        Assert.Equal(LogLevel.Error, entry.Level);
         Assert.Equal("default", entry.Channel);
     }
 
@@ -26,7 +26,7 @@ public class LogErrorTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal(LogLevel.Error, entry!.Level);
+        Assert.Equal(LogLevel.Error, entry.Level);
         Assert.Same(ex, entry.Exception);
     }
 
@@ -39,7 +39,7 @@ public class LogErrorTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal(LogLevel.Error, entry!.Level);
+        Assert.Equal(LogLevel.Error, entry.Level);
         Assert.Equal("error-chan", entry.Channel);
         Assert.Same(ex, entry.Exception);
     }
@@ -53,7 +53,7 @@ public class LogErrorTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal("save failed", entry!.RenderedMessage);
+        Assert.Equal("save failed", entry.RenderedMessage);
         Assert.Same(ex, entry.Exception);
         Assert.IsType<InvalidOperationException>(entry.Exception);
         Assert.Equal("boom", entry.Exception.Message);
@@ -77,7 +77,7 @@ public class LogErrorTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal("error-audit", entry!.Channel);
+        Assert.Equal("error-audit", entry.Channel);
         Assert.Equal(LogLevel.Error, entry.Level);
     }
 
@@ -88,7 +88,7 @@ public class LogErrorTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal("error-once-chan", entry!.Channel);
+        Assert.Equal("error-once-chan", entry.Channel);
         Assert.Equal(LogLevel.Error, entry.Level);
     }
 
@@ -110,7 +110,7 @@ public class LogErrorTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal("default", entry!.Channel);
+        Assert.Equal("default", entry.Channel);
         Assert.Equal(LogLevel.Error, entry.Level);
     }
 
@@ -132,7 +132,7 @@ public class LogErrorTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal("error-every-keep-chan", entry!.Channel);
+        Assert.Equal("error-every-keep-chan", entry.Channel);
         Assert.Equal(LogLevel.Error, entry.Level);
     }
 
@@ -143,7 +143,7 @@ public class LogErrorTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal("default", entry!.Channel);
+        Assert.Equal("default", entry.Channel);
         Assert.Equal(LogLevel.Error, entry.Level);
     }
 }

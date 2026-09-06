@@ -10,7 +10,11 @@ public class PatchAttributionGuardTests : IDisposable
 {
     private static readonly StackFrame Frame = new StackFrame();
 
-    public void Dispose() => Logging.AttributionProvider = null;
+    public void Dispose()
+    {
+        Logging.AttributionProvider = null;
+        GC.SuppressFinalize(this);
+    }
 
     [Fact]
     public void OwnersFor_NoProviderInstalled_IsEmpty()
@@ -21,7 +25,7 @@ public class PatchAttributionGuardTests : IDisposable
 
         // no backend at all is a definite "nothing patched it", not "could not tell"
         Assert.NotNull(owners);
-        Assert.Empty(owners!);
+        Assert.Empty(owners);
     }
 
     [Fact]

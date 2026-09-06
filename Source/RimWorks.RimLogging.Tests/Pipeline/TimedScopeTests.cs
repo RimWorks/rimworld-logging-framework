@@ -7,11 +7,7 @@ namespace RimWorks.RimLogging.Tests.Pipeline;
 
 public class TimedScopeTests : LogSinkFixtureBase
 {
-    public override void Dispose()
-    {
-        TimedScope.TimestampProvider = null;
-        base.Dispose();
-    }
+    protected override void OnDispose() => TimedScope.TimestampProvider = null;
 
     // drives the monotonic clock so elapsed_ms is exact instead of whatever the test machine did
     private static void ClockAdvances(params long[] readings)
@@ -31,7 +27,7 @@ public class TimedScopeTests : LogSinkFixtureBase
 
         LogEntry? entry = Last();
         Assert.NotNull(entry);
-        Assert.Equal("timed-sentinel", entry!.RenderedMessage);
+        Assert.Equal("timed-sentinel", entry.RenderedMessage);
         Assert.Equal(LogLevel.Debug, entry.Level);
         Assert.Equal("default", entry.Channel);
     }
@@ -84,7 +80,7 @@ public class TimedScopeTests : LogSinkFixtureBase
 
         LogEntry? entry = Last();
         Assert.NotNull(entry);
-        Assert.Equal("MPF.Worldgen", entry!.Channel);
+        Assert.Equal("MPF.Worldgen", entry.Channel);
         Assert.Equal(LogLevel.Info, entry.Level);
     }
 

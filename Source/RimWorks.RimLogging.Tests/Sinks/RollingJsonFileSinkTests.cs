@@ -249,18 +249,20 @@ public class RollingJsonFileSinkTests : IDisposable
         Assert.Equal(7, doc.RootElement.GetProperty("repeats").GetInt32());
     }
 
+    private static readonly string[] TwoOwners = { "a.mod", "b.mod" };
+
     [Fact]
     public void Write_PatchedBy_LandsAsAnArray()
     {
         RollingJsonFileSink sink = new RollingJsonFileSink(_tempDir);
-        sink.Write(MakeEntry(LogLevel.Error, "msg", patchedBy: new[] { "a.mod", "b.mod" }));
+        sink.Write(MakeEntry(LogLevel.Error, "msg", patchedBy: TwoOwners));
         sink.Dispose();
 
         string[] lines = File.ReadAllLines(sink.FilePath);
         using JsonDocument doc = JsonDocument.Parse(lines[0]);
         JsonElement patched = doc.RootElement.GetProperty("patched");
         Assert.Equal(JsonValueKind.Array, patched.ValueKind);
-        Assert.Equal(new[] { "a.mod", "b.mod" }, patched.EnumerateArray().Select(e => e.GetString()));
+        Assert.Equal(TwoOwners, patched.EnumerateArray().Select(e => e.GetString()));
     }
 
     [Fact]

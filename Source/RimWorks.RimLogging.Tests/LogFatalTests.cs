@@ -13,7 +13,7 @@ public class LogFatalTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal(LogLevel.Fatal, entry!.Level);
+        Assert.Equal(LogLevel.Fatal, entry.Level);
         Assert.Equal("default", entry.Channel);
     }
 
@@ -26,7 +26,7 @@ public class LogFatalTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal(LogLevel.Fatal, entry!.Level);
+        Assert.Equal(LogLevel.Fatal, entry.Level);
         Assert.Same(ex, entry.Exception);
     }
 
@@ -39,7 +39,7 @@ public class LogFatalTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal(LogLevel.Fatal, entry!.Level);
+        Assert.Equal(LogLevel.Fatal, entry.Level);
         Assert.Equal("fatal-chan", entry.Channel);
         Assert.Same(ex, entry.Exception);
     }
@@ -51,7 +51,7 @@ public class LogFatalTests : LogSinkFixtureBase
 
         LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
         Assert.NotNull(entry);
-        Assert.Equal("fatal-audit", entry!.Channel);
+        Assert.Equal("fatal-audit", entry.Channel);
         Assert.Equal(LogLevel.Fatal, entry.Level);
     }
 }

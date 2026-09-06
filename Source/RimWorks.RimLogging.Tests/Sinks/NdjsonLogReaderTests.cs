@@ -102,7 +102,7 @@ public class NdjsonLogReaderTests : IDisposable
     {
         LogEntry original = FullyPopulated() with { PatchedBy = Array.Empty<string>() };
 
-        Assert.Empty(Assert.IsAssignableFrom<IReadOnlyList<string>>(RoundTrip(original).PatchedBy));
+        Assert.Empty(Assert.IsType<IReadOnlyList<string>>(RoundTrip(original).PatchedBy, exactMatch: false));
     }
 
     [Fact]

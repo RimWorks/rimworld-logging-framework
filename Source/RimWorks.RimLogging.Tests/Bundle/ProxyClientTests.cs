@@ -103,7 +103,7 @@ public class ProxyClientTests
         ProxyClient proxy = new ProxyClient("https://proxy.example/upload", client, githubToken: "ghp_secret");
         await proxy.UploadAsync(new BundlePayload());
         Assert.True(h.LastRequest!.Headers.TryGetValues("X-Gist-Token", out IEnumerable<string>? values));
-        Assert.Equal("ghp_secret", Assert.Single(values!));
+        Assert.Equal("ghp_secret", Assert.Single(values));
     }
 
     [Fact]

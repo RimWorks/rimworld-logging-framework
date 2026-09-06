@@ -13,7 +13,6 @@ internal static class LogSeeder
 
     private static readonly object Gate = new object();
     private static volatile bool running;
-    private static Thread? worker;
 
     /// <summary>Whether the seeder is currently emitting.</summary>
     internal static bool IsRunning => running;
@@ -27,13 +26,11 @@ internal static class LogSeeder
             if (running)
             {
                 running = false;
-                worker = null;
                 return false;
             }
 
             running = true;
-            worker = new Thread(Run) { IsBackground = true, Name = "RimLogging seeder" };
-            worker.Start();
+            new Thread(Run) { IsBackground = true, Name = "RimLogging seeder" }.Start();
             return true;
         }
     }
@@ -46,9 +43,10 @@ internal static class LogSeeder
             Emit(i);
         }
 
-        for (int i = BurstCount; running; i++)
+        int index = BurstCount;
+        while (running)
         {
-            Emit(i);
+            Emit(index++);
             Thread.Sleep(TrickleDelayMs);
         }
     }

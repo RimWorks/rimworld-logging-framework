@@ -113,6 +113,6 @@ public class SelfChannelUsageTests
         }
 
         Assert.NotNull(dir);
-        return dir!.FullName;
+        return dir.FullName;
     }
 }
