@@ -11,13 +11,13 @@
         <li>brrainz.harmony</li>
         <li>concordlib.concord</li>
     </loadAfter>
-    <description>A public logging framework for RimWorld mods.
+    <description>Log viewer and bug report sharing for RimWorld. Read your log inside the game, filter it down to the red error you actually care about, and share it as a link with one click. The bundle carries your mod list and game version, trimmed to fit the upload limit.
 
-Replaces vanilla and Unity logging with a structured, channel-based, multi-sink pipeline. It has hierarchical channels (XML-defined or transient), Serilog-style templated messages with structured context, and an expression-based filter DSL.
+If you have used HugsLib's publish-log button, this covers the same job. HugsLib uploads the whole file as one wall of text. RimLogging lets you narrow to one channel and one level first, then sends what is left.
 
-Other mods can depend on this and call RimWorks.RimLogging.Log.Info / Warn / Error / Fatal directly. Vanilla Verse.Log and UnityEngine.Debug.Log calls are also captured and routed through the framework.
+The in-game viewer has three panes: a channel tree, level toggles, an expression filter DSL, and the bug-report button. The detail pane docks to the bottom, docks to the right, or pops out into its own window.
 
-A three-pane in-game log viewer ships with this mod: a channel tree, level toggles, the filter DSL, and a one-click bug-report bundle. The detail pane docks to the bottom, docks to the right, or pops out into its own window.
+RimLogging is also a public logging framework for mod authors. It replaces vanilla Verse.Log and UnityEngine.Debug.Log with a structured, channel-based, multi-sink pipeline: hierarchical channels (XML-defined or transient), Serilog-style templated messages with structured context, and six levels. Other mods can depend on this and call RimWorks.RimLogging.Log.Info / Warn / Error / Fatal directly. Vanilla and Unity log calls are captured and routed through the framework too.
 
 Distributed as both a Steam Workshop dependency mod and a NuGet package. MIT licensed.</description>
 </ModMetaData>
