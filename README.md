@@ -1,4 +1,4 @@
-# RimLogging
+# RimLogging: RimWorld log viewer and bug report sharing
 
 [![Steam Workshop](https://img.shields.io/badge/Steam_Workshop-RimLogging-1b2838?logo=steam&logoColor=white)](https://steamcommunity.com/sharedfiles/filedetails/?id=3733484696)
 [![Discord](https://img.shields.io/badge/Discord-RimWorld-5865F2?logo=discord&logoColor=white)](https://discord.gg/rimworld)
@@ -7,7 +7,9 @@
 
 <img src="https://raw.githubusercontent.com/RimWorks/rimworld-logging-framework/main/About/ModIcon.png" alt="RimLogging icon" width="96" align="right">
 
-A public, structured logging framework for RimWorld 1.6+ mods. It replaces vanilla `Verse.Log` and `UnityEngine.Debug.Log` with one structured, filterable pipeline that every dependent mod shares.
+Read your RimWorld log inside the game, filter it down to the red error you care about, and share it as a link with one click. RimLogging is also a structured logging framework for RimWorld 1.6+ mods, replacing vanilla `Verse.Log` and `UnityEngine.Debug.Log` with one filterable pipeline that every dependent mod shares.
+
+If you have used HugsLib's publish-log button, this covers the same job. HugsLib uploads the whole file as one wall of text and hands you a link. RimLogging lets you narrow to one channel and one level first, then sends what is left with your mod list attached.
 
 - Hierarchical channels (XML defs or transient) with prefix-based resolution.
 - Serilog-style templated messages plus anonymous-object structured context.
@@ -85,5 +87,13 @@ The first string argument is the channel only when a later argument disambiguate
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for build commands, commit conventions, and translation notes.
+
+## More modding tools from RimWorks
+
+| Tool | What it does |
+| --- | --- |
+| [RimObs](https://github.com/RimWorks/rimworld-observability-collector) | Performance profiler and telemetry that finds which mod is eating your TPS |
+| [Pickle](https://github.com/RimWorks/Rimworld-Pickle) | Run Gherkin tests against a live RimWorld session, in the game |
+| [Quickstarts](https://github.com/RimWorks/Rimworld-Quickstarts) | Boot straight into a configured colony from the dev quicktest menu |
 
 MIT licensed.
