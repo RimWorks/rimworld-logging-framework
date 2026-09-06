@@ -9,8 +9,9 @@ on:
 permissions:
   contents: read
 
+# shares the release group so two workflows never push the same workshop item at once
 concurrency:
-  group: weekly-verify
+  group: release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
