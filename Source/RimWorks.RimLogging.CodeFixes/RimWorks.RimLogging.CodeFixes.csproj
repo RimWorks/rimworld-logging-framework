@@ -22,5 +22,6 @@
         <!-- linked, not referenced: a ProjectReference would load the analyzer's DiagnosticAnalyzer
              a second time out of this DLL when both sit in analyzers/dotnet/cs together -->
         <Compile Include="..\RimWorks.RimLogging.Analyzers\VerseLogMethods.cs" LinkBase="LinkedSource" />
+        <Compile Include="..\RimWorks.RimLogging.Analyzers\ChannelArgumentRules.cs" LinkBase="LinkedSource" />
     </ItemGroup>
 </Project>
