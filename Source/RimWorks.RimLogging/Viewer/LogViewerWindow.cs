@@ -63,7 +63,23 @@ internal sealed class LogViewerWindow : EditWindow
     private static readonly Color SegmentDivider = new Color(0.16f, 0.17f, 0.18f);
 
     private static Texture2D? nextErrorTexture;
-    private static Texture2D NextErrorTexture => nextErrorTexture ??= ContentFinder<Texture2D>.Get("UI/Buttons/RimLogging/NextError");
+    private static bool nextErrorTextureLoaded;
+
+    // ??= re-ran the lookup every frame when the texture was missing, and each miss logs an
+    // error. A logging mod flooding the log it owns is the worst version of that bug.
+    private static Texture2D NextErrorTexture
+    {
+        get
+        {
+            if (!nextErrorTextureLoaded)
+            {
+                nextErrorTextureLoaded = true;
+                nextErrorTexture = ContentFinder<Texture2D>.Get("UI/Buttons/RimLogging/NextError");
+            }
+
+            return nextErrorTexture!;
+        }
+    }
 
     private static readonly LogLevel[] ToggleLevels = {
         LogLevel.Trace, LogLevel.Debug, LogLevel.Info, LogLevel.Warn, LogLevel.Error,

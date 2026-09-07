@@ -18,7 +18,7 @@ const plugins = [
         '@semantic-release/exec',
         {
             prepareCmd:
-                "node scripts/write-stamp.mjs && dotnet pack Source/RimWorks.RimLogging/RimWorks.RimLogging.csproj -c Release -p:Version=${nextRelease.version} -p:PackageVersion=${nextRelease.version} -p:FileVersion=${nextRelease.version.replace(/-.*/, '')}.0 -p:AssemblyVersion=${nextRelease.version.replace(/-.*/, '')}.0 -p:InformationalVersion=${nextRelease.version} -o ./nupkgs && rm -rf dist && mkdir -p dist/RimLogging && cp -r About Assemblies Concord Defs Harmony Languages loadFolders.xml LICENSE README.md dist/RimLogging/ && cd dist && zip -qr RimLogging-${nextRelease.version}.zip RimLogging",
+                "node scripts/write-stamp.mjs && dotnet pack Source/RimWorks.RimLogging/RimWorks.RimLogging.csproj -c Release -p:Version=${nextRelease.version} -p:PackageVersion=${nextRelease.version} -p:FileVersion=${nextRelease.version.replace(/-.*/, '')}.0 -p:AssemblyVersion=${nextRelease.version.replace(/-.*/, '')}.0 -p:InformationalVersion=${nextRelease.version} -o ./nupkgs && rm -rf dist && mkdir -p dist/RimLogging && cp -r About Assemblies Concord Defs Harmony Languages Textures loadFolders.xml LICENSE README.md dist/RimLogging/ && cd dist && zip -qr RimLogging-${nextRelease.version}.zip RimLogging",
             publishCmd:
                 "dotnet nuget push './nupkgs/*.nupkg' --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json --skip-duplicate",
         },
