@@ -26,6 +26,8 @@
     <ItemGroup>
         <!-- ships to Assemblies/: Directory.Build.props excludes runtime assets by default -->
         <PackageReference Include="System.Text.Json" Version="10.0.*" ExcludeAssets=""/>
+        <!-- net472 counts ValueTuple as framework provided so the SDK skips it, but System.Text.Json binds the real assembly -->
+        <PackageReference Include="System.ValueTuple" Version="4.6.*" GeneratePathProperty="true"/>
         <PackageReference Include="Concord.Ref" Version="0.16.*" PrivateAssets="all"/>
         <PackageReference Include="Concord.Analyzers" Version="0.16.*" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all">
@@ -69,6 +71,12 @@
               Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"
               Condition="'$(TargetFramework)' == ''" />
     </ItemGroup>
+
+    <Target Name="ShipValueTuple" AfterTargets="Build"
+            Condition="'$(TargetFramework)' == 'net472' And '$(PkgSystem_ValueTuple)' != ''">
+        <Copy SourceFiles="$(PkgSystem_ValueTuple)/lib/net47/System.ValueTuple.dll"
+              DestinationFolder="$(OutDir)" SkipUnchangedFiles="true"/>
+    </Target>
 
     <!-- Inner builds only; the multi-target outer build has no ResolveAssemblyReferences. -->
     <Target Name="CopyRimWorldRuntimeDeps" AfterTargets="Build" DependsOnTargets="ResolveAssemblyReferences" Condition="'$(TargetFramework)' != ''">
