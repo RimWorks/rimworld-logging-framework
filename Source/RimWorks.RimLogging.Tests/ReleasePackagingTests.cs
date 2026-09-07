@@ -53,6 +53,6 @@ public class ReleasePackagingTests
             dir = dir.Parent;
 
         Assert.NotNull(dir);
-        return dir!.FullName;
+        return dir.FullName;
     }
 }
