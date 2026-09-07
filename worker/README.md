@@ -19,7 +19,7 @@ Response on success: `{ "url": "https://gist.github.com/...", "id": "..." }`.
 | 413    | body exceeds 5 MB |
 | 415    | wrong content-type |
 | 429    | rate limited (10 bundles per hour per IP) |
-| 502    | github API failure |
+| 502    | GitHub API failure |
 
 ## Local development
 

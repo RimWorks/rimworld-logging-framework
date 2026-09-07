@@ -27,11 +27,11 @@ Channels are dotted, hierarchical names. Define them in XML to set defaults, or 
 | Field | Default | Meaning |
 |---|---|---|
 | `defaultLevel` | `Info` | Minimum level emitted on this channel. |
-| `color` | none | RGB tuple for the viewer, e.g. `(0.7, 0.85, 1.0)`. |
-| `captureStackAt` | `Error` | Level at/above which a stack trace is captured. |
+| `color` | none | RGB tuple for the viewer, for example `(0.7, 0.85, 1.0)`. |
+| `captureStackAt` | `Error` | Lowest level RimLogging captures a stack trace for. |
 | `destinations` | all sinks | Sink defNames this channel routes to (empty = every registered sink). |
 | `format` | default | Per-channel format template override. |
 
-**Transient fallback / prefix resolution:** when you log to a channel name with no exact `ChannelDef`, resolution walks up the dotted prefix to the nearest registered ancestor, then falls back to the built-in `default` channel. So `Cosmere.Roshar.Surgebinding.Windrunner` uses the `Cosmere.Roshar.Surgebinding` def if that is the closest registered ancestor.
+**Transient fallback / prefix resolution:** when you log to a channel name with no exact `ChannelDef`, resolution walks up the dotted prefix to the nearest registered ancestor. Failing that, it falls back to the built-in `default` channel. So `Cosmere.Roshar.Surgebinding.Windrunner` uses the `Cosmere.Roshar.Surgebinding` def if that is the closest registered ancestor.
 
 Built-in channels: `default` (catch-all), `Vanilla` (captured `Verse.Log` calls), `Unity` (captured `UnityEngine.Debug.Log` calls).

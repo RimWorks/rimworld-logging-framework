@@ -1,10 +1,10 @@
 # RimLogging: RimWorld log viewer and bug report sharing
 
-Read your RimWorld log inside the game, filter it down to the red error you actually care about, and share it as a link with one click. RimLogging is also a structured logging framework for mod authors, replacing vanilla `Verse.Log` and `UnityEngine.Debug.Log` with one pipeline every mod shares.
+Read your RimWorld log inside the game. Filter it down to the red error you actually care about, then share it as a link with one click. RimLogging is also a structured logging framework for mod authors. It replaces vanilla `Verse.Log` and `UnityEngine.Debug.Log` with one pipeline every mod shares.
 
-## How do I share my RimWorld log?
+## How to share your RimWorld log
 
-Open the log viewer, press the share button, and RimLogging uploads a bundle and copies a shareable link to your clipboard. Paste it into Discord or a GitHub issue. The bundle carries your mod list, the game version, and the captured entries, trimmed to fit the upload limit so a long session still goes through.
+Open the log viewer, press the share button, and RimLogging uploads a bundle and copies a shareable link to your clipboard. Paste it into Discord or a GitHub issue. The bundle carries your mod list, the game version, and the captured entries. RimLogging trims it to fit the upload limit, so a long session still goes through.
 
 ## What is wrong with the vanilla log window?
 

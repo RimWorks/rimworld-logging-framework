@@ -35,3 +35,17 @@ jobs:
       # last, so a formatting nit never hides a real test failure
       - name: dotnet format
         run: dotnet format RimWorks.RimLogging.sln --verify-no-changes --no-restore
+
+  prose:
+    name: prose
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Vale
+        uses: errata-ai/vale-action@518a9136acc6e6668ce7c00d367051e0941e87ff # reviewdog
+        with:
+          reporter: github-pr-check
+          fail_on_error: true

@@ -7,7 +7,7 @@
 
 <img src="https://raw.githubusercontent.com/RimWorks/rimworld-logging-framework/main/About/ModIcon.png" alt="RimLogging icon" width="96" align="right">
 
-Read your RimWorld log inside the game, filter it down to the red error you care about, and share it as a link with one click. RimLogging is also a structured logging framework for RimWorld 1.6+ mods, replacing vanilla `Verse.Log` and `UnityEngine.Debug.Log` with one filterable pipeline that every dependent mod shares.
+Read your RimWorld log inside the game. Filter it down to the red error you care about, then share it as a link with one click. RimLogging is also a structured logging framework for RimWorld 1.6+ mods. It replaces vanilla `Verse.Log` and `UnityEngine.Debug.Log` with one filterable pipeline. Every dependent mod shares it.
 
 If you have used HugsLib's publish-log button, this covers the same job. HugsLib uploads the whole file as one wall of text and hands you a link. RimLogging lets you narrow to one channel and one level first, then sends what is left with your mod list attached.
 
@@ -38,7 +38,7 @@ As a Steam Workshop dependency (recommended for shipped mods): end users install
 </loadAfter>
 ```
 
-Or bundle it from NuGet. The dll (and its `System.Text.Json` runtime dependencies) are copied into your mod's `Assemblies/` at build time, so you don't need the Workshop dependency:
+Or bundle it from NuGet. The build copies the dll, and its `System.Text.Json` runtime dependencies, into your mod's `Assemblies/`, so you don't need the Workshop dependency:
 
 ```
 dotnet add package RimWorks.RimLogging
