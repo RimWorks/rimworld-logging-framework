@@ -10,38 +10,15 @@ jobs:
     name: Build and analyze
     runs-on: ubuntu-latest
     steps:
-      - name: Set up JDK 17
-        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
-        with:
-          java-version: 17
-          distribution: 'zulu' # Alternative distribution options are available.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - name: Cache SonarQube Cloud packages
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+
+      # The exclusions mirror the Compile Exclude list in the test project: both name the files
+      # that need a running game.
+      - uses: RimWorks/mod-ci/.github/actions/dotnet-sonar@2a4af7891b92cd20917a0dd9f726532314a602a1 # v1.2.0
         with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-      - name: Cache SonarQube Cloud scanner
-        id: cache-sonar-scanner
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ${{ runner.temp }}/scanner
-          key: ${{ runner.os }}-sonar-scanner
-          restore-keys: ${{ runner.os }}-sonar-scanner
-      - name: Install SonarQube Cloud scanner
-        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p "${{ runner.temp }}/scanner"
-          dotnet tool update dotnet-sonarscanner --tool-path "${{ runner.temp }}/scanner"
-      - name: Build and analyze
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          dotnet tool install --global dotnet-coverage
-          export PATH="$PATH:$HOME/.dotnet/tools"
-          "${{ runner.temp }}/scanner/dotnet-sonarscanner" begin /k:"RimWorks_rimworld-logging-framework" /o:"rimworks" /d:sonar.token="$SONAR_TOKEN" /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml /d:sonar.coverage.exclusions="**/Hijack/**,**/Bootstrap/**,**/Settings/LogDirectory.cs,**/Settings/LoggingSettings.cs,**/Settings/LoggingSettingsWindow.cs,**/Settings/LoggingMod.cs,**/Sinks/VerseLogSink.cs,**/Sinks/SinkDef.cs,**/Pipeline/ShutdownFlush.cs,**/Bundle/ModListSnapshot.cs,**/Bundle/BundlerSessionFactory.cs,**/Channels/ChannelDef.cs,**/Channels/ChannelRegistry.cs,**/Sinks/SinkLoader.cs,**/Viewer/LogViewerWindow.cs,**/Viewer/LogDetailWindow.cs,**/Viewer/LogDetailView.cs,**/Viewer/LogBundleShare.cs,**/Viewer/LevelColors.cs,**/Viewer/LogViewerBoot.cs,**/Viewer/ViewerHooks.cs,**/Viewer/ListTailing.cs,**/Patching/PatchBackends.cs,**/Viewer/ChannelClassifierBootstrap.cs,**/Viewer/SuggestField.cs,**/Viewer/Dialog_NameFilterPreset.cs,**/Dev/LogSeederDebugAction.cs"
-          dotnet-coverage collect "dotnet test RimWorks.RimLogging.sln" -f xml -o coverage.xml
-          "${{ runner.temp }}/scanner/dotnet-sonarscanner" end /d:sonar.token="$SONAR_TOKEN"
+          solution: RimWorks.RimLogging.sln
+          project-key: RimWorks_rimworld-logging-framework
+          sonar-token: ${{ secrets.SONAR_TOKEN }}
+          coverage-exclusions: "**/Hijack/**,**/Bootstrap/**,**/Settings/LogDirectory.cs,**/Settings/LoggingSettings.cs,**/Settings/LoggingSettingsWindow.cs,**/Settings/LoggingMod.cs,**/Sinks/VerseLogSink.cs,**/Sinks/SinkDef.cs,**/Pipeline/ShutdownFlush.cs,**/Bundle/ModListSnapshot.cs,**/Bundle/BundlerSessionFactory.cs,**/Channels/ChannelDef.cs,**/Channels/ChannelRegistry.cs,**/Sinks/SinkLoader.cs,**/Viewer/LogViewerWindow.cs,**/Viewer/LogDetailWindow.cs,**/Viewer/LogDetailView.cs,**/Viewer/LogBundleShare.cs,**/Viewer/LevelColors.cs,**/Viewer/LogViewerBoot.cs,**/Viewer/ViewerHooks.cs,**/Viewer/ListTailing.cs,**/Patching/PatchBackends.cs,**/Viewer/ChannelClassifierBootstrap.cs,**/Viewer/SuggestField.cs,**/Viewer/Dialog_NameFilterPreset.cs,**/Dev/LogSeederDebugAction.cs"

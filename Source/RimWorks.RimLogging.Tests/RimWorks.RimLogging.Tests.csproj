@@ -9,6 +9,9 @@
         <IsTestProject>true</IsTestProject>
         <RootNamespace>RimWorks.RimLogging.Tests</RootNamespace>
         <AssemblyName>RimWorks.RimLogging.Tests</AssemblyName>
+        <!-- CA1846 wants AsSpan, which the net472 build the mod ships cannot use. -->
+        <NoWarn>$(NoWarn);CA1846</NoWarn>
+        <RunSettingsFilePath>$(MSBuildProjectDirectory)/coverlet.runsettings</RunSettingsFilePath>
     </PropertyGroup>
 
     <ItemGroup>
@@ -30,6 +33,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
+        <PackageReference Include="coverlet.collector" Version="10.0.*" PrivateAssets="all" />
         <PackageReference Include="xunit" Version="2.9.3" />
         <PackageReference Include="xunit.runner.visualstudio" Version="4.0.0">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
