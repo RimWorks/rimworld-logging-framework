@@ -22,7 +22,7 @@ package.json
 package-lock.json
 release.config.mjs
 scripts/
-RimWorks.RimLogging.sln
+RimWorks.RimLogging.slnx
 Directory.Build.props
 README.md
 

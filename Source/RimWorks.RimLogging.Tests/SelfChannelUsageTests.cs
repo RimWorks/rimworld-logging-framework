@@ -105,7 +105,7 @@ public partial class SelfChannelUsageTests
     private static string RepositoryRoot()
     {
         DirectoryInfo? dir = new DirectoryInfo(AppContext.BaseDirectory);
-        while (dir != null && !dir.EnumerateFiles("RimWorks.RimLogging.sln").Any())
+        while (dir != null && !dir.EnumerateFiles("RimWorks.RimLogging.slnx").Any())
         {
             dir = dir.Parent;
         }

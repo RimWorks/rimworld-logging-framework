@@ -1,7 +1,7 @@
 .PHONY: help all clean restore build build-core test format lint pack
 
 CONFIG ?= Debug
-SLN := RimWorks.RimLogging.sln
+SLN := RimWorks.RimLogging.slnx
 
 help:
 	@echo "Targets:"

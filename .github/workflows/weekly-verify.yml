@@ -41,7 +41,7 @@ jobs:
       # Krafs.Rimworld.Ref floats on 1.6.* with no lock file, so this is where a new
       # RimWorld release enters and where breakage would first show up.
       - name: dotnet restore
-        run: dotnet restore RimWorks.RimLogging.sln
+        run: dotnet restore RimWorks.RimLogging.slnx
 
       - name: Record resolved RimWorld version
         run: |
@@ -53,18 +53,18 @@ jobs:
       # Assemblies/ is gitignored, so a checkout has no DLLs. Skipping this publishes a
       # mod with no code in it.
       - name: dotnet build
-        run: dotnet build RimWorks.RimLogging.sln -c Release --nologo --no-restore
+        run: dotnet build RimWorks.RimLogging.slnx -c Release --nologo --no-restore
 
       - name: dotnet test
         run: |
           set -o pipefail
-          dotnet test RimWorks.RimLogging.sln -c Release --nologo --no-build \
+          dotnet test RimWorks.RimLogging.slnx -c Release --nologo --no-build \
             --logger "console;verbosity=normal" | tee test-output.txt
           passed=$(grep -oE 'Passed:[[:space:]]+[0-9]+' test-output.txt | grep -oE '[0-9]+' | tail -1)
           echo "TESTS_PASSED=${passed:-unknown}" >> "$GITHUB_ENV"
 
       - name: dotnet format
-        run: dotnet format RimWorks.RimLogging.sln --verify-no-changes
+        run: dotnet format RimWorks.RimLogging.slnx --verify-no-changes
 
       - name: Set up SteamCMD
         uses: buildalon/setup-steamcmd@2a16e8f482192d9a5710a17f0119890ceb1f48a1 # v1

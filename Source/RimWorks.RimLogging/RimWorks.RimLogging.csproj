@@ -30,7 +30,7 @@
         <PackageReference Include="System.ValueTuple" Version="4.6.*" GeneratePathProperty="true"/>
         <PackageReference Include="Concord.Ref" Version="0.16.*" PrivateAssets="all"/>
         <PackageReference Include="Concord.Analyzers" Version="0.16.*" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all">
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.*" PrivateAssets="all">
             <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
 

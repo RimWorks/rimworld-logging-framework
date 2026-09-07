@@ -24,17 +24,17 @@ jobs:
             10.0.x
 
       - name: dotnet restore
-        run: dotnet restore RimWorks.RimLogging.sln
+        run: dotnet restore RimWorks.RimLogging.slnx
 
       - name: dotnet build
-        run: dotnet build RimWorks.RimLogging.sln -c Release --nologo --no-restore
+        run: dotnet build RimWorks.RimLogging.slnx -c Release --nologo --no-restore
 
       - name: dotnet test
-        run: dotnet test RimWorks.RimLogging.sln -c Release --nologo --no-build --logger "console;verbosity=normal"
+        run: dotnet test RimWorks.RimLogging.slnx -c Release --nologo --no-build --logger "console;verbosity=normal"
 
       # last, so a formatting nit never hides a real test failure
       - name: dotnet format
-        run: dotnet format RimWorks.RimLogging.sln --verify-no-changes --no-restore
+        run: dotnet format RimWorks.RimLogging.slnx --verify-no-changes --no-restore
 
   prose:
     name: prose

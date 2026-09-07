@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="Source/RimWorks.RimLogging.Analyzers/RimWorks.RimLogging.Analyzers.csproj" />
+  <Project Path="Source/RimWorks.RimLogging.CodeFixes/RimWorks.RimLogging.CodeFixes.csproj" />
+  <Project Path="Source/RimWorks.RimLogging.Patches.Concord/RimWorks.RimLogging.Patches.Concord.csproj" />
+  <Project Path="Source/RimWorks.RimLogging.Patches.Harmony/RimWorks.RimLogging.Patches.Harmony.csproj" />
+  <Project Path="Source/RimWorks.RimLogging.Tests/RimWorks.RimLogging.Tests.csproj" />
+  <Project Path="Source/RimWorks.RimLogging/RimWorks.RimLogging.csproj" />
+</Solution>

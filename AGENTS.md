@@ -47,7 +47,7 @@ make build CONFIG=Release    # what CI builds
 
 ```bash
 make test                                                                 # xunit suites
-dotnet test RimWorks.RimLogging.sln --filter "FullyQualifiedName~LogEntryTests"  # one class
+dotnet test RimWorks.RimLogging.slnx --filter "FullyQualifiedName~LogEntryTests"  # one class
 make lint                                                                 # dotnet format check
 ```
 
