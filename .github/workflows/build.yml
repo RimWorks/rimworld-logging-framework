@@ -16,7 +16,7 @@ jobs:
 
       # The exclusions mirror the Compile Exclude list in the test project: both name the files
       # that need a running game.
-      - uses: RimWorks/mod-ci/.github/actions/dotnet-sonar@2a4af7891b92cd20917a0dd9f726532314a602a1 # v1.2.0
+      - uses: RimWorks/mod-ci/.github/actions/dotnet-sonar@5698991b43ade4de809d49d9695ac88e0895b298 # v1.2.1
         with:
           solution: RimWorks.RimLogging.sln
           project-key: RimWorks_rimworld-logging-framework
