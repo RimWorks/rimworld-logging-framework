@@ -13,6 +13,7 @@ public sealed class MemoryLogSink : ILogSink
     private readonly LogEntry[] _ring;
     private int _writeIndex;
     private int _count;
+    private long _droppedCount;
 
     /// <summary>
     /// Initializes a new <see cref="MemoryLogSink"/>.
@@ -61,9 +62,22 @@ public sealed class MemoryLogSink : ILogSink
         if (entry.Level < MinLevel) return;
         lock (_lock)
         {
+            if (_count == _ring.Length) _droppedCount++;
             _ring[_writeIndex] = entry;
             _writeIndex = (_writeIndex + 1) % _ring.Length;
             if (_count < _ring.Length) _count++;
+        }
+    }
+
+    /// <summary>
+    /// How many entries the ring overwrote before a caller could read them. A full buffer that
+    /// never wrapped reads the same as one that dropped thousands, so a gate has to check this.
+    /// </summary>
+    public long DroppedCount
+    {
+        get
+        {
+            lock (_lock) { return _droppedCount; }
         }
     }
 
@@ -75,6 +89,7 @@ public sealed class MemoryLogSink : ILogSink
             Array.Clear(_ring, 0, _ring.Length);
             _writeIndex = 0;
             _count = 0;
+            _droppedCount = 0;
         }
     }
 

@@ -96,6 +96,32 @@ public class MemoryLogSinkTests
     }
 
     [Fact]
+    public void DroppedCount_CountsOnlyOverwrittenEntries()
+    {
+        MemoryLogSink sink = new MemoryLogSink(capacity: 2);
+        sink.Write(MakeEntry());
+        sink.Write(MakeEntry());
+
+        Assert.Equal(0, sink.DroppedCount);
+
+        sink.Write(MakeEntry());
+        sink.Write(MakeEntry());
+
+        Assert.Equal(2, sink.DroppedCount);
+    }
+
+    [Fact]
+    public void DroppedCount_ResetsOnClear()
+    {
+        MemoryLogSink sink = new MemoryLogSink(capacity: 1);
+        sink.Write(MakeEntry());
+        sink.Write(MakeEntry());
+        sink.Clear();
+
+        Assert.Equal(0, sink.DroppedCount);
+    }
+
+    [Fact]
     public void Name_ReturnsMemory()
     {
         MemoryLogSink sink = new MemoryLogSink();
