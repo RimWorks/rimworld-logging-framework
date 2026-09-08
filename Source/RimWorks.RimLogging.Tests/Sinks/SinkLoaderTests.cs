@@ -18,7 +18,7 @@ public class SinkLoaderTests
     public void Build_SkipsSpecsThatResolvedToDisabled()
     {
         List<string> warnings = [];
-        List<ILogSink> result = SinkPlan.Build(
+        List<KeyValuePair<string, ILogSink>> result = SinkPlan.Build(
             [Spec(typeof(TestParameterlessSink).AssemblyQualifiedName!, enabled: false)],
             EmptyFactories,
             warnings.Add);
@@ -50,7 +50,7 @@ public class SinkLoaderTests
     public void Build_SkipsAndWarnsOnUnresolvableType()
     {
         List<string> warnings = [];
-        List<ILogSink> result = SinkPlan.Build(
+        List<KeyValuePair<string, ILogSink>> result = SinkPlan.Build(
             [Spec("Some.Bogus.Type, NonexistentAssembly")],
             EmptyFactories,
             warnings.Add);
@@ -63,13 +63,14 @@ public class SinkLoaderTests
     [Fact]
     public void Build_RegistersSinkViaParameterlessFallback()
     {
-        List<ILogSink> result = SinkPlan.Build(
+        List<KeyValuePair<string, ILogSink>> result = SinkPlan.Build(
             [Spec(typeof(TestParameterlessSink).AssemblyQualifiedName!)],
             EmptyFactories,
             _ => { });
 
-        ILogSink sink = Assert.Single(result);
-        Assert.IsType<TestParameterlessSink>(sink);
+        KeyValuePair<string, ILogSink> sink = Assert.Single(result);
+        Assert.Equal("TestDef", sink.Key);
+        Assert.IsType<TestParameterlessSink>(sink.Value);
     }
 
     [Fact]
@@ -85,7 +86,7 @@ public class SinkLoaderTests
             },
         };
 
-        List<ILogSink> result = SinkPlan.Build(
+        List<KeyValuePair<string, ILogSink>> result = SinkPlan.Build(
             [Spec(typeof(TestParameterlessSink).AssemblyQualifiedName!, minLevel: LogLevel.Warn)],
             factories,
             _ => { });
@@ -98,7 +99,7 @@ public class SinkLoaderTests
     public void Build_ContinuesAfterFailedSpecAndRegistersLaterOnes()
     {
         List<string> warnings = [];
-        List<ILogSink> result = SinkPlan.Build(
+        List<KeyValuePair<string, ILogSink>> result = SinkPlan.Build(
             [
                 Spec("Some.Bogus.Type, NonexistentAssembly"),
                 Spec(typeof(TestParameterlessSink).AssemblyQualifiedName!),
@@ -106,7 +107,7 @@ public class SinkLoaderTests
             EmptyFactories,
             warnings.Add);
 
-        Assert.IsType<TestParameterlessSink>(Assert.Single(result));
+        Assert.IsType<TestParameterlessSink>(Assert.Single(result).Value);
         Assert.Single(warnings);
     }
 
@@ -146,12 +147,12 @@ public class SinkLoaderTests
             [typeof(MemoryLogSink)] = minLevel => new MemoryLogSink(minLevel: minLevel),
         };
 
-        List<ILogSink> result = SinkPlan.Build(
+        List<KeyValuePair<string, ILogSink>> result = SinkPlan.Build(
             [Spec(typeof(MemoryLogSink).AssemblyQualifiedName!, minLevel: LogLevel.Info)],
             factories,
             _ => { });
 
-        MemoryLogSink sink = Assert.IsType<MemoryLogSink>(Assert.Single(result));
+        MemoryLogSink sink = Assert.IsType<MemoryLogSink>(Assert.Single(result).Value);
         Assert.Equal(LogLevel.Info, sink.MinLevel);
     }
 

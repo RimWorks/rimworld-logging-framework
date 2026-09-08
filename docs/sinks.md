@@ -20,6 +20,11 @@ Logging.RegisterSink(new MySink());
 Logging.RegisterSink(new MySink(), replayHistory: false);
 ```
 
+A sink registered this way is never filtered by a channel's `destinations` list, because that
+list names `SinkDef` defNames and a code-registered sink has none. It therefore sees every
+channel. Size a bounded sink for that traffic. `MemoryLogSink` holds 1024 entries by default and
+overwrites the oldest, so an early error can drop out of the window.
+
 `RegisterSink` replays buffered history into a new sink first, so a sink that registers late
 still sees earlier entries. The buffer holds up to 10000 entries going back to game start, so a
 sink registered mid-session also receives boot and def-loading entries. Pass `replayHistory:

@@ -32,6 +32,10 @@ Channels are dotted, hierarchical names. Define them in XML to set defaults, or 
 | `destinations` | all sinks | Sink defNames this channel routes to (empty = every registered sink). |
 | `format` | default | Per-channel format template override. |
 
+`destinations` matches `SinkDef` defNames. A sink you register from code with
+`Logging.RegisterSink` has no defName, so no `destinations` list can name it and none filters it.
+That is deliberate: a diagnostic or CI sink registered in code sees every channel.
+
 **Transient fallback / prefix resolution:** when you log to a channel name with no exact `ChannelDef`, resolution walks up the dotted prefix to the nearest registered ancestor. Failing that, it falls back to the built-in `default` channel. So `Cosmere.Roshar.Surgebinding.Windrunner` uses the `Cosmere.Roshar.Surgebinding` def if that is the closest registered ancestor.
 
 Built-in channels: `default` (catch-all), `Vanilla` (captured `Verse.Log` calls), `Unity` (captured `UnityEngine.Debug.Log` calls).

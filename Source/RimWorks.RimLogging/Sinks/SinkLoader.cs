@@ -42,10 +42,10 @@ internal static class SinkLoader
             new SinkSpec(def.defName, def.sinkClass, def.minLevel,
                 SinkToggles.IsEnabled(def.defName, def.enabledByDefault, overrideNames, overrideStates)));
 
-        foreach (ILogSink sink in SinkPlan.Build(specs, factories, Bootstrap.PanicLog.Warn))
+        foreach (KeyValuePair<string, ILogSink> built in SinkPlan.Build(specs, factories, Bootstrap.PanicLog.Warn))
         {
-            Logging.RegisterSink(sink);
-            Loaded.Add(sink);
+            SinkRegistry.Register(built.Value, replayHistory: true, defName: built.Key);
+            Loaded.Add(built.Value);
         }
     }
 

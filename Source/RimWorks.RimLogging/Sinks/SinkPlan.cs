@@ -9,18 +9,19 @@ namespace RimWorks.RimLogging.Sinks;
 /// </summary>
 internal static class SinkPlan
 {
-    internal static List<ILogSink> Build(
+    /// <summary>Each built sink keyed by the def that named it, which is what channel destinations match.</summary>
+    internal static List<KeyValuePair<string, ILogSink>> Build(
         IEnumerable<SinkSpec> specs,
         IReadOnlyDictionary<Type, Func<LogLevel, ILogSink?>> factories,
         Action<string> warn)
     {
-        List<ILogSink> sinks = [];
+        List<KeyValuePair<string, ILogSink>> sinks = [];
         foreach (SinkSpec spec in specs)
         {
             if (!spec.Enabled) continue;
             ILogSink? sink = TryCreate(spec, factories, warn);
             if (sink == null) continue;
-            sinks.Add(sink);
+            sinks.Add(new KeyValuePair<string, ILogSink>(spec.DefName, sink));
         }
         return sinks;
     }
