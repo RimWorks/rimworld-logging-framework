@@ -16,8 +16,16 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  sonar:
+    uses: ./.github/workflows/sonar.yml
+    secrets: inherit
+
   release:
     name: semantic-release
+    needs: [ci, sonar]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -40,14 +48,13 @@ jobs:
       - name: Install release dependencies
         run: npm ci --ignore-scripts
 
-      - name: dotnet restore
-        run: dotnet restore RimWorks.RimLogging.slnx
-
-      - name: dotnet build
-        run: dotnet build RimWorks.RimLogging.slnx -c Release --nologo --no-restore
-
-      - name: dotnet test
-        run: dotnet test RimWorks.RimLogging.slnx -c Release --nologo --no-build --logger "console;verbosity=normal"
+      # ci already built and tested this commit; packaging reuses that output
+      # instead of rebuilding it.
+      - name: Download build output
+        uses: actions/download-artifact@v8
+        with:
+          name: build-output
+          path: .
 
       - name: NuGet login (OIDC trusted publishing)
         uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1
@@ -55,7 +62,7 @@ jobs:
         with:
           user: ${{ secrets.NUGET_USER }}
 
-      - uses: RimWorks/mod-ci/.github/actions/steam-login@79a54854b2795cf5cc12025b3d86ede3b354af94
+      - uses: RimWorks/mod-ci/.github/actions/steam-login@79a54854b2795cf5cc12025b3d86ede3b354af94 # v1.3.0
         with:
           steam-config-vdf-b64: ${{ secrets.STEAM_CONFIG_VDF_B64 }}
           steam-username: ${{ secrets.STEAM_USERNAME }}

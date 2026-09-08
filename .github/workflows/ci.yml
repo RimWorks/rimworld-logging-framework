@@ -1,10 +1,13 @@
 name: ci
 
 on:
-  push:
-    branches: [main, beta]
+  workflow_call:
   pull_request:
     branches: [main, beta]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -29,6 +32,19 @@ jobs:
       - name: dotnet build
         run: dotnet build RimWorks.RimLogging.slnx -c Release --nologo --no-restore
 
+      # Assemblies/, Concord/Assemblies/, Harmony/Assemblies/ are gitignored build output;
+      # release.yml downloads this instead of rebuilding what already passed here.
+      - name: Upload build output
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-output
+          # error, not the default warn: a partial artifact ships a mod missing a backend dll
+          if-no-files-found: error
+          path: |
+            Assemblies/
+            Concord/Assemblies/
+            Harmony/Assemblies/
+
       - name: dotnet test
         run: dotnet test RimWorks.RimLogging.slnx -c Release --nologo --no-build --logger "console;verbosity=normal"
 
@@ -37,15 +53,10 @@ jobs:
         run: dotnet format RimWorks.RimLogging.slnx --verify-no-changes --no-restore
 
   prose:
-    name: prose
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v7
+    uses: RimWorks/mod-ci/.github/workflows/prose.yml@dbb33c36ad8165dd9ffbe567c07055cbfb0b5c21 # v1.4.0
 
-      - name: Vale
-        uses: errata-ai/vale-action@518a9136acc6e6668ce7c00d367051e0941e87ff # reviewdog
-        with:
-          reporter: github-pr-check
-          fail_on_error: true
+  links:
+    uses: RimWorks/mod-ci/.github/workflows/links.yml@dbb33c36ad8165dd9ffbe567c07055cbfb0b5c21 # v1.4.0
+    with:
+      # no lychee.toml in this repo, so drop the shared default's --config flag
+      args: --no-progress README.md
