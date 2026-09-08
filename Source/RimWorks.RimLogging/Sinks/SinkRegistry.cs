@@ -19,12 +19,12 @@ internal static class SinkRegistry
     private static readonly System.Threading.ReaderWriterLockSlim _lock = new System.Threading.ReaderWriterLockSlim();
     private static bool _historyCapped;
 
-    internal static void Register(ILogSink sink)
+    internal static void Register(ILogSink sink, bool replayHistory = true)
     {
         _lock.EnterWriteLock();
         try
         {
-            ReplayHistoryTo(sink);
+            if (replayHistory) ReplayHistoryTo(sink);
             _sinks.Add(sink);
         }
         finally { _lock.ExitWriteLock(); }

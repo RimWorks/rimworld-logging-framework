@@ -28,7 +28,8 @@ public sealed class MemoryLogSink : ILogSink
     }
 
     /// <inheritdoc/>
-    public string Name => "Memory";
+    // settable so a consumer can match a channel's destination list, which filters on sink name
+    public string Name { get; set; } = "Memory";
 
     /// <summary>Gets or sets the minimum level; entries below this level are dropped.</summary>
     public LogLevel MinLevel { get; set; }

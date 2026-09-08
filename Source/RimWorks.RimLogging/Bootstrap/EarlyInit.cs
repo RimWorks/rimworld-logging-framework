@@ -18,8 +18,10 @@ internal static class EarlyInit
         try
         {
             Logging.InstallShutdownHook = Pipeline.ShutdownFlush.Install;
-            Logging.Init();
+            // before Init: a throw in there would otherwise leave the provider null, and
+            // IsPrimary then reads true off a bootstrap that never finished
             Logging.IsDegradedProvider = () => DegradedMode.IsPresent;
+            Logging.Init();
             Logging.GlobalMinLevel = settings.globalMinLevel;
             Logging.CaptureStackTraces = settings.captureStackTraces;
             if (Hijack.HijackBootstrap.Install())

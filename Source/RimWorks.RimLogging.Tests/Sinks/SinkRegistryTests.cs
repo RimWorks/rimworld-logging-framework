@@ -11,6 +11,7 @@ public class SinkRegistryTests : IDisposable
     private readonly int _savedCap;
     private static readonly string[] ExpectedH1H2H3 = ["h1", "h2", "h3"];
     private static readonly string[] ExpectedError = ["error"];
+    private static readonly string[] ExpectedLive = ["live"];
     private static readonly string[] ExpectedE1ToE5 = ["e1", "e2", "e3", "e4", "e5"];
     private static readonly string[] ExpectedE3ToE5 = ["e3", "e4", "e5"];
     private static readonly string[] ExpectedE1ToE4 = ["e1", "e2", "e3", "e4"];
@@ -201,6 +202,18 @@ public class SinkRegistryTests : IDisposable
         SinkRegistry.Register(late);
 
         Assert.Equal(ExpectedH1H2H3, late.Messages());
+    }
+
+    [Fact]
+    public void Register_WithoutReplay_SeesOnlyLiveEntries()
+    {
+        SinkRegistry.DispatchSynchronously(MakeEntry("h1"));
+        RecordingSink late = new RecordingSink("late");
+
+        SinkRegistry.Register(late, replayHistory: false);
+        SinkRegistry.DispatchSynchronously(MakeEntry("live"));
+
+        Assert.Equal(ExpectedLive, late.Messages());
     }
 
     [Fact]

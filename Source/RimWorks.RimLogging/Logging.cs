@@ -55,6 +55,14 @@ public static class Logging
     /// <summary><c>true</c> when this instance is the primary (non-degraded) logger; <c>false</c> if a degraded-mode provider reports otherwise.</summary>
     public static bool IsPrimary => !(IsDegradedProvider?.Invoke() ?? false);
 
+    /// <summary>
+    /// The patching backend that took over <c>Verse.Log</c> (<c>"Harmony"</c> or <c>"Concord"</c>),
+    /// or <c>null</c> when nothing patched it. A consumer that fails a run on captured errors has
+    /// to check this: with no backend, <c>Verse.Log</c> reaches no sink and a quiet sink is not a
+    /// quiet game.
+    /// </summary>
+    public static string? CaptureBackend { get; internal set; }
+
     /// <summary>Emit a log entry, applying the global minimum-level filter.</summary>
     internal static void Emit(LogEntry entry)
     {
@@ -99,13 +107,24 @@ public static class Logging
         _queue = null;
     }
 
-    /// <summary>Registers a sink to receive dispatched log entries.</summary>
+    /// <summary>
+    /// Registers a sink to receive dispatched log entries, and replays the buffered history into
+    /// it first, so a sink registered late still sees entries emitted before it existed. The
+    /// buffer holds up to 10000 entries going back to game start, so a sink registered mid-session
+    /// receives boot and def-loading entries too. Use the <c>replayHistory</c> overload to skip that.
+    /// </summary>
     /// <param name="sink">The sink to add.</param>
     /// <exception cref="ArgumentNullException"><paramref name="sink"/> is <c>null</c>.</exception>
-    public static void RegisterSink(ILogSink sink)
+    public static void RegisterSink(ILogSink sink) => RegisterSink(sink, true);
+
+    /// <summary>Registers a sink, choosing whether the buffered history is replayed into it.</summary>
+    /// <param name="sink">The sink to add.</param>
+    /// <param name="replayHistory">When <c>false</c>, the sink only sees entries emitted from now on.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="sink"/> is <c>null</c>.</exception>
+    public static void RegisterSink(ILogSink sink, bool replayHistory)
     {
         if (sink == null) throw new ArgumentNullException(nameof(sink));
-        Sinks.SinkRegistry.Register(sink);
+        Sinks.SinkRegistry.Register(sink, replayHistory);
     }
 
     /// <summary>Removes a previously registered sink.</summary>

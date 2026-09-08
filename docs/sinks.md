@@ -15,7 +15,15 @@ public sealed class MySink : ILogSink
 
 // Register from a StaticConstructorOnStartup or your mod ctor:
 Logging.RegisterSink(new MySink());
+
+// Or skip the history replay and see only entries from now on:
+Logging.RegisterSink(new MySink(), replayHistory: false);
 ```
+
+`RegisterSink` replays buffered history into a new sink first, so a sink that registers late
+still sees earlier entries. The buffer holds up to 10000 entries going back to game start, so a
+sink registered mid-session also receives boot and def-loading entries. Pass `replayHistory:
+false` when you only want what happens after registration.
 
 Or load it from XML so the bootstrap phase instantiates it:
 

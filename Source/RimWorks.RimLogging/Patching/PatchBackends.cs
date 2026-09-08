@@ -42,6 +42,7 @@ internal static class PatchBackends
             }
 
             InstallAttribution(found);
+            Logging.CaptureBackend = backend.Name;
 
             // our own status line: routing it through Verse.Log made the hijack capture it, and
             // the caller walk skips our frames, so it landed on Mod.Unknown blaming our own patch
