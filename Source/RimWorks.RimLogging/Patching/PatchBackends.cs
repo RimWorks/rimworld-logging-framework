@@ -105,7 +105,7 @@ internal static class PatchBackends
         {
             foreach (Type type in TypesOf(assembly))
             {
-                if (type.IsAbstract || type.IsInterface || !typeof(IPatchBackend).IsAssignableFrom(type))
+                if (!IsBackend(type))
                 {
                     continue;
                 }
@@ -132,6 +132,26 @@ internal static class PatchBackends
         catch (ReflectionTypeLoadException ex)
         {
             return ex.Types.Where(type => type != null).ToList();
+        }
+        catch (Exception)
+        {
+            // a dynamic or half-loaded assembly cannot be enumerated at all, so skip it whole.
+            return Array.Empty<Type>();
+        }
+    }
+
+    /// <summary>Tests a scanned type without letting a broken one stop the scan.</summary>
+    // IsAssignableFrom walks the interface map, so a type whose interfaces live in a missing
+    // assembly throws here. stays quiet: a half-loaded mod can hit this for hundreds of types.
+    private static bool IsBackend(Type type)
+    {
+        try
+        {
+            return !type.IsAbstract && !type.IsInterface && typeof(IPatchBackend).IsAssignableFrom(type);
+        }
+        catch (Exception)
+        {
+            return false;
         }
     }
 }
