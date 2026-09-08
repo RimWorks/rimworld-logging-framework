@@ -31,3 +31,6 @@ worker/.dev.vars
 # written at publish time; belongs in the release zip and Steam, never the repo
 About/PublishStamp.txt
 Styles/Google/
+
+# docker-game writes the launch log here, per .docker-game.yml
+game.log
