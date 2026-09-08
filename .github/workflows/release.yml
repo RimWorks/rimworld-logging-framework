@@ -21,7 +21,8 @@ jobs:
 
   sonar:
     uses: ./.github/workflows/sonar.yml
-    secrets: inherit
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   release:
     name: semantic-release
