@@ -40,5 +40,10 @@ updates:
       npm:
         patterns: ["*"]
         update-types: ["minor", "patch"]
+    ignore:
+      # vitest 5 has no compatible @cloudflare/vitest-pool-workers yet, and the last
+      # major bump broke the worker suite
+      - dependency-name: "vitest"
+        update-types: ["version-update:semver-major"]
     commit-message:
       prefix: "chore(deps)"
