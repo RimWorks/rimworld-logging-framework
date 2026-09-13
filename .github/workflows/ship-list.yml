@@ -11,3 +11,5 @@ permissions:
 jobs:
   verify:
     uses: RimWorks/mod-ci/.github/workflows/ship-list.yml@d6261858b6b74c0cd3ca03c6402c954d58ac7fee # v1.5.1
+    with:
+      ref: d6261858b6b74c0cd3ca03c6402c954d58ac7fee # v1.5.1
