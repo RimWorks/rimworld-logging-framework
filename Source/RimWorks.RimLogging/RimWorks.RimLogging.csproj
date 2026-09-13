@@ -28,8 +28,8 @@
         <PackageReference Include="System.Text.Json" Version="10.0.*" ExcludeAssets=""/>
         <!-- net472 counts ValueTuple as framework provided so the SDK skips it, but System.Text.Json binds the real assembly -->
         <PackageReference Include="System.ValueTuple" Version="4.6.*" GeneratePathProperty="true"/>
-        <PackageReference Include="Concord.Ref" Version="0.16.*" PrivateAssets="all"/>
-        <PackageReference Include="Concord.Analyzers" Version="0.16.*" PrivateAssets="all"/>
+        <PackageReference Include="Concord.Ref" Version="0.19.*" PrivateAssets="all"/>
+        <PackageReference Include="Concord.Analyzers" Version="0.19.*" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.*" PrivateAssets="all">
             <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
