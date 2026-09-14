@@ -1,7 +1,7 @@
 # RimLogging: RimWorld log viewer and bug report sharing
 
 [![Steam Workshop](https://img.shields.io/badge/Steam_Workshop-RimLogging-1b2838?logo=steam&logoColor=white)](https://steamcommunity.com/sharedfiles/filedetails/?id=3733484696)
-[![Discord](https://img.shields.io/badge/Discord-RimWorld-5865F2?logo=discord&logoColor=white)](https://discord.gg/rimworld)
+[![Discord](https://img.shields.io/badge/Discord-Cryptiks_Mods-5865F2?logo=discord&logoColor=white)](https://discord.gg/tbcKN8e4mZ)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=RimWorks_rimworld-logging-framework&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=RimWorks_rimworld-logging-framework)
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=RimWorks_rimworld-logging-framework&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=RimWorks_rimworld-logging-framework)
 
