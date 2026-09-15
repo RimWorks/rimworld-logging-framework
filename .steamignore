@@ -29,3 +29,8 @@ README.md
 docs/
 *.md
 *.xcf
+artifacts
+nupkgs
+Styles
+.vale.ini
+lychee.toml
