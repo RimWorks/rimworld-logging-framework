@@ -59,3 +59,10 @@ quicktest
 templated
 Unrendered
 writeback
+vibecode
+Vibecoding
+vitest
+dequeues
+recurse
+memoises
+repo
