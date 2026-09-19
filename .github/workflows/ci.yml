@@ -52,6 +52,5 @@ jobs:
     uses: RimWorks/mod-ci/.github/workflows/prose.yml@v1.10
 
   links:
+    # No args override: the default already passes --config lychee.toml.
     uses: RimWorks/mod-ci/.github/workflows/links.yml@v1.10
-    with:
-      args: --no-progress README.md
