@@ -14,7 +14,8 @@ public class DefaultFormatColoredPrefixTests
     private static LogEntry MakeEntry(
         string renderedMessage = "the message",
         Exception? exception = null,
-        IReadOnlyDictionary<string, object?>? context = null)
+        IReadOnlyDictionary<string, object?>? context = null,
+        string? stackTrace = null)
         => new LogEntry
         {
             Timestamp = new DateTime(2025, 6, 15, 12, 0, 0, 0, DateTimeKind.Utc),
@@ -24,7 +25,7 @@ public class DefaultFormatColoredPrefixTests
             RenderedMessage = renderedMessage,
             Context = context,
             Source = new SourceLocation("SuiteRunner.cs", 88, "Run"),
-            StackTrace = null,
+            StackTrace = stackTrace,
             Exception = exception,
         };
 
@@ -88,5 +89,16 @@ public class DefaultFormatColoredPrefixTests
         LogEntry entry = MakeEntry(exception: new InvalidOperationException("boom"));
 
         Assert.Equal(string.Empty, DefaultFormat.RenderSuffixOnly("[{level}]", entry, stripRichText: false));
+    }
+
+    // the writeback into Verse.Log is what lands in Player.log, and it carried no stack
+    [Fact]
+    public void RenderWithColoredPrefix_WithAStack_KeepsTheStack()
+    {
+        LogEntry entry = MakeEntry(stackTrace: "at Pickle.Suite.Run (Suite:88)");
+
+        string line = DefaultFormat.RenderWithColoredPrefix(DefaultFormat.Default, entry, "FF0000");
+
+        Assert.EndsWith("\nat Pickle.Suite.Run (Suite:88)", line, StringComparison.Ordinal);
     }
 }

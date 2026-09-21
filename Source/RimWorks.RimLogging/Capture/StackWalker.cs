@@ -134,6 +134,9 @@ public static class StackWalker
             System.Type? declaringType = method?.DeclaringType;
             string? declaring = declaringType?.FullName;
             string? assembly = declaringType?.Assembly.GetName().Name;
+            // a patched method's replacement frame has no declaring type, and dropping it made
+            // the trace read as if the caller logged directly. vanilla keeps it, so do we
+            if (declaringType == null) { sb.Append("at (wrapper dynamic-method)\n"); continue; }
             if (CallerFrameClassifier.IsInternalFrame(declaring, assembly)) continue;
             AppendFrame(sb, frame, method, declaringType, declaring);
         }

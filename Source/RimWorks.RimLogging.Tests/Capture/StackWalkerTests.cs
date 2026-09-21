@@ -356,4 +356,16 @@ public class StackWalkerTests : System.IDisposable
 
         Assert.Equal(["mono.mod"], patchedBy);
     }
+
+    // the frame is a patched method's replacement. dropping it made the trace read as if the
+    // caller logged directly, so every patched method between caller and log call vanished
+    [Fact]
+    public void FormatTrace_FrameWithNullGetMethod_KeepsAWrapperLine()
+    {
+        StackTrace st = new StackTrace(new NullMethodStackFrame());
+
+        string formatted = StackWalker.FormatTrace(st);
+
+        Assert.Equal("at (wrapper dynamic-method)", formatted);
+    }
 }
