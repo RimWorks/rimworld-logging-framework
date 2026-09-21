@@ -28,9 +28,13 @@ Channels are dotted, hierarchical names. Define them in XML to set defaults, or 
 |---|---|---|
 | `defaultLevel` | `Info` | Minimum level emitted on this channel. |
 | `color` | none | RGB tuple for the viewer, for example `(0.7, 0.85, 1.0)`. |
-| `captureStackAt` | `Error` | Lowest level RimLogging captures a stack trace for. |
+| `captureStackAt` | none | Lowest level RimLogging captures a stack trace for. With no value, the channel follows the global **Capture stack traces** setting, which captures at every level. |
 | `destinations` | all sinks | Sink defNames this channel routes to (empty = every registered sink). |
 | `format` | default | Per-channel format template override. |
+
+The `format` template accepts these tokens: `{ts}`, `{level}`, `{channel}`, `{mod}`, `{source}`,
+`{message}`, `{ctx}`, `{exc}` and `{stack}`. A token you leave out is not written, so a channel
+that overrides `format` without `{stack}` shows no stack trace.
 
 `destinations` matches `SinkDef` defNames. A sink you register from code with
 `Logging.RegisterSink` has no defName, so no `destinations` list can name it and none filters it.

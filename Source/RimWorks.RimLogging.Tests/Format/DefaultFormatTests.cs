@@ -16,7 +16,8 @@ public class DefaultFormatTests
         string channel = "default",
         IReadOnlyDictionary<string, object?>? context = null,
         SourceLocation source = default,
-        DateTime timestamp = default)
+        DateTime timestamp = default,
+        string? stackTrace = null)
     {
         DateTime ts = timestamp == default ? new DateTime(2025, 1, 2, 3, 4, 5, 678, DateTimeKind.Utc) : timestamp;
         return new LogEntry
@@ -28,7 +29,7 @@ public class DefaultFormatTests
             RenderedMessage = renderedMessage,
             Context = context,
             Source = source,
-            StackTrace = null,
+            StackTrace = stackTrace,
             Exception = null,
         };
     }
@@ -243,7 +244,7 @@ public class DefaultFormatTests
     [Fact]
     public void Default_Constant_HasExpectedValue()
     {
-        Assert.Equal("[{ts}] [{level}] [{channel}] [{source}] {message}{ctx}{exc}", DefaultFormat.Default);
+        Assert.Equal("[{ts}] [{level}] [{channel}] [{source}] {message}{ctx}{exc}{stack}", DefaultFormat.Default);
     }
 
     [Fact]
@@ -302,5 +303,37 @@ public class DefaultFormatTests
 
         Assert.StartsWith("[2025-06-15 12:00:00.000] [ERROR] [combat] [Foo.cs:10] save failed", result);
         Assert.Contains("\nSystem.InvalidOperationException: boom", result);
+    }
+
+    [Fact]
+    public void Render_StackToken_AppendsTraceOnItsOwnLine()
+    {
+        LogEntry entry = MakeEntry(stackTrace: "at Foo.Bar (Foo:12)");
+
+        string result = DefaultFormat.Render("{message}{stack}", entry, stripRichText: false);
+
+        Assert.Equal("msg\nat Foo.Bar (Foo:12)", result);
+    }
+
+    [Fact]
+    public void Render_StackToken_EmptyWhenEntryHasNoTrace()
+    {
+        LogEntry entry = MakeEntry(stackTrace: null);
+
+        string result = DefaultFormat.Render("{message}{stack}", entry, stripRichText: false);
+
+        Assert.Equal("msg", result);
+    }
+
+    // the captured trace used to reach only the ndjson sink and the viewer, so the rolling
+    // text file and the writeback into Verse.Log both shipped errors with no stack at all
+    [Fact]
+    public void Render_DefaultTemplate_IncludesTheCapturedStack()
+    {
+        LogEntry entry = MakeEntry(stackTrace: "at Foo.Bar (Foo:12)");
+
+        string result = DefaultFormat.Render(DefaultFormat.Default, entry, stripRichText: false);
+
+        Assert.EndsWith("\nat Foo.Bar (Foo:12)", result);
     }
 }

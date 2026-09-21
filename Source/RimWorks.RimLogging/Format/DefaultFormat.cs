@@ -2,11 +2,11 @@ using System.Collections.Generic;
 
 namespace RimWorks.RimLogging.Format;
 
-/// <summary>Renders log entries against a token-based format template (tokens: ts, level, channel, mod, source, message, ctx, exc).</summary>
+/// <summary>Renders log entries against a token-based format template (tokens: ts, level, channel, mod, source, message, ctx, exc, stack).</summary>
 public static class DefaultFormat
 {
     /// <summary>The default format template applied when a channel specifies no override.</summary>
-    public const string Default = "[{ts}] [{level}] [{channel}] [{source}] {message}{ctx}{exc}";
+    public const string Default = "[{ts}] [{level}] [{channel}] [{source}] {message}{ctx}{exc}{stack}";
 
     /// <summary>Renders the full template for the given entry, substituting all recognized tokens.</summary>
     /// <param name="template">The format template string.</param>
@@ -135,6 +135,7 @@ public static class DefaultFormat
             case "message": return strip ? RichText.Strip(e.RenderedMessage) : e.RenderedMessage;
             case "ctx": return RenderUnconsumedContext(e);
             case "exc": return e.Exception != null ? "\n" + e.Exception.ToString() : string.Empty;
+            case "stack": return string.IsNullOrEmpty(e.StackTrace) ? string.Empty : "\n" + e.StackTrace;
             default: return "{" + token + "}";
         }
     }
