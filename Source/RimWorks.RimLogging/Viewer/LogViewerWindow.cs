@@ -652,6 +652,8 @@ internal sealed class LogViewerWindow : EditWindow
 
     private void DrawChannelRow(Rect rect, LogChannel channel, int index)
     {
+        // same reason as DrawLogRow: a channel name is whatever a mod passed to an emit call
+        Text.WordWrap = false;
         if (index % 2 == 1)
         {
             Widgets.DrawAltRect(rect);
@@ -700,6 +702,7 @@ internal sealed class LogViewerWindow : EditWindow
         GUI.color = Color.white;
         Text.Font = GameFont.Small;
         Text.Anchor = TextAnchor.UpperLeft;
+        Text.WordWrap = true;
 
         if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && Mouse.IsOver(rect))
         {
@@ -824,6 +827,9 @@ internal sealed class LogViewerWindow : EditWindow
         Widgets.DrawHighlightIfMouseover(rect);
 
         Text.Anchor = TextAnchor.MiddleLeft;
+        // Text.CalcSize strips <...> before measuring, so Truncate can return a string that
+        // draws wider than the column, and a wrapped line is dropped whole, blanking the row.
+        Text.WordWrap = false;
         Text.Font = GameFont.Tiny;
         GUI.color = new Color(0.54f, 0.56f, 0.58f);
         Widgets.Label(new Rect(rect.x + 4f, rect.y, TimestampWidth, rect.height), entry.Timestamp.ToString("HH:mm:ss"));
@@ -881,6 +887,7 @@ internal sealed class LogViewerWindow : EditWindow
         }
         GUI.color = Color.white;
         Text.Anchor = TextAnchor.UpperLeft;
+        Text.WordWrap = true;
 
         // no ButtonInvisible here: it allocates a control id, and a per-row id count that moves
         // with scrolling shifts every later slider id, which breaks scrollbar dragging
