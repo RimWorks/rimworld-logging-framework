@@ -15,42 +15,24 @@ permissions:
 jobs:
   build:
     name: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
-        with:
-          dotnet-version: |
-            8.0.x
-            10.0.x
-
-      - name: dotnet restore
-        run: dotnet restore RimWorks.RimLogging.slnx
-
-      - name: dotnet build
-        run: dotnet build RimWorks.RimLogging.slnx -c Release --nologo --no-restore
-
-      - name: Upload build output
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: build-output
-          if-no-files-found: error
-          path: |
-            Assemblies/
-            Concord/Assemblies/
-            Harmony/Assemblies/
-
-      - name: dotnet test
-        run: dotnet test RimWorks.RimLogging.slnx -c Release --nologo --no-build --logger "console;verbosity=normal"
-
-      - name: dotnet format
-        run: dotnet format RimWorks.RimLogging.slnx --verify-no-changes --no-restore
+    uses: RimWorks/mod-ci/.github/workflows/dotnet-build.yml@v1
+    permissions:
+      contents: read
+      checks: write
+    with:
+      solution: RimWorks.RimLogging.slnx
+      dotnet-version: |
+        8.0.x
+        10.0.x
+      artifact-name: build-output
+      artifact-paths: |
+        Assemblies/
+        Concord/Assemblies/
+        Harmony/Assemblies/
 
   prose:
-    uses: RimWorks/mod-ci/.github/workflows/prose.yml@v1.10
+    uses: RimWorks/mod-ci/.github/workflows/prose.yml@v1
 
   links:
     # No args override: the default already passes --config lychee.toml.
-    uses: RimWorks/mod-ci/.github/workflows/links.yml@v1.10
+    uses: RimWorks/mod-ci/.github/workflows/links.yml@v1
