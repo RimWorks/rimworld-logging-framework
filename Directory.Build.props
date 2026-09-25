@@ -38,11 +38,11 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <HasLocalRimWorld>false</HasLocalRimWorld>
-        <HasLocalRimWorld Condition="Exists('..\..\..\RimWorldWin64_Data\Managed')">true</HasLocalRimWorld>
-        <HasLocalRimWorld Condition="Exists('C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed')">true</HasLocalRimWorld>
-        <HasLocalRimWorld Condition="Exists('/mnt/games/SteamLibrary/steamapps/common/RimWorld/RimWorldLinux_Data/Managed')">true</HasLocalRimWorld>
-        <HasLocalRimWorld Condition="Exists('/mnt/games/RimWorld/RimWorldLinux_Data/Managed')">true</HasLocalRimWorld>
+        <GamecrateCache Condition="'$(GamecrateCache)' == '' And '$(XDG_CACHE_HOME)' != ''">$(XDG_CACHE_HOME)</GamecrateCache>
+        <GamecrateCache Condition="'$(GamecrateCache)' == ''">$([System.IO.Path]::Combine($([System.Environment]::GetFolderPath(SpecialFolder.UserProfile)), '.cache'))</GamecrateCache>
+        <GamecrateRefs Condition="'$(GamecrateRefs)' == ''">$([System.IO.Path]::Combine($(GamecrateCache), 'gamecrate', 'refs', 'current', 'rimworld'))</GamecrateRefs>
+        <HasGameRefs>false</HasGameRefs>
+        <HasGameRefs Condition="Exists('$(GamecrateRefs)/Assembly-CSharp.dll')">true</HasGameRefs>
     </PropertyGroup>
 
     <ItemDefinitionGroup Condition="'$(IsTestProject)' != 'true'">
