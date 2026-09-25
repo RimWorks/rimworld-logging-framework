@@ -27,6 +27,8 @@ internal sealed class Dialog_NameFilterPreset : Window
 
     public override Vector2 InitialSize => new Vector2(320f, 150f);
 
+    public override bool IsDebug => true;
+
     public override void DoWindowContents(Rect inRect)
     {
         bool submitted = Event.current.type == EventType.KeyDown

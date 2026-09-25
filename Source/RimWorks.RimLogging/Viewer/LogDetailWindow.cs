@@ -19,6 +19,8 @@ internal sealed class LogDetailWindow : EditWindow
 
     public override Vector2 InitialSize => new Vector2(560f, 360f);
 
+    public override bool IsDebug => true;
+
     public override void DoWindowContents(Rect inRect)
     {
         Text.Font = GameFont.Small;

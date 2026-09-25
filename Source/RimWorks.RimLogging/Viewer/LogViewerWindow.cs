@@ -161,6 +161,8 @@ internal sealed class LogViewerWindow : EditWindow
 
     public override Vector2 InitialSize => new Vector2(1100f, 700f);
 
+    public override bool IsDebug => true;
+
     private enum Splitter
     {
         None,
