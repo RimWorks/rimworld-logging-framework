@@ -19,6 +19,7 @@ jobs:
     permissions:
       contents: read
       checks: write
+      packages: read
     with:
       solution: RimWorks.RimLogging.slnx
       dotnet-version: |

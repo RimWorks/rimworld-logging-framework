@@ -18,6 +18,9 @@ permissions:
 jobs:
   analyze:
     uses: RimWorks/mod-ci/.github/workflows/sonar.yml@v1
+    permissions:
+      contents: read
+      packages: read
     with:
       solution: RimWorks.RimLogging.slnx
       project-key: RimWorks_rimworld-logging-framework
