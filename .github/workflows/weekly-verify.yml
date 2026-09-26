@@ -41,10 +41,9 @@ jobs:
 
       - name: Record resolved RimWorld version
         run: |
-          version=$(dotnet list Source/RimWorks.RimLogging/RimWorks.RimLogging.csproj package \
-            | awk '/Krafs.Rimworld.Ref/ {print $NF; exit}')
-          echo "RIMWORLD_REF=${version:-unknown}" >> "$GITHUB_ENV"
-          echo "resolved RimWorld ref: ${version:-unknown}"
+          version=$(cat "$RUNNER_TEMP/game/Version.txt")
+          echo "RIMWORLD_REF=$version" >> "$GITHUB_ENV"
+          echo "resolved RimWorld ref: $version"
 
       - name: dotnet build
         run: dotnet build RimWorks.RimLogging.slnx -c Release --nologo --no-restore

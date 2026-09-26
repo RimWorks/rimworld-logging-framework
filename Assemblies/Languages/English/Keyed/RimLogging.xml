@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+  <CRL_Settings_GlobalMinLevel>Minimum log level</CRL_Settings_GlobalMinLevel>
+  <CRL_Settings_LogDir>Log directory</CRL_Settings_LogDir>
+  <CRL_Settings_LogDir_OpenButton>Open</CRL_Settings_LogDir_OpenButton>
+  <CRL_Settings_Retention>Retained log files</CRL_Settings_Retention>
+  <CRL_Settings_ProxyUrl>Bug bundle proxy URL</CRL_Settings_ProxyUrl>
+  <CRL_Settings_CaptureStackTraces>Capture stack traces</CRL_Settings_CaptureStackTraces>
+  <CRL_Settings_Reset>Reset to defaults</CRL_Settings_Reset>
+</LanguageData>

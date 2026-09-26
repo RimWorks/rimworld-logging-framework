@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
+    <Import Project="$(MSBuildThisFileDirectory)node_modules/@rimworks/mod-ci/msbuild/GameVersion.props"
+            Condition="Exists('$(MSBuildThisFileDirectory)node_modules/@rimworks/mod-ci/msbuild/GameVersion.props')" />
+
+    <Target Name="RequireModCi" BeforeTargets="ResolveAssemblyReferences" Condition="'$(GameVersion)' == ''">
+        <Error Text="mod-ci is not installed. run: npm install" />
+    </Target>
+
     <PropertyGroup>
         <Authors>RimWorks</Authors>
         <Company>RimWorks</Company>
@@ -27,22 +34,14 @@
         <DebugSymbols>true</DebugSymbols>
         <DebugType>embedded</DebugType>
         <Optimize>false</Optimize>
-        <DefineConstants>DEBUG;TRACE</DefineConstants>
+        <DefineConstants>$(DefineConstants);DEBUG;TRACE</DefineConstants>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">
         <DebugSymbols>true</DebugSymbols>
         <DebugType>embedded</DebugType>
         <Optimize>true</Optimize>
-        <DefineConstants>TRACE</DefineConstants>
-    </PropertyGroup>
-
-    <PropertyGroup>
-        <GamecrateCache Condition="'$(GamecrateCache)' == '' And '$(XDG_CACHE_HOME)' != ''">$(XDG_CACHE_HOME)</GamecrateCache>
-        <GamecrateCache Condition="'$(GamecrateCache)' == ''">$([System.IO.Path]::Combine($([System.Environment]::GetFolderPath(SpecialFolder.UserProfile)), '.cache'))</GamecrateCache>
-        <GamecrateRefs Condition="'$(GamecrateRefs)' == ''">$([System.IO.Path]::Combine($(GamecrateCache), 'gamecrate', 'refs', 'current', 'rimworld'))</GamecrateRefs>
-        <HasGameRefs>false</HasGameRefs>
-        <HasGameRefs Condition="Exists('$(GamecrateRefs)/Assembly-CSharp.dll')">true</HasGameRefs>
+        <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
     </PropertyGroup>
 
     <ItemDefinitionGroup Condition="'$(IsTestProject)' != 'true'">

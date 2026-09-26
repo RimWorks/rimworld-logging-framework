@@ -1,0 +1,2649 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>RimWorks.RimLogging</name>
+    </assembly>
+    <members>
+        <member name="T:RimWorks.RimLogging.Bootstrap.EarlyInit">
+            <summary>
+            Starts the pipeline and installs the Verse.Log hijack. Runs from <see cref="T:RimWorks.RimLogging.Settings.LoggingMod"/>'s
+            constructor, before any static constructor, so the hijack catches other mods' load-time logs.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Bootstrap.EarlyInit.Run(RimWorks.RimLogging.Settings.LoggingSettings)">
+            <summary>
+            Runs early bootstrap using the supplied settings. Failures are caught and
+            reported via <c>Verse.Log</c> so a bootstrap error never aborts mod loading.
+            </summary>
+            <param name="settings">The loaded logging settings to apply.</param>
+        </member>
+        <member name="T:RimWorks.RimLogging.Bootstrap.PanicLog">
+            <summary>
+            Reports framework startup failures. Goes through Unity because the Verse.Log hijack
+            cancels Verse.Log, which would let a broken bootstrap hide its own error.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Bootstrap.PanicLog.Warn(System.String)">
+            <summary>Same route at warning level, for a degraded part rather than a dead one.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Bootstrap.StaticInit">
+            <summary>
+            Second-phase bootstrap, once defs exist. Wires the def-backed channels and sinks that
+            could not be read at mod-construction time. Earlier entries replay from the history buffer.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Bundle.BundlePayload">
+            <summary>
+            Serializable container for a bug-report bundle: the RimWorld and framework versions, the loaded mod
+            list, and the captured log entries. Serialized to JSON and uploaded via the proxy.
+            </summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Bundle.BundlePayload.RimWorldVersion">
+            <summary>The RimWorld game version the bundle was captured under.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Bundle.BundlePayload.FrameworkVersion">
+            <summary>The RimLogging framework revision the bundle was captured under.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Bundle.BundlePayload.Mods">
+            <summary>The mods that were loaded when the bundle was captured.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Bundle.BundlePayload.Entries">
+            <summary>The log entries included in the bundle.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Bundle.BundlePayload.ModInfo">
+            <summary>Describes a single loaded mod within the bundle.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Bundle.BundlePayload.ModInfo.Name">
+            <summary>Human-readable mod name.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Bundle.BundlePayload.ModInfo.PackageId">
+            <summary>The mod's package identifier (e.g. <c>author.modname</c>).</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Bundle.BundlePayload.ModInfo.Version">
+            <summary>The mod version read from its manifest, or <c>null</c> if unavailable.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Bundle.BundlePayload.ModInfo.Active">
+            <summary>Whether the mod was active in the load order.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Bundle.BundlePayload.EntryDto">
+            <summary>Flattened, serialization-friendly representation of a single log entry.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Bundle.BundlePayload.EntryDto.Timestamp">
+            <summary>The entry timestamp in ISO-8601 round-trip ("o") format.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Bundle.BundlePayload.EntryDto.Level">
+            <summary>The log level name.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Bundle.BundlePayload.EntryDto.Channel">
+            <summary>The channel the entry was logged to.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Bundle.BundlePayload.EntryDto.Source">
+            <summary>The caller source location as <c>file:line</c>, or empty when not caller-provided.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Bundle.BundlePayload.EntryDto.Message">
+            <summary>The rendered message with RimWorld rich-text markup stripped.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Bundle.BundlePayload.EntryDto.Context">
+            <summary>Structured context key/value pairs attached to the entry, or <c>null</c> if none.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Bundle.BundlePayload.EntryDto.Stack">
+            <summary>The stack trace, or the formatted exception when no explicit stack trace is present; <c>null</c> if neither.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Bundle.Bundler">
+            <summary>
+            Builds a <see cref="T:RimWorks.RimLogging.Bundle.BundlePayload"/> from captured log entries and environment metadata, flattening each
+            <see cref="T:RimWorks.RimLogging.LogEntry"/> into a serializable <see cref="T:RimWorks.RimLogging.Bundle.BundlePayload.EntryDto"/>.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Bundle.Bundler.Build(System.Collections.Generic.IReadOnlyList{RimWorks.RimLogging.LogEntry},System.String,System.String,System.Collections.Generic.List{RimWorks.RimLogging.Bundle.BundlePayload.ModInfo})">
+            <summary>
+            Builds the bundle payload. Timestamps go out as ISO-8601, messages lose their rich-text
+            markup, and source is included as <c>file:line</c> only when the caller supplied it.
+            </summary>
+            <param name="entries">The log entries to include.</param>
+            <param name="rimWorldVersion">The RimWorld game version to record.</param>
+            <param name="frameworkVersion">The RimLogging framework revision to record.</param>
+            <param name="mods">The loaded mod list to record.</param>
+            <returns>A populated <see cref="T:RimWorks.RimLogging.Bundle.BundlePayload"/>.</returns>
+        </member>
+        <member name="M:RimWorks.RimLogging.Bundle.Bundler.SerializeLevel(RimWorks.RimLogging.LogLevel)">
+            <summary>
+            Maps a  to the canonical level name accepted by the bundle upload worker. The worker's accepted set is
+            Trace, Debug, Info, Warning, Error, Critical, so Warn and Fatal must be translated.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Bundle.BundlerSessionFactory">
+            <summary>
+            Convenience factory that builds a <see cref="T:RimWorks.RimLogging.Bundle.BundlePayload"/> for the currently running game session,
+            supplying the live RimWorld version, framework revision, and captured mod list automatically.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Bundle.BundlerSessionFactory.BuildForRunningSession(System.Collections.Generic.IReadOnlyList{RimWorks.RimLogging.LogEntry})">
+            <summary>
+            Builds a bundle for the running session, pulling the current RimWorld version, framework revision,
+            and a snapshot of the loaded mods from the live game state.
+            </summary>
+            <param name="entries">The log entries to include in the bundle.</param>
+            <returns>A <see cref="T:RimWorks.RimLogging.Bundle.BundlePayload"/> populated with the current session's metadata.</returns>
+        </member>
+        <member name="T:RimWorks.RimLogging.Bundle.BundleSerializer">
+            <summary>
+            Serializes and deserializes <see cref="T:RimWorks.RimLogging.Bundle.BundlePayload"/> to and from JSON using indented, camelCase output
+            that omits null values and applies relaxed escaping.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Bundle.BundleSerializer.Serialize(RimWorks.RimLogging.Bundle.BundlePayload)">
+            <summary>Serializes a bundle payload to indented camelCase JSON.</summary>
+            <param name="p">The payload to serialize.</param>
+            <returns>The JSON representation of <paramref name="p"/>.</returns>
+        </member>
+        <member name="M:RimWorks.RimLogging.Bundle.BundleSerializer.Deserialize(System.String)">
+            <summary>Deserializes a bundle payload from JSON, returning an empty payload if the input deserializes to null.</summary>
+            <param name="json">The JSON to deserialize.</param>
+            <returns>The deserialized <see cref="T:RimWorks.RimLogging.Bundle.BundlePayload"/>, or a new empty instance.</returns>
+        </member>
+        <member name="T:RimWorks.RimLogging.Bundle.BundleTextRenderer">
+            <summary>Renders a bundle as the plain text a paste host stores. Pure so it tests without the game.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Bundle.BundleTextRenderer.Render(RimWorks.RimLogging.Bundle.BundlePayload)">
+            <summary>Returns the whole bundle as a readable report: versions, then mods, then the log.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Bundle.BundleTrimmer">
+            <summary>Trims bundle text to fit a paste host's byte budget. Pure so it tests without the game.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Bundle.BundleTrimmer.Cap(System.String,System.Int32)">
+            <summary>
+            Returns <paramref name="content"/> unchanged when it fits, otherwise a copy keeping the
+            header and the newest lines with a marker naming how many were dropped.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Bundle.BundleUploadCoordinator">
+            <summary>
+            Backs the "Upload bundle" actions: finds the buffer, picks the publisher, and turns the
+            result into a message. Verse-free so the decision logic tests without the game.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Bundle.BundleUploadCoordinator.FindMemorySink(System.Collections.Generic.IReadOnlyList{RimWorks.RimLogging.ILogSink})">
+            <summary>Returns the first registered <see cref="T:RimWorks.RimLogging.Sinks.MemoryLogSink"/>, or <c>null</c> when none is registered.</summary>
+            <param name="sinks">The registered sinks to scan.</param>
+        </member>
+        <member name="M:RimWorks.RimLogging.Bundle.BundleUploadCoordinator.DescribeResult(RimWorks.RimLogging.Bundle.PublishResult)">
+            <summary>Formats an upload outcome into a single user-facing line: the URL on success, the error otherwise.</summary>
+            <param name="result">The upload outcome to describe.</param>
+        </member>
+        <member name="M:RimWorks.RimLogging.Bundle.BundleUploadCoordinator.UsesGist(System.String)">
+            <summary>Returns <c>true</c> when the publisher id selects the gist path; anything else means Docbin.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Bundle.BundleUploadCoordinator.Upload(RimWorks.RimLogging.Bundle.BundlePayload,RimWorks.RimLogging.Bundle.PublishOptions,System.Net.Http.HttpClient)">
+            <summary>Uploads the bundle through whichever publisher the options select.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Bundle.DocbinClient">
+            <summary>
+            Uploads a bundle to Docbin as plain text. An API key raises the size ceiling and lets the
+            paste carry a name and visibility; without one the anonymous endpoint is used.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Bundle.DocbinClient.#ctor(System.String,System.Net.Http.HttpClient,System.String,System.String)">
+            <summary>Creates a client targeting a Docbin instance.</summary>
+            <param name="baseUrl">The Docbin base URL, for example <c>https://docbin.app</c>.</param>
+            <param name="http">An optional HTTP client to reuse; a default with a 30-second timeout is created when <c>null</c>.</param>
+            <param name="apiKey">An optional Docbin API key; when set the paste is authenticated.</param>
+            <param name="visibility">The visibility for authenticated pastes; defaults to <c>unlisted</c>.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="baseUrl"/> is <c>null</c>.</exception>
+        </member>
+        <member name="M:RimWorks.RimLogging.Bundle.DocbinClient.UploadAsync(RimWorks.RimLogging.Bundle.BundlePayload)">
+            <summary>
+            Renders the bundle to text, trims it to Docbin's ceiling, and POSTs it. Bad status, bad
+            JSON and transport errors all come back as a failed result instead of throwing.
+            </summary>
+            <param name="payload">The bundle to upload.</param>
+            <returns>A <see cref="T:RimWorks.RimLogging.Bundle.PublishResult"/> carrying the document URL, or the failure reason.</returns>
+        </member>
+        <member name="T:RimWorks.RimLogging.Bundle.DocbinRequest">
+            <summary>Builds the Docbin paste URL and byte budget. Pure so it tests without a network call.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Bundle.DocbinRequest.AnonMaxBytes">
+            <summary>Docbin's anonymous paste ceiling, minus room for headers.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Bundle.DocbinRequest.AuthedMaxBytes">
+            <summary>Docbin's authenticated paste ceiling, minus room for headers.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Bundle.DocbinRequest.MaxBytes(System.Boolean)">
+            <summary>Returns the byte budget Docbin accepts for the given auth state.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Bundle.DocbinRequest.Url(System.String,System.Boolean,System.String,System.String)">
+            <summary>
+            Returns the paste endpoint for the given auth state. Authenticated pastes carry a
+            visibility and a name; anonymous ones take neither.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Bundle.DocbinRequest.NameFor(System.DateTime)">
+            <summary>Returns the default paste name for a bundle captured at the given moment.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Bundle.DocbinVisibility">
+            <summary>The visibility values Docbin accepts, and which one a given API key allows.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Bundle.DocbinVisibility.Public">
+            <summary>Anyone can find the paste.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Bundle.DocbinVisibility.Unlisted">
+            <summary>Only someone holding the link can open the paste.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Bundle.DocbinVisibility.CanChoose(System.String)">
+            <summary>Whether an API key is present, which is what makes the choice available.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Bundle.DocbinVisibility.Effective(System.Boolean,System.String)">
+            <summary>
+            Resolves the visibility actually sent. Anonymous pastes are always public because Docbin
+            has nowhere to file them; a key makes unlisted the default and public opt-in.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Bundle.ManifestVersionReader">
+            <summary>
+            Reads a mod's version string from its <c>About/Manifest.xml</c> file.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Bundle.ManifestVersionReader.TryGetVersion(System.String)">
+            <summary>
+            Attempts to read the <c>version</c> element from <c>About/Manifest.xml</c> under the given mod root.
+            Returns <c>null</c> if the file is missing or any error occurs while reading it.
+            </summary>
+            <param name="rootDir">The mod's root directory.</param>
+            <returns>The manifest version string, or <c>null</c> if unavailable.</returns>
+        </member>
+        <member name="T:RimWorks.RimLogging.Bundle.ModListSnapshot">
+            <summary>
+            Captures the currently loaded RimWorld mods into a list of <see cref="T:RimWorks.RimLogging.Bundle.BundlePayload.ModInfo"/> for inclusion
+            in a bug-report bundle.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Bundle.ModListSnapshot.Capture">
+            <summary>
+            Snapshots the running mods, recording each one's name, package id, and manifest version. All captured
+            mods are marked active since the snapshot reflects the live load order.
+            </summary>
+            <returns>The loaded mods as <see cref="T:RimWorks.RimLogging.Bundle.BundlePayload.ModInfo"/> entries.</returns>
+        </member>
+        <member name="T:RimWorks.RimLogging.Bundle.ProxyClient">
+            <summary>
+            Uploads a bundle to the proxy and reads the <c>url</c> field back out. A user's GitHub PAT
+            goes in the <c>X-Gist-Token</c> header, never the body, which is stored verbatim as the gist.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Bundle.ProxyClient.#ctor(System.String,System.Net.Http.HttpClient,System.String)">
+            <summary>
+            Creates a client targeting the given proxy URL. If no <see cref="T:System.Net.Http.HttpClient"/> is
+            supplied, a default one with a 30-second timeout is used.
+            </summary>
+            <param name="url">The proxy endpoint URL to POST bundles to.</param>
+            <param name="http">An optional HTTP client to reuse; a default client is created when <c>null</c>.</param>
+            <param name="githubToken">An optional user-supplied GitHub PAT; when non-empty it is relayed to the proxy as an <c>X-Gist-Token</c> header so the gist is created under the user's account.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="url"/> is <c>null</c>.</exception>
+        </member>
+        <member name="M:RimWorks.RimLogging.Bundle.ProxyClient.UploadAsync(RimWorks.RimLogging.Bundle.BundlePayload)">
+            <summary>
+            POSTs the payload and returns the gist URL from the response. Bad status, bad JSON, a
+            missing url and transport errors all come back as a failed result instead of throwing.
+            </summary>
+            <param name="payload">The bundle to upload.</param>
+            <returns>A <see cref="T:RimWorks.RimLogging.Bundle.PublishResult"/> describing success with the gist URL, or failure with an error message.</returns>
+        </member>
+        <member name="T:RimWorks.RimLogging.Bundle.PublishOptions">
+            <summary>Everything the upload path needs from settings, without depending on Verse.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Bundle.PublishOptions.Publisher">
+            <summary>Which publisher to use: <c>docbin</c> or <c>gist</c>.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Bundle.PublishOptions.DocbinUrl">
+            <summary>The Docbin base URL.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Bundle.PublishOptions.DocbinApiKey">
+            <summary>The Docbin API key; empty means an anonymous paste.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Bundle.PublishOptions.DocbinVisibility">
+            <summary>The visibility applied to authenticated Docbin pastes.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Bundle.PublishOptions.ProxyUrl">
+            <summary>The gist proxy endpoint, used only by the gist publisher.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Bundle.PublishOptions.GitHubToken">
+            <summary>The user's GitHub PAT, relayed by the gist publisher.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Bundle.PublishResult">
+            <summary>
+            Outcome of a bundle upload: either a success carrying the resulting document URL,
+            or a failure carrying an error message.
+            </summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Bundle.PublishResult.Success">
+            <summary>Whether the upload succeeded.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Bundle.PublishResult.Url">
+            <summary>The URL of the uploaded bundle on success; otherwise <c>null</c>.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Bundle.PublishResult.ErrorMessage">
+            <summary>A description of the failure on error; otherwise <c>null</c>.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Capture.AssemblyChannelCache.ResolverHook">
+            <summary>
+            Resolver hook. Bootstrap installs the Verse-aware implementation; tests may set this directly to assert
+            behavior. When null, the cache returns  for non-vanilla assemblies.
+            </summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Capture.AssemblyChannelCache.OnResolverError">
+            <summary>
+            Diagnostic hook invoked when  throws. Bootstrap wires this to Verse.Log.Warning so a broken resolver
+            surfaces a message instead of silently degrading to . Verse-free so the cache stays unit-testable.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.AssemblyChannelCache.Resolve(System.Reflection.Assembly)">
+            <summary>
+            Channel name for an assembly. Only real resolutions are cached, so one first seen before
+            the resolver was wired gets another chance instead of being pinned to <see cref="F:RimWorks.RimLogging.Capture.AssemblyChannelCache.Unknown"/>.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Capture.AssemblyChannelMatcher">
+            <summary>
+            Maps an assembly to <c>"Mod.&lt;sanitized-packageId&gt;"</c> for whichever loaded mod owns it,
+            or <see cref="F:RimWorks.RimLogging.Capture.AssemblyChannelCache.Unknown"/>. Verse-free so it tests directly.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Capture.CallerFrameClassifier">
+            <summary>
+            Decides whether a stack frame is logging infrastructure to skip, or the real caller.
+            </summary>
+            <remarks>
+            Skips by assembly name as well as namespace. Patchers ship MonoMod and Cecil under
+            namespaces that are not their own, so a namespace-only skip blames the patcher mod.
+            </remarks>
+        </member>
+        <member name="F:RimWorks.RimLogging.Capture.CallerFrameClassifier.HarmonyAssemblyName">
+            <summary>Assembly simple name of the Harmony 2.x library.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.CallerFrameClassifier.IsInternalFrame(System.String,System.String)">
+            <summary>
+            Returns <c>true</c> when a frame with the given declaring-type namespace and
+            declaring-assembly simple name should be skipped during caller-channel resolution.
+            </summary>
+            <param name="declaringNamespace">
+            <c>DeclaringType?.FullName</c> of the frame's <c>MethodBase</c>. May be <c>null</c>
+            for DynamicMethod-emitted Harmony stubs.
+            </param>
+            <param name="assemblyName">
+            <c>DeclaringType?.Assembly.GetName().Name</c> of the frame, or <c>null</c> when
+            the frame has no declaring type.
+            </param>
+        </member>
+        <member name="T:RimWorks.RimLogging.Capture.ModContext">
+            <summary>
+            Adds the owning mod's packageId to an entry's structured context, so it can be filtered with
+            <c>ctx.mod_id</c> and survives into the file sinks.
+            </summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Capture.ModContext.ModIdKey">
+            <summary>Context key holding the owning mod's packageId.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.ModContext.WithModId(System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object},System.String)">
+            <summary>
+            Returns the context with the packageId added. A key the caller set themselves wins, since
+            their value is the one they can predict when they write a filter.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.ModContext.Fallback(System.String,System.String,System.String)">
+            <summary>
+            The packageId to fall back on when caller resolution found none. Only RimLogging's own
+            channel gets one, because the caller walk skips our frames and never reaches us.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Capture.ModNameCache">
+            <summary>
+            Caches assembly name to mod name, built once from <see cref="P:RimWorks.RimLogging.Capture.ModNameCache.Provider"/>. Lets the emit
+            pipeline attribute entries to a mod without walking the stack each call.
+            </summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Capture.ModNameCache.Provider">
+            <summary>
+            Provider hook for the asm-name to mod-display-name map. Bootstrap sets the Verse-aware
+            implementation; tests set it directly. When <c>null</c>, the cache yields an empty map.
+            </summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Capture.ModNameCache.FolderProvider">
+            <summary>
+            Supplies assembly name to mod folder. The folder beats the display name for paths,
+            since it is stable and matches the file system.
+            </summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Capture.ModNameCache.PackageIdProvider">
+            <summary>Supplies assembly name to mod packageId, which is what ctx.mod_id reports.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Capture.ModNameCache.OnProviderError">
+            <summary>
+            Called when a provider throws, so a broken one warns instead of silently emptying the map.
+            Mirrors <see cref="P:RimWorks.RimLogging.Capture.AssemblyChannelCache.OnResolverError"/>.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.ModNameCache.Map">
+            <summary>
+            Builds the map via <see cref="P:RimWorks.RimLogging.Capture.ModNameCache.Provider"/>, caching the first non-empty result. An empty
+            one is not cached, so a call made before mods finish loading is retried.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.ModNameCache.FolderMap">
+            <summary>
+            Returns the assembly-name to mod-folder-name map. Same caching semantics as
+            <see cref="M:RimWorks.RimLogging.Capture.ModNameCache.Map"/>: the first non-empty result is cached; empty results are retried.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.ModNameCache.PackageIdMap">
+            <summary>Assembly name to packageId map. Same caching semantics as <see cref="M:RimWorks.RimLogging.Capture.ModNameCache.Map"/>.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.ModNameCache.PackageIdForAssembly(System.Reflection.Assembly)">
+            <summary>Returns the packageId for the given assembly, or <c>null</c> when unknown.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.ModNameCache.PackageIdForAssemblyName(System.String)">
+            <summary>PackageId for an assembly's simple name, for callers with no frame to walk.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.ModNameCache.ForAssembly(System.Reflection.Assembly)">
+            <summary>Returns the mod name for the given assembly, or <c>null</c> when unknown.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.ModNameCache.NameForAssemblyName(System.String)">
+            <summary>Mod name for an assembly's simple name, for callers with no frame to walk.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.ModNameCache.FolderForAssembly(System.Reflection.Assembly)">
+            <summary>
+            Returns the mod folder name (directory under <c>/Mods/</c>) for the given assembly,
+            or <c>null</c> when unknown.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Capture.ModResolution">
+            <summary>
+            Trims a source path to everything after the last segment matching a known assembly name,
+            and labels it with that mod. Falls back to <see cref="M:RimWorks.RimLogging.Capture.StackWalker.NormalizePath(System.String,System.Type)"/>.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.ModResolution.ResolveFromPath(System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})">
+            <summary>
+            Resolves a compact source path and originating mod from a raw file path.
+            </summary>
+            <param name="file">Raw file path (e.g. from <c>[CallerFilePath]</c>).</param>
+            <param name="assemblyToMod">Map of assembly simple name to mod name.</param>
+            <returns>The mod-relative path (without <c>.cs</c>) and the mod name, or the normalized
+            path and <c>null</c> when no path segment matches a known assembly.</returns>
+        </member>
+        <member name="T:RimWorks.RimLogging.Capture.PackageIdSanitizer">
+            <summary>
+            Converts raw mod packageIds into clean dot-separated channel name segments
+            by stripping invalid characters and normalising dot sequences.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.PackageIdSanitizer.ToChannelSegment(System.String)">
+            <summary>
+            Keeps letters, digits, underscores and dots, collapses repeated dots, and trims dots
+            off both ends. Returns <c>"Unknown"</c> if nothing is left.
+            </summary>
+            <param name="packageId">The raw mod packageId, e.g. <c>"com.cryptiklemur.rimobs"</c>.</param>
+            <returns>A sanitized segment string, or <c>"Unknown"</c> when no valid characters remain.</returns>
+        </member>
+        <member name="T:RimWorks.RimLogging.Capture.SourceLocation">
+            <summary>
+            Where a log event came from. Filled by the compile-time caller attributes, or by the
+            stack walker when those are unavailable.
+            </summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Capture.SourceLocation.File">
+            <summary>Gets the source file path at the call site.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Capture.SourceLocation.Line">
+            <summary>Gets the line number within <see cref="P:RimWorks.RimLogging.Capture.SourceLocation.File"/> at the call site.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Capture.SourceLocation.Method">
+            <summary>Gets the member name at the call site, or <c>null</c> when unavailable.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.SourceLocation.#ctor(System.String,System.Int32,System.String)">
+            <summary>
+            Initializes a new <see cref="T:RimWorks.RimLogging.Capture.SourceLocation"/>.
+            </summary>
+            <param name="file">Source file path. <c>null</c> is treated as <see cref="F:System.String.Empty"/>.</param>
+            <param name="line">Line number (1-based). Zero indicates an unknown location.</param>
+            <param name="method">Member name, or <c>null</c> when unavailable.</param>
+        </member>
+        <member name="P:RimWorks.RimLogging.Capture.SourceLocation.IsCallerProvided">
+            <summary>
+            Gets a value indicating whether this location was populated by caller attributes rather than a runtime
+            stack-walk fallback. true when both is non-empty and  is greater than zero.
+            </summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Capture.SourceLocation.Empty">
+            <summary>
+            A <see cref="T:RimWorks.RimLogging.Capture.SourceLocation"/> that represents an unknown or unavailable location.
+            <see cref="P:RimWorks.RimLogging.Capture.SourceLocation.IsCallerProvided"/> is always <c>false</c> for this instance.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Capture.StackWalker">
+            <summary>
+            Runtime fallback that resolves the originating <see cref="T:RimWorks.RimLogging.Capture.SourceLocation"/> by
+            walking the managed stack when compile-time caller attributes are unavailable.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Capture.StackWalker.AssemblyHint">
+            <summary>
+            Anchors an embedded source path to a mod folder, so the user sees the in-game folder
+            name rather than the developer's project layout.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.StackWalker.WalkOnce">
+            <summary>
+            Walks the current stack and returns the first frame outside the RimWorks.RimLogging. namespace,
+            normalising its file path so the resulting  is stable across machines and layouts.
+            </summary>
+            <returns>
+            A populated <see cref="T:RimWorks.RimLogging.Capture.SourceLocation"/> when a usable frame is found, or
+            <see cref="P:RimWorks.RimLogging.Capture.SourceLocation.Empty"/> when no caller frame carries file info.
+            </returns>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.StackWalker.FirstCallerFrame(System.Diagnostics.StackTrace)">
+            <summary>
+            Returns the first frame in <paramref name="st"/> that lives outside the
+            <c>RimWorks.RimLogging.</c> namespace, with a normalised file path.
+            </summary>
+            <param name="st">A pre-captured stack trace to scan.</param>
+            <returns>The resolved <see cref="T:RimWorks.RimLogging.Capture.SourceLocation"/>, or <see cref="P:RimWorks.RimLogging.Capture.SourceLocation.Empty"/>.</returns>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.StackWalker.FirstCallerType(System.Diagnostics.StackTrace)">
+            <summary>
+            Returns the declaring <see cref="T:System.Type"/> of the first non-framework frame in
+            <paramref name="st"/>, or <c>null</c> when no such frame exists. Cheaper than
+            <see cref="M:RimWorks.RimLogging.Capture.StackWalker.FirstCallerFrame(System.Diagnostics.StackTrace)"/> because it does not touch file/line metadata, so the
+            caller can build the trace with <c>fNeedFileInfo: false</c>.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.StackWalker.FormatTrace(System.Diagnostics.StackTrace)">
+            <summary>
+            Formats a  into a multi-line string of at Type.Method (file:line) entries for every frame outside the
+            RimWorks.RimLogging. namespace. Paths are normalised the same way  normalises them.
+            </summary>
+            <param name="st">A pre-captured stack trace to format.</param>
+            <returns>A formatted trace string; empty when no qualifying frames exist.</returns>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.StackWalker.FormatTrace(System.Diagnostics.StackTrace,System.Collections.Generic.IReadOnlyList{System.String}@)">
+            <summary>Same as <see cref="M:RimWorks.RimLogging.Capture.StackWalker.FormatTrace(System.Diagnostics.StackTrace)"/>, plus the
+            distinct patch-owner ids found across every frame of the same walk.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.StackWalker.CollectOwners(System.Diagnostics.StackFrame,System.Collections.Generic.List{System.String}@)">
+            <summary>Merges one frame's patch owners into <paramref name="owners"/>.</summary>
+            <returns><c>false</c> when the frame could not be attributed at all.</returns>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.StackWalker.AppendFrame(System.Text.StringBuilder,System.Diagnostics.StackFrame,System.Reflection.MethodBase,System.Type,System.String)">
+            <summary>Writes one <c>at Type.Method (file:line)</c> line, newline included.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.StackWalker.NormalizePath(System.String,System.Type)">
+            <summary>
+            Shortens an absolute source path. With a declaring type it anchors on the assembly name
+            and prefixes the mod folder; otherwise it strips known RimWorld layout prefixes.
+            </summary>
+            <param name="file">Raw file path from <c>StackFrame.GetFileName()</c>.</param>
+            <param name="declaringType">
+            Optional declaring type of the frame whose file path is being normalised.
+            When provided, enables assembly-anchored resolution.
+            </param>
+            <returns>Short normalised path, never <c>null</c>.</returns>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.StackWalker.ComputeNormalizedPath(System.String,System.Type)">
+            <summary>
+            Normalises a path, anchoring on the declaring type's assembly name when it can and
+            falling back to regex prefix stripping when it cannot.
+            </summary>
+            <summary>
+            Normalises the path and reports whether it is safe to cache. Unstable while the mod
+            folder is unresolved but a provider exists, since a later call may resolve it.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.StackWalker.StripLeadingSourceDir(System.String)">
+            <summary>
+            Drops a leading or second-segment "Source/" so paths read as "Foo/Bar.cs".
+            The second-segment case covers sub-project containers like "Framework/Source/...".
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.StackWalker.TryAnchorByAssembly(System.String,System.String)">
+            <summary>
+            Searches  for the first occurrence of a path segment whose name equals  (matching either separator
+            style) and returns the substring after that segment, or null if no such anchor exists.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.StackWalker.ComputeAssemblyHint(System.Reflection.Assembly)">
+            <summary>
+            Builds a hint from an assembly: its simple name anchors the source path, and the mod
+            folder becomes the display prefix when it loaded from under <c>Mods/</c>.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.StackWalker.GetHint(System.Reflection.Assembly)">
+            <summary>
+            Cached hint for the assembly, recomputed while the mod folder is unresolved so an
+            early-load miss does not get cached forever.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.StackWalker.ParseModFolder(System.String)">
+            <summary>
+            Returns the segment after <c>/Mods/</c>, so ".../Mods/RimObs/Assemblies/x.dll" gives
+            "RimObs". Null outside a Mods directory, which is normal for tests and tooling.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Capture.TaggedMessageChannel">
+            <summary>
+            Reads a bracketed tag off the head of a captured message. A library that logs through
+            Verse.Log gets attributed to whatever frame the walk lands on, which is usually not itself.
+            </summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Capture.TaggedMessageChannel.ConcordRoot">
+            <summary>Tag root Concord writes, as in <c>[Concord.Coex] hook-installed</c>.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Capture.TaggedMessageChannel.ConcordAssembly">
+            <summary>Simple name of Concord's assembly, which is how its packageId is looked up.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.TaggedMessageChannel.Read(System.String,System.String)">
+            <summary>
+            The channel a leading <c>[Root.Sub]</c> tag implies, or null when the message carries no
+            such tag. The sub-tag is kept, so Concord.Coex nests under Concord in the channel tree.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Capture.ThrowSite">
+            <summary>
+            Reads the throw site out of a formatted stack trace. A captured exception is logged by
+            whoever caught it, so the caller walk finds the handler rather than the code that failed.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.ThrowSite.From(System.String)">
+            <summary>The first frame carrying a real file and line, or <c>null</c> when none does.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Capture.UnityLevelMapping">
+            <summary>
+            Pure mapping from Unity's <c>LogType</c> ordinal to the framework's <see cref="T:RimWorks.RimLogging.LogLevel"/>.
+            Takes the raw ordinal int so the helper is testable without referencing <c>UnityEngine</c>.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.UnityLevelMapping.FromUnityLogTypeId(System.Int32)">
+            <summary>
+            Maps a UnityEngine.LogType ordinal to a framework LogLevel.
+            0=Error, 1=Assert, 2=Warning, 3=Log, 4=Exception.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Capture.VerseLevelMapping.FromVerseMessageTypeId(System.Int32)">
+            <summary>
+            Maps a Verse.LogMessageType ordinal to a framework LogLevel.
+            0=Message, 1=Warning, 2=Error.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Channels.ChannelDef">
+            <summary>Verse Def describing a named logging channel and its defaults (level, color, stack-capture threshold, destinations, format).</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Channels.ChannelDef.defaultLevel">
+            <summary>Minimum level for this channel, or <c>null</c> to follow the global minimum.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Channels.ChannelDef.color">
+            <summary>Optional display color for this channel, or <c>null</c> for no color.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Channels.ChannelDef.captureStackAt">
+            <summary>Level at or above which a stack trace is captured, or <c>null</c> to follow the global switch.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Channels.ChannelDef.destinations">
+            <summary>Names of the sink destinations entries on this channel are routed to.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Channels.ChannelDef.format">
+            <summary>Optional per-channel format template override, or <c>null</c> to use the default.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Channels.ChannelDef.ColorHex">
+            <summary>The channel <see cref="F:RimWorks.RimLogging.Channels.ChannelDef.color"/> as an RGB hex string, or <c>null</c> when no color is set.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Channels.ChannelDef.ConfigErrors">
+            <summary>Reports config errors, allowing the dots that vanilla's defName rule rejects.</summary>
+            <returns>Every base error except the defName-characters one, plus our own dotted-name check.</returns>
+        </member>
+        <member name="T:RimWorks.RimLogging.Channels.ChannelDefName">
+            <summary>Validates dotted channel defNames, which vanilla's Def rules reject. Pure so it tests without Verse.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Channels.ChannelDefName.Validate(System.String)">
+            <summary>Returns a config-error string, or <c>null</c> when the name is a valid channel name.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Channels.ChannelRegistry">
+            <summary>In-memory lookup of <see cref="T:RimWorks.RimLogging.Channels.ChannelDef"/>s loaded from the DefDatabase, with prefix-based channel name resolution.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Channels.ChannelRegistry.SettingsFor(System.String)">
+            <summary>The overrides for a channel, memoised because this runs on every emit.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Channels.ChannelRegistry.TryResolve(System.String)">
+            <summary>Resolves the owning <see cref="T:RimWorks.RimLogging.Channels.ChannelDef"/> for a channel name by prefix match, or <c>null</c> if none matches or the registry is not booted.</summary>
+            <param name="channelName">The channel name to resolve.</param>
+            <returns>The matching <see cref="T:RimWorks.RimLogging.Channels.ChannelDef"/>, or <c>null</c>.</returns>
+        </member>
+        <member name="M:RimWorks.RimLogging.Channels.ChannelRegistry.GetAllRegisteredDefs">
+            <summary>All currently registered <see cref="T:RimWorks.RimLogging.Channels.ChannelDef"/>s, or an empty list if the registry is not booted.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Channels.ChannelResolution">
+            <summary>Pure dotted-name resolution: exact match, then prefix walk, then "default" only if it is itself a registered key.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Channels.ChannelResolution.ResolveOwnerKey(System.String,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Resolves a channel to a registered key: exact match, then each dotted ancestor.
+            Falls back to <c>"default"</c> only if that is itself registered, else null.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Channels.ChannelSettings">
+            <summary>
+            A channel's optional overrides of the global gates. Holds the raw nullable values rather than
+            resolved ones, so changing a global at runtime takes effect without invalidating any cache.
+            </summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Channels.ChannelSettings.Inherit">
+            <summary>A channel that overrides nothing and follows the globals.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Channels.ChannelSettings.#ctor(System.Nullable{RimWorks.RimLogging.LogLevel},System.Nullable{RimWorks.RimLogging.LogLevel},System.Collections.Generic.IReadOnlyList{System.String},System.String)">
+            <summary>Initializes the overrides for one channel.</summary>
+            <param name="minLevel">The channel's minimum level, or <c>null</c> to follow the global.</param>
+            <param name="captureStackAt">The level at or above which to capture a trace, or <c>null</c> to follow the global.</param>
+            <param name="destinations">Names of the only sinks this channel writes to, or <c>null</c> for all of them.</param>
+            <param name="format">A format template overriding the sink's own, or <c>null</c> to use the sink's.</param>
+        </member>
+        <member name="P:RimWorks.RimLogging.Channels.ChannelSettings.MinLevel">
+            <summary>The channel's minimum level override, or <c>null</c> when it follows the global.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Channels.ChannelSettings.CaptureStackAt">
+            <summary>The channel's stack-capture threshold, or <c>null</c> when it follows the global.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Channels.ChannelSettings.Destinations">
+            <summary>The sinks this channel is restricted to, or <c>null</c> when it writes to all of them.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Channels.ChannelSettings.Format">
+            <summary>The channel's format template override, or <c>null</c> when the sink's own is used.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Channels.ChannelSettings.HasDestinations">
+            <summary>Whether this channel names the sinks it writes to.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Channels.ChannelSettings.MinLevelOr(RimWorks.RimLogging.LogLevel)">
+            <summary>Returns the level this channel actually gates at.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Channels.ChannelSettings.TemplateOr(System.String)">
+            <summary>Returns the template to render with, preferring the channel's own.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Channels.ChannelSettings.AllowsSink(System.String)">
+            <summary>
+            Whether an entry on this channel is allowed to reach the named sink. Case-insensitive,
+            because these are hand-typed in XML.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Channels.ChannelSettings.ShouldCaptureStack(RimWorks.RimLogging.LogLevel,System.Boolean)">
+            <summary>
+            Whether an entry at this level captures a stack trace. The global switch wins outright, so
+            turning it off stays an absolute kill switch no matter what a channel asks for.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Dev.LogSeeder">
+            <summary>
+            Emits synthetic entries so the viewer has something to filter, scroll and navigate. Off unless
+            switched on from the dev menu, and never started on its own.
+            </summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Dev.LogSeeder.IsRunning">
+            <summary>Whether the seeder is currently emitting.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Dev.LogSeeder.Toggle">
+            <summary>Starts the seeder if it is stopped, stops it if it is running.</summary>
+            <returns><c>true</c> when the seeder is running after the call.</returns>
+        </member>
+        <member name="T:RimWorks.RimLogging.Dev.LogSeederDebugAction">
+            <summary>Exposes the log seeder in RimWorld's dev menu.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Dev.SeedEntry">
+            <summary>One synthetic entry the seeder emits. Pure so the shape of a seed run is testable.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Dev.SeedEntry.Scoped">
+            <summary>Whether this entry carries ambient scope, so scoped context is exercised too.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Dev.SeedEntry.At(System.Int32)">
+            <summary>
+            Builds the entry for a position in the run. Errors land every 25 and a fatal every 100, so
+            a seeded log has something for error navigation to walk without drowning the list.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Filtering.AndNode">
+            <summary>
+            AST node representing a logical AND of two sub-expressions; both operands must match.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Filtering.AstNode">
+            <summary>
+            Base type for all nodes in a parsed filter expression abstract syntax tree.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Filtering.Compiler">
+            <summary>
+            Compiles a filter expression AST into an executable predicate over log entries.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Filtering.Compiler.Compile(RimWorks.RimLogging.Filtering.AstNode)">
+            <summary>
+            Recursively compiles the given AST node into a predicate that returns whether a
+            <see cref="T:RimWorks.RimLogging.LogEntry"/> satisfies the expression.
+            </summary>
+            <param name="node">The root AST node to compile.</param>
+            <returns>A predicate that evaluates the expression against a log entry.</returns>
+            <exception cref="T:System.ArgumentException">Thrown when the node is an unrecognized AST type.</exception>
+            <exception cref="T:System.InvalidOperationException">Thrown for an unknown level comparison operator.</exception>
+        </member>
+        <member name="M:RimWorks.RimLogging.Filtering.Compiler.MatchesContext(System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object},System.String,System.String)">
+            <summary>Finds the key case-insensitively; a missing key never matches.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Filtering.MatchField">
+            <summary>Which entry field a <see cref="T:RimWorks.RimLogging.Filtering.FieldMatchNode"/> tests.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Filtering.MatchField.Channel">
+            <summary>The entry's channel, matched as a wildcard pattern.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Filtering.MatchField.Text">
+            <summary>The entry's rendered message, matched as a case-insensitive substring.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Filtering.MatchField.Mod">
+            <summary>The owning mod, matched as a wildcard pattern.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Filtering.MatchField.Context">
+            <summary>A structured-context value, found by key and matched as a wildcard pattern.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Filtering.FieldMatchNode">
+            <summary>
+            AST node that matches one of a log entry's string fields against a pattern, optionally negated.
+            </summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Filtering.FieldMatchNode.Key">
+            <summary>The context key, for <see cref="F:RimWorks.RimLogging.Filtering.MatchField.Context"/> only. Null for every other field.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Filtering.FilterExpression">
+            <summary>
+            A parsed and compiled log filter expression that can be evaluated against log entries.
+            </summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Filtering.FilterExpression.Source">
+            <summary>The original source text the expression was parsed from.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Filtering.FilterExpression.Parse(System.String)">
+            <summary>
+            Parses and compiles the given source text into a <see cref="T:RimWorks.RimLogging.Filtering.FilterExpression"/>.
+            </summary>
+            <param name="input">The filter expression source text.</param>
+            <returns>The compiled filter expression.</returns>
+            <exception cref="T:System.FormatException">Thrown when the input is not a valid filter expression.</exception>
+        </member>
+        <member name="M:RimWorks.RimLogging.Filtering.FilterExpression.TryParse(System.String,RimWorks.RimLogging.Filtering.FilterExpression@,System.String@)">
+            <summary>
+            Attempts to parse the given source text without throwing on failure.
+            </summary>
+            <param name="input">The filter expression source text.</param>
+            <param name="result">The parsed expression on success; otherwise <c>null</c>.</param>
+            <param name="error">The parse error message on failure; otherwise <c>null</c>.</param>
+            <returns><c>true</c> if parsing succeeded; otherwise <c>false</c>.</returns>
+        </member>
+        <member name="M:RimWorks.RimLogging.Filtering.FilterExpression.Search(System.String)">
+            <summary>An expression that matches the message text, for input that is not an expression at all.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Filtering.FilterExpression.LooksStructured(System.String)">
+            <summary>
+            Whether the input is trying to be an expression. Anything without an operator, a quote or a
+            bracket is a plain phrase, so a typo inside a real expression still reports as an error.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Filtering.FilterExpression.TryParseOrSearch(System.String,RimWorks.RimLogging.Filtering.FilterExpression@,System.String@)">
+            <summary>
+            Parses as the DSL, falling back to a message-text search when the input is a plain phrase.
+            </summary>
+            <param name="input">The filter box contents.</param>
+            <param name="result">The compiled expression, or <c>null</c> when the input was empty or bad.</param>
+            <param name="error">The parse error, only ever set for input that looked structured.</param>
+            <returns><c>true</c> when <paramref name="result"/> is usable.</returns>
+        </member>
+        <member name="M:RimWorks.RimLogging.Filtering.FilterExpression.Match(RimWorks.RimLogging.LogEntry)">
+            <summary>
+            Evaluates the expression against a log entry.
+            </summary>
+            <param name="entry">The log entry to test.</param>
+            <returns><c>true</c> if the entry satisfies the filter; otherwise <c>false</c>.</returns>
+        </member>
+        <member name="M:RimWorks.RimLogging.Filtering.FilterExpression.ToString">
+            <summary>
+            Returns a normalized, parenthesized rendering of the parsed expression tree.
+            </summary>
+            <returns>A canonical string form of the expression.</returns>
+        </member>
+        <member name="T:RimWorks.RimLogging.Filtering.FilterPresets">
+            <summary>
+            Saved filter expressions, held as two parallel lists because that is what the settings
+            scribe already persists. Every read guards against the two drifting out of step.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Filtering.FilterPresets.IndexOf(System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String},System.String)">
+            <summary>Returns the index of a preset by name, or -1 when it is absent or unusable.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Filtering.FilterPresets.Expression(System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String},System.String)">
+            <summary>Returns the expression saved under a name, or <c>null</c> when there is none.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Filtering.FilterPresets.Save(System.Collections.Generic.List{System.String},System.Collections.Generic.List{System.String},System.String,System.String)">
+            <summary>Saves an expression under a name, replacing any preset already using it.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Filtering.FilterPresets.Remove(System.Collections.Generic.List{System.String},System.Collections.Generic.List{System.String},System.String)">
+            <summary>Removes a preset by name. Returns <c>true</c> when one was removed.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Filtering.FilterPresets.Usable(System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String})">
+            <summary>Returns the names that have an expression to go with them.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Filtering.LevelCompareNode">
+            <summary>
+            AST node that compares a log entry's level against a fixed level using a comparison operator.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Filtering.Lexer">
+            <summary>
+            Converts filter expression source text into a list of <see cref="T:RimWorks.RimLogging.Filtering.Token"/> values.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Filtering.Lexer.Tokenize(System.String)">
+            <summary>
+            Tokenizes the input, recognizing parentheses, operators, double-quoted strings, and
+            keyword/level identifiers, and appends a trailing <see cref="F:RimWorks.RimLogging.Filtering.TokenKind.End"/> token.
+            </summary>
+            <param name="input">The filter expression source text.</param>
+            <returns>The list of tokens, ending with an <see cref="F:RimWorks.RimLogging.Filtering.TokenKind.End"/> token.</returns>
+            <exception cref="T:System.FormatException">
+            Thrown for an unterminated string, an unexpected character, or an unknown identifier.
+            </exception>
+        </member>
+        <member name="M:RimWorks.RimLogging.Filtering.Lexer.ContextIdent(System.String,System.Int32)">
+            <summary>Carries the key from <c>ctx.&lt;key&gt;</c> as the token text, keeping the caller's casing.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Filtering.NotNode">
+            <summary>
+            AST node representing a logical NOT that negates the result of its operand.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Filtering.OrNode">
+            <summary>
+            AST node representing a logical OR of two sub-expressions; either operand may match.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Filtering.Parser">
+            <summary>
+            Parses filter expression source text into an abstract syntax tree. Precedence is
+            OR over AND over NOT, with parentheses for grouping.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Filtering.Parser.Parse(System.String)">
+            <summary>
+            Tokenizes and parses the input into an AST, requiring that all input is consumed.
+            </summary>
+            <param name="input">The filter expression source text.</param>
+            <returns>The root <see cref="T:RimWorks.RimLogging.Filtering.AstNode"/> of the parsed expression.</returns>
+            <exception cref="T:System.FormatException">Thrown on a lexing error or unexpected/leftover token.</exception>
+        </member>
+        <member name="T:RimWorks.RimLogging.Filtering.Token">
+            <summary>
+            A single lexical token produced by the filter expression <see cref="T:RimWorks.RimLogging.Filtering.Lexer"/>.
+            </summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Filtering.Token.Kind">
+            <summary>The category of the token.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Filtering.Token.Text">
+            <summary>The raw source text of the token (for string literals, the unquoted contents).</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Filtering.Token.Pos">
+            <summary>The zero-based character offset of the token within the source input.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Filtering.Token.#ctor(RimWorks.RimLogging.Filtering.TokenKind,System.String,System.Int32)">
+            <summary>Creates a token with the given kind, text, and source position.</summary>
+            <param name="k">The token kind.</param>
+            <param name="t">The token text.</param>
+            <param name="p">The zero-based source position.</param>
+        </member>
+        <member name="T:RimWorks.RimLogging.Filtering.TokenKind">
+            <summary>
+            The kinds of lexical tokens recognized in a filter expression.
+            </summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Filtering.TokenKind.LevelIdent">
+            <summary>The <c>level</c> keyword introducing a level comparison.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Filtering.TokenKind.ChannelIdent">
+            <summary>The <c>channel</c> keyword introducing a channel match.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Filtering.TokenKind.TextIdent">
+            <summary>The <c>text</c> keyword introducing a message substring match.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Filtering.TokenKind.ModIdent">
+            <summary>The <c>mod</c> keyword introducing a mod match.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Filtering.TokenKind.CtxIdent">
+            <summary>A <c>ctx.&lt;key&gt;</c> term; the token text is the key alone.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Filtering.TokenKind.And">
+            <summary>The <c>and</c> logical conjunction keyword.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Filtering.TokenKind.Or">
+            <summary>The <c>or</c> logical disjunction keyword.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Filtering.TokenKind.Not">
+            <summary>The <c>not</c> logical negation keyword.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Filtering.TokenKind.LParen">
+            <summary>An opening parenthesis <c>(</c>.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Filtering.TokenKind.RParen">
+            <summary>A closing parenthesis <c>)</c>.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Filtering.TokenKind.OpEq">
+            <summary>The equality operator <c>=</c>.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Filtering.TokenKind.OpNeq">
+            <summary>The inequality operator <c>!=</c>.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Filtering.TokenKind.OpLt">
+            <summary>The less-than operator <c>&lt;</c>.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Filtering.TokenKind.OpLte">
+            <summary>The less-than-or-equal operator <c>&lt;=</c>.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Filtering.TokenKind.OpGt">
+            <summary>The greater-than operator <c>&gt;</c>.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Filtering.TokenKind.OpGte">
+            <summary>The greater-than-or-equal operator <c>&gt;=</c>.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Filtering.TokenKind.LevelLiteral">
+            <summary>A log level literal such as <c>trace</c>, <c>info</c>, or <c>error</c>.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Filtering.TokenKind.StringLiteral">
+            <summary>A double-quoted string literal, typically a channel pattern.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Filtering.TokenKind.End">
+            <summary>The end-of-input sentinel token.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Filtering.WildcardMatcher">
+            <summary>
+            Matches channel names against wildcard patterns using <c>*</c> as a wildcard.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Filtering.WildcardMatcher.Match(System.String,System.String)">
+            <summary>
+            Matches a channel against a pattern. A trailing <c>.*</c> also matches the prefix itself,
+            any other <c>*</c> matches any run of characters, and no <c>*</c> means exact.
+            </summary>
+            <param name="pattern">The wildcard pattern.</param>
+            <param name="input">The channel name to test.</param>
+            <returns><c>true</c> if the input matches the pattern; otherwise <c>false</c>.</returns>
+        </member>
+        <member name="T:RimWorks.RimLogging.Format.ContextReflector">
+            <summary>Caches per-type property accessors for anonymous-object reflection.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Format.ContextReflector.PropertyAccessor">
+            <summary>A cached accessor for a single property.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Format.ContextReflector.PropertyAccessor.Name">
+            <summary>Property name as declared on the type.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Format.ContextReflector.PropertyAccessor.Get">
+            <summary>Delegate that reads the property value from an instance.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Format.ContextReflector.GetAccessors(System.Type)">
+            <summary>Returns cached accessors for all public instance properties of <paramref name="type"/>.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Format.ContextReflector.CacheSize">
+            <summary>Number of types currently in the accessor cache. For testing.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Format.DefaultFormat">
+            <summary>Renders log entries against a token-based format template (tokens: ts, level, channel, mod, source, message, ctx, exc, stack).</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Format.DefaultFormat.Default">
+            <summary>The default format template applied when a channel specifies no override.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Format.DefaultFormat.Render(System.String,RimWorks.RimLogging.LogEntry,System.Boolean)">
+            <summary>Renders the full template for the given entry, substituting all recognized tokens.</summary>
+            <param name="template">The format template string.</param>
+            <param name="entry">The log entry supplying token values.</param>
+            <param name="stripRichText">When <c>true</c>, rich-text tags are stripped from the message token.</param>
+            <returns>The fully rendered line.</returns>
+        </member>
+        <member name="M:RimWorks.RimLogging.Format.DefaultFormat.TryConsumeEmptyBracketGroup(System.String,System.Int32,System.Int32,System.Text.StringBuilder,System.Int32@)">
+            <summary>
+            Eats the <c>[ ]</c> around an empty token, plus one trailing space, so an optional
+            field leaves nothing behind instead of a stray <c>[]</c>.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Format.DefaultFormat.RenderPrefixOnly(System.String,RimWorks.RimLogging.LogEntry,System.Boolean)">
+            <summary>
+            Renders everything before <c>{message}</c>, including the literal text just before it.
+            Returns the whole rendered template when there is no <c>{message}</c>.
+            </summary>
+            <param name="template">The format template string.</param>
+            <param name="entry">The log entry supplying token values.</param>
+            <param name="stripRichText">When <c>true</c>, rich-text tags are stripped from token values.</param>
+            <returns>The rendered prefix up to (but excluding) the <c>{message}</c> token, or the full template if no such token exists.</returns>
+        </member>
+        <member name="M:RimWorks.RimLogging.Format.DefaultFormat.RenderSuffixOnly(System.String,RimWorks.RimLogging.LogEntry,System.Boolean)">
+            <summary>
+            Renders everything after <c>{message}</c>, which is where <c>{ctx}</c> and <c>{exc}</c>
+            sit in the default template. Returns empty when the template has no <c>{message}</c>.
+            </summary>
+            <param name="template">The format template string.</param>
+            <param name="entry">The log entry supplying token values.</param>
+            <param name="stripRichText">When <c>true</c>, rich-text tags are stripped from token values.</param>
+            <returns>The rendered tail after the <c>{message}</c> token.</returns>
+        </member>
+        <member name="M:RimWorks.RimLogging.Format.DefaultFormat.RenderWithColoredPrefix(System.String,RimWorks.RimLogging.LogEntry,System.String)">
+            <summary>
+            Builds a line whose prefix is wrapped in a Unity colour tag and whose message and tail
+            are not, for sinks that colour the prefix alone.
+            </summary>
+            <param name="template">The format template string.</param>
+            <param name="entry">The log entry supplying token values.</param>
+            <param name="colorHex">Six-digit hex colour applied to the prefix.</param>
+            <returns>The rendered line, exception and context included.</returns>
+        </member>
+        <member name="M:RimWorks.RimLogging.Format.DefaultFormat.FindToken(System.String,System.String)">
+            <summary>
+            Returns the brace positions of the <c>{token}</c> occurrence, or (-1, -1) if absent.
+            Tokenizes through <see cref="M:RimWorks.RimLogging.Format.DefaultFormat.ScanTokens(System.String)"/> so only a whole-token match counts.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Format.DefaultFormat.ScanTokens(System.String)">
+            <summary>
+            Yields every well-formed <c>{token}</c> in order, stopping at the first unclosed brace.
+            <see cref="M:RimWorks.RimLogging.Format.DefaultFormat.Render(System.String,RimWorks.RimLogging.LogEntry,System.Boolean)"/> and <see cref="M:RimWorks.RimLogging.Format.DefaultFormat.FindToken(System.String,System.String)"/> share it so they cannot drift apart.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Format.MessageTemplate">
+            <summary>Parsed structured-logging template with holes and literal segments.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Format.MessageTemplate.Raw">
+            <summary>Original string with {Name}-style holes.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Format.MessageTemplate.Holes">
+            <summary>Named placeholders in order of appearance.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Format.MessageTemplate.Segments">
+            <summary>Literal text between holes (Segments.Count == Holes.Count + 1 always).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Format.MessageTemplate.#ctor(System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String})">
+            <summary>Constructs a template from its raw text, parsed holes, and literal segments.</summary>
+            <param name="raw">Original template string.</param>
+            <param name="holes">Named placeholders in order of appearance.</param>
+            <param name="segments">Literal text between holes; must contain one more element than <paramref name="holes"/>.</param>
+        </member>
+        <member name="M:RimWorks.RimLogging.Format.MessageTemplate.Parse(System.String)">
+            <summary>Parses a raw template string into named holes and surrounding literal segments.</summary>
+            <summary>Parses a raw template string into named holes and surrounding literal segments.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Format.MessageTemplate.Render(System.Object[])">
+            <summary>Renders the template by substituting positional args into holes and returns the formatted string plus a name-to-value context dictionary.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Format.RichText">
+            <summary>Strips Unity rich-text markup tags from log messages before writing to file sinks.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Format.RichText.Strip(System.String)">
+            <summary>Returns <paramref name="input"/> with all recognized rich-text tags removed.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Format.SeverityColors">
+            <summary>Maps log severity levels to muted hex color strings for Unity rich-text tags.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Format.SeverityColors.GetHex(RimWorks.RimLogging.LogLevel)">
+            <summary>Returns a hex color string (no <c>#</c> prefix) for the given <paramref name="level"/>.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Format.StructuredContext">
+            <summary>Captures an anonymous object's properties into a keyed dictionary for structured logging.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Format.StructuredContext.Capture(System.Object)">
+            <summary>
+            Reflects <paramref name="obj"/>'s public instance properties into a read-only dictionary.
+            Returns <see langword="null"/> when <paramref name="obj"/> is <see langword="null"/> or has no properties.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Format.TemplateCache">
+            <summary>Thread-safe cache of parsed MessageTemplate instances keyed by raw string.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Format.TemplateCache.Get(System.String)">
+            <summary>Returns the cached MessageTemplate for <paramref name="raw"/>, parsing it on first use.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Hijack.AssemblyChannelResolver.Resolve(System.Reflection.Assembly)">
+            <summary>
+            Verse-aware resolver wired into by . Projects into packageId/assembly pairs and delegates the actual
+            matching to .
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Hijack.LogHooks">
+            <summary>Verse.Log capture, stated once so each patch backend only has to call it.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Hijack.LogHooks.OnError(System.String)">
+            <summary>Returns true to run vanilla's body, false to replace it.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Hijack.LogHooks.OnWarning(System.String)">
+            <inheritdoc cref="M:RimWorks.RimLogging.Hijack.LogHooks.OnError(System.String)"/>
+        </member>
+        <member name="M:RimWorks.RimLogging.Hijack.LogHooks.OnMessage(System.String)">
+            <inheritdoc cref="M:RimWorks.RimLogging.Hijack.LogHooks.OnError(System.String)"/>
+        </member>
+        <member name="T:RimWorks.RimLogging.Hijack.ModNameMapProvider">
+            <summary>
+            Verse-aware provider that projects  into an assembly-simple-name to mod-name (About.xml &lt;name&gt;)
+            map. Wired into by .
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Hijack.ModNameMapProvider.BuildFolders">
+            <summary>
+            Maps assembly name to mod folder, taken from <see cref="P:Verse.ModContentPack.RootDir"/>.
+            The folder is stable across loads and matches what the user sees, unlike the display name.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Hijack.ModNameMapProvider.BuildPackageIds">
+            <summary>Maps assembly name to the mod's packageId, which is what ctx.mod_id reports.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Hijack.UnityLogBridge">
+            <summary>
+            Subscribes to Unity's threaded log callback so messages emitted via UnityEngine.Debug.Log route into the
+            framework. The framework catches what slips past the Verse.Log Harmony patches.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Hijack.UnityLogBridge.Install">
+            <summary>Subscribes to <see cref="E:UnityEngine.Application.logMessageReceivedThreaded"/>.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Hijack.UnityLogBridge.Uninstall">
+            <summary>Unsubscribes from <see cref="E:UnityEngine.Application.logMessageReceivedThreaded"/>.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Hijack.VanillaBufferWriteback">
+            <summary>
+            Writes a rendered line into vanilla's buffer inside a <see cref="T:RimWorks.RimLogging.Pipeline.ReentryGuard"/>
+            scope, then resets the message count so duplicate-suppression cannot silence fresh entries.
+            </summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Hijack.VanillaBufferWriteback._resetMessageCount">
+            <summary>Prevents duplicate-suppression by resetting the vanilla message counter after each write.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Hijack.VanillaBufferWriteback.Write(RimWorks.RimLogging.LogLevel,System.String)">
+            <summary>
+            Writes <paramref name="coloredLine"/> into the appropriate vanilla log method based on
+            <paramref name="level"/>, guarded by <see cref="T:RimWorks.RimLogging.Pipeline.ReentryGuard"/> to prevent recursion.
+            </summary>
+            <param name="level">Severity level; determines which <c>Verse.Log</c> method is called.</param>
+            <param name="coloredLine">Fully-rendered, color-tagged line to write.</param>
+        </member>
+        <member name="T:RimWorks.RimLogging.Hijack.VerseLogBackfill">
+            <summary>
+            Drains <see cref="P:Verse.Log.Messages"/> once before patching, so entries logged from
+            process start to hijack install are not missing from our sinks.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Hijack.VerseLogBackfill.Drain">
+            <summary>
+            Emits every entry currently in  through the pipeline on the Vanilla channel. Must be called before the
+            Harmony prefix is applied so the buffered set and the live-captured set do not overlap.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Hijack.VerseLogPatchHelpers.ResolveCaller">
+            <summary>
+            Walks the stack past patcher and pipeline frames to the first external assembly, and
+            returns its channel, mod name and packageId. Falls back to Vanilla with neither.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.ILogSink">
+            <summary>Contract for log emit destinations; disposable for clean teardown of file handles.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.ILogSink.Name">
+            <summary>Identifies this sink for telemetry and settings lookup.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.ILogSink.MinLevel">
+            <summary>Per-sink filter gate; entries below this level are not forwarded to this sink.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.ILogSink.Write(RimWorks.RimLogging.LogEntry)">
+            <summary>Receives a fully resolved entry; the sink decides whether to render the template or emit structured data.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.ILogSink.Flush">
+            <summary>Flushes buffered entries; called by ShutdownFlush and after sync-bypass of Error/Fatal.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Log">
+            <summary>Entry point for emitting log messages through the RimLogging framework.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Log.DefaultChannel">
+            <summary>Name of the default log channel used when no channel is specified.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Log.SelfChannel">
+            <summary>Channel RimLogging files its own messages under.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.PushContext(System.String,System.Object)">
+            <summary>
+            Attaches a key and value to every entry emitted on this thread until the returned handle
+            is disposed. Nested scopes stack, and an explicit context at the call site still wins.
+            </summary>
+            <param name="key">The context key to attach.</param>
+            <param name="value">The value to attach.</param>
+            <returns>A handle that removes the pair when disposed.</returns>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.Timed(System.String,RimWorks.RimLogging.LogLevel,System.Int32,System.String)">
+            <summary>Times the using-block and logs it at Debug with an elapsed_ms context value.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.TimedTo(System.String,System.String,RimWorks.RimLogging.LogLevel,System.Int32,System.String)">
+            <summary>Times the using-block on an explicit channel. Returns a no-op scope when the level is gated out.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.IsEnabled(RimWorks.RimLogging.LogLevel,System.String)">
+            <summary>Whether an entry at this level on this channel would survive both gates.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.Trace(System.String,System.Object[])">
+            <summary>Log at Trace using a templated message and positional args (default channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.Trace(System.Exception,System.String,System.Int32,System.String)">
+            <summary>Log at Trace with an exception and a context message (default channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.TraceAt(System.String,System.Object[],System.Int32,System.String)">
+            <summary>Log at Trace using a templated message, positional args, and explicit caller info (default channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.TraceWith(System.String,System.Object,System.Int32,System.String)">
+            <summary>Log at Trace using a plain message and an anonymous-object context (default channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.TraceTo(System.String,System.String,System.Object[],System.Int32,System.String)">
+            <summary>Log at Trace using an explicit channel, a templated message, and optional positional args.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.TraceTo(System.String,System.String,System.Object,System.Int32,System.String)">
+            <summary>Log at Trace using an explicit channel, a plain message, and an anonymous-object context.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.TraceTo(System.String,System.Exception,System.String,System.Int32,System.String)">
+            <summary>Log at Trace with an exception and a context message (explicit channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.Debug(System.String,System.Object[])">
+            <summary>Log at Debug using a templated message and positional args (default channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.Debug(System.Exception,System.String,System.Int32,System.String)">
+            <summary>Log at Debug with an exception and a context message (default channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.DebugAt(System.String,System.Object[],System.Int32,System.String)">
+            <summary>Log at Debug using a templated message, positional args, and explicit caller info (default channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.DebugWith(System.String,System.Object,System.Int32,System.String)">
+            <summary>Log at Debug using a plain message and an anonymous-object context (default channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.DebugTo(System.String,System.String,System.Object[],System.Int32,System.String)">
+            <summary>Log at Debug using an explicit channel, a templated message, and optional positional args.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.DebugTo(System.String,System.String,System.Object,System.Int32,System.String)">
+            <summary>Log at Debug using an explicit channel, a plain message, and an anonymous-object context.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.DebugTo(System.String,System.Exception,System.String,System.Int32,System.String)">
+            <summary>Log at Debug with an exception and a context message (explicit channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.Info(System.String,System.Object[])">
+            <summary>Log at Info using a templated message and positional args (default channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.Info(System.Exception,System.String,System.Int32,System.String)">
+            <summary>Log at Info with an exception and a context message (default channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.InfoAt(System.String,System.Object[],System.Int32,System.String)">
+            <summary>Log at Info using a templated message, positional args, and explicit caller info (default channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.InfoWith(System.String,System.Object,System.Int32,System.String)">
+            <summary>Log at Info using a plain message and an anonymous-object context (default channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.InfoTo(System.String,System.String,System.Object[],System.Int32,System.String)">
+            <summary>Log at Info using an explicit channel, a templated message, and optional positional args.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.InfoTo(System.String,System.String,System.Object,System.Int32,System.String)">
+            <summary>Log at Info using an explicit channel, a plain message, and an anonymous-object context.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.InfoTo(System.String,System.Exception,System.String,System.Int32,System.String)">
+            <summary>Log at Info with an exception and a context message (explicit channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.Warn(System.String,System.Object[])">
+            <summary>Log at Warn using a templated message and positional args (default channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.Warn(System.Exception,System.String,System.Int32,System.String)">
+            <summary>Log at Warn with an exception and a context message (default channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.WarnAt(System.String,System.Object[],System.Int32,System.String)">
+            <summary>Log at Warn using a templated message, positional args, and explicit caller info (default channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.WarnWith(System.String,System.Object,System.Int32,System.String)">
+            <summary>Log at Warn using a plain message and an anonymous-object context (default channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.WarnTo(System.String,System.String,System.Object[],System.Int32,System.String)">
+            <summary>Log at Warn using an explicit channel, a templated message, and optional positional args.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.WarnTo(System.String,System.String,System.Object,System.Int32,System.String)">
+            <summary>Log at Warn using an explicit channel, a plain message, and an anonymous-object context.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.WarnTo(System.String,System.Exception,System.String,System.Int32,System.String)">
+            <summary>Log at Warn with an exception and a context message (explicit channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.WarnOnce(System.String,System.String,System.Int32,System.String)">
+            <summary>
+            Log at Warn only the first time this key is seen. For callers in a tick loop, where the
+            same warning would otherwise land sixty times a second.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.WarnOnceTo(System.String,System.String,System.String,System.Int32,System.String)">
+            <summary>
+            Log at Warn only the first time this key is seen, on an explicit channel. The key is
+            global, so the same key on two channels still only fires once.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.WarnEvery(System.String,System.TimeSpan,System.String,System.Int32,System.String)">
+            <summary>Log at Warn at most once per interval for this key, for a tick-loop heartbeat.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.WarnEveryTo(System.String,System.String,System.TimeSpan,System.String,System.Int32,System.String)">
+            <summary>Log at Warn once per interval on an explicit channel. The key is global across channels.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.Error(System.String,System.Object[])">
+            <summary>Log at Error using a templated message and positional args (default channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.Error(System.Exception,System.String,System.Int32,System.String)">
+            <summary>Log at Error with an exception and a context message (default channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.ErrorAt(System.String,System.Object[],System.Int32,System.String)">
+            <summary>Log at Error using a templated message, positional args, and explicit caller info (default channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.ErrorWith(System.String,System.Object,System.Int32,System.String)">
+            <summary>Log at Error using a plain message and an anonymous-object context (default channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.ErrorTo(System.String,System.String,System.Object[],System.Int32,System.String)">
+            <summary>Log at Error using an explicit channel, a templated message, and optional positional args.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.ErrorTo(System.String,System.String,System.Object,System.Int32,System.String)">
+            <summary>Log at Error using an explicit channel, a plain message, and an anonymous-object context.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.ErrorTo(System.String,System.Exception,System.String,System.Int32,System.String)">
+            <summary>Log at Error with an exception and a context message (explicit channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.ErrorOnce(System.String,System.String,System.Int32,System.String)">
+            <summary>
+            Log at Error only the first time this key is seen. For callers in a tick loop, where the
+            same error would otherwise land sixty times a second.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.ErrorOnceTo(System.String,System.String,System.String,System.Int32,System.String)">
+            <summary>
+            Log at Error only the first time this key is seen, on an explicit channel. The key is
+            global, so the same key on two channels still only fires once.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.ErrorEvery(System.String,System.TimeSpan,System.String,System.Int32,System.String)">
+            <summary>Log at Error at most once per interval for this key, for a tick-loop heartbeat.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.ErrorEveryTo(System.String,System.String,System.TimeSpan,System.String,System.Int32,System.String)">
+            <summary>Log at Error once per interval on an explicit channel. The key is global across channels.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.Fatal(System.String,System.Object[])">
+            <summary>Log at Fatal using a templated message and positional args (default channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.Fatal(System.Exception,System.String,System.Int32,System.String)">
+            <summary>Log at Fatal with an exception and a context message (default channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.FatalAt(System.String,System.Object[],System.Int32,System.String)">
+            <summary>Log at Fatal using a templated message, positional args, and explicit caller info (default channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.FatalWith(System.String,System.Object,System.Int32,System.String)">
+            <summary>Log at Fatal using a plain message and an anonymous-object context (default channel).</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.FatalTo(System.String,System.String,System.Object[],System.Int32,System.String)">
+            <summary>Log at Fatal using an explicit channel, a templated message, and optional positional args.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.FatalTo(System.String,System.String,System.Object,System.Int32,System.String)">
+            <summary>Log at Fatal using an explicit channel, a plain message, and an anonymous-object context.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.FatalTo(System.String,System.Exception,System.String,System.Int32,System.String)">
+            <summary>Log at Fatal with an exception and a context message (explicit channel).</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Log.CallSite">
+            <summary>
+            Bundles the call-site source coordinates (explicit location plus the [CallerLineNumber]/[CallerFilePath]
+            values) so the emit entry point stays within a reasonable parameter count.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.SelfModId(System.String)">
+            <summary>
+            Resolves the source location for an entry: caller-info file/line first (also yielding the originating
+            mod via ), then an explicit caller-provided location, then a single stack walk as the fallback.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.RenderMessage(System.String,System.Object[],System.Object)">
+            <summary>
+            Renders the message template against  and merges in any structured context object. Returns the rendered
+            string and the combined context dictionary (null when no context was supplied).
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.MergeContext(System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})">
+            <summary>Merges two context dictionaries, with <paramref name="overrides"/> winning on key collisions.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Log.EmitCaptured(RimWorks.RimLogging.LogLevel,System.String,System.String,System.String,System.String,System.String,System.Boolean)">
+            <summary>
+            Entry point for logs captured outside our call sites. Set <c>callerOnStack</c> for a live
+            capture, where the original caller is still below us; a replay must leave it false.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.LogEntry">
+            <summary>
+            Immutable payload delivered to every sink. Carries the template and the rendered string,
+            so structured sinks can read <see cref="P:RimWorks.RimLogging.LogEntry.Context"/> and text sinks just write the message.
+            </summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.LogEntry.Timestamp">
+            <summary>Gets the UTC timestamp at which the log call was made.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.LogEntry.Level">
+            <summary>Gets the severity level of this entry.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.LogEntry.Repeats">
+            <summary>How many times this entry repeated back to back. 1 for a normal entry.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.LogEntry.Channel">
+            <summary>Gets the channel (dot-separated category) this entry was emitted on. Never <c>null</c>.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.LogEntry.MessageTemplate">
+            <summary>
+            Gets the unrendered message template, e.g. "died at {Hp}hp". Structured sinks use this together with  to
+            extract typed fields. null assignments are normalized to .
+            </summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.LogEntry.RenderedMessage">
+            <summary>
+            Gets the fully-rendered message string, e.g. "died at 5hp". Text sinks write this value directly. null
+            assignments are normalized to .
+            </summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.LogEntry.Context">
+            <summary>
+            Gets the structured context dictionary, or <c>null</c> when the call site
+            did not supply an anonymous-object context.
+            </summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.LogEntry.Source">
+            <summary>Gets the source location captured at the call site.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.LogEntry.StackTrace">
+            <summary>
+            Gets the stack trace string, or null. Populated eagerly on the sync-bypass path at  and so the stack is
+            captured before the call stack unwinds.
+            </summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.LogEntry.Exception">
+            <summary>
+            Gets the exception associated with this entry, or <c>null</c> when the
+            call site used a non-exception overload.
+            </summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.LogEntry.Mod">
+            <summary>
+            Gets the originating mod's display name (About.xml <c>&lt;name&gt;</c>), or <c>null</c>
+            when the entry could not be attributed to a known mod.
+            </summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.LogEntry.Tick">
+            <summary>The game tick this was logged on, or <c>null</c> outside a running game.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.LogEntry.PatchedBy">
+            <summary>Owner ids of mods that patched a method on this trace, or empty when none did.</summary>
+            <summary>
+            Mods that patched a method on this entry's stack. Empty means nothing patched it;
+            <c>null</c> means attribution could not run, which is a different claim.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Logging">
+            <summary>Framework lifecycle and sink registration: init/shutdown, global minimum level, and sink management. The public emit API is <see cref="T:RimWorks.RimLogging.Log"/>.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Logging.GlobalMinLevel">
+            <summary>Global minimum level; entries below this are dropped before dispatch.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Logging.CaptureStackTraces">
+            <summary>When <c>true</c>, every emitted entry captures and stores a formatted stack trace. Defaults to <c>true</c>.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Logging.TickProvider">
+            <summary>Supplies the current game tick, or <c>null</c> when no game is running.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Logging.CurrentTick">
+            <summary>
+            The current tick, or <c>null</c>. A provider that throws is swallowed: a logging call must
+            never take down its caller, and this one runs on every emit.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Logging.SettingsFor(System.String)">
+            <summary>The overrides for a channel, or none when no registry is installed.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Logging.IsPrimary">
+            <summary><c>true</c> when this instance is the primary (non-degraded) logger; <c>false</c> if a degraded-mode provider reports otherwise.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Logging.CaptureBackend">
+            <summary>
+            The patching backend that took over <c>Verse.Log</c> (<c>"Harmony"</c> or <c>"Concord"</c>),
+            or <c>null</c> when nothing patched it. A consumer that fails a run on captured errors has
+            to check this: with no backend, <c>Verse.Log</c> reaches no sink and a quiet sink is not a
+            quiet game.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Logging.Emit(RimWorks.RimLogging.LogEntry)">
+            <summary>Emit a log entry, applying the global minimum-level filter.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Logging.EnsureStarted">
+            <summary>Lazy initializer used by internal paths.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Logging.Init">
+            <summary>
+            Explicit public lifecycle entry point. Idempotent.
+            Invokes <see cref="P:RimWorks.RimLogging.Logging.InstallShutdownHook"/> if non-null (wired by Bootstrap; null in tests).
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Logging.Shutdown">
+            <summary>Tears down the drain and clears queue/drain references. After this, Emit routes synchronously.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Logging.RegisterSink(RimWorks.RimLogging.ILogSink)">
+            <summary>
+            Registers a sink to receive dispatched log entries, and replays the buffered history into
+            it first, so a sink registered late still sees entries emitted before it existed. The
+            buffer holds up to 10000 entries going back to game start, so a sink registered mid-session
+            receives boot and def-loading entries too. Use the <c>replayHistory</c> overload to skip that.
+            </summary>
+            <param name="sink">The sink to add.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="sink"/> is <c>null</c>.</exception>
+        </member>
+        <member name="M:RimWorks.RimLogging.Logging.RegisterSink(RimWorks.RimLogging.ILogSink,System.Boolean)">
+            <summary>Registers a sink, choosing whether the buffered history is replayed into it.</summary>
+            <param name="sink">The sink to add.</param>
+            <param name="replayHistory">When <c>false</c>, the sink only sees entries emitted from now on.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="sink"/> is <c>null</c>.</exception>
+        </member>
+        <member name="M:RimWorks.RimLogging.Logging.RemoveSink(RimWorks.RimLogging.ILogSink)">
+            <summary>Removes a previously registered sink.</summary>
+            <param name="sink">The sink to remove.</param>
+            <returns><c>true</c> if the sink was registered and removed; otherwise <c>false</c>.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="sink"/> is <c>null</c>.</exception>
+        </member>
+        <member name="P:RimWorks.RimLogging.Logging.RegisteredSinks">
+            <summary>A snapshot of the currently registered sinks.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Logging.SetShutdownHookForTests(System.Action{RimWorks.RimLogging.Pipeline.BackgroundDrain})">
+            <summary>Test seam: installs a shutdown hook, standing in for the Bootstrap wiring.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Logging.ResetShutdownHookForTests">
+            <summary>Test seam: clears any installed shutdown hook so tests start from a known state.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.LogLevel">
+            <summary>
+            Severity levels for log messages, ordered from least to most severe.
+            Backing integer values (0..5) allow cheap integer comparison at the global min-level gate.
+            </summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.LogLevel.Trace">
+            <summary>Fine-grained diagnostic output, lowest severity.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.LogLevel.Debug">
+            <summary>Debugging information useful during development.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.LogLevel.Info">
+            <summary>General informational messages about normal operation.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.LogLevel.Warn">
+            <summary>Potentially harmful situations that deserve attention.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.LogLevel.Error">
+            <summary>Error events that may still allow the application to continue.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.LogLevel.Fatal">
+            <summary>Severe errors that will likely cause the application to abort.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Patching.BackendChoice">
+            <summary>Ranks the loaded backends. Pure so it tests without Verse.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Patching.BackendChoice.Ranked(System.Collections.Generic.IEnumerable{RimWorks.RimLogging.Patching.IPatchBackend})">
+            <summary>Orders backends best-first, so a library that throws hands over to the next.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Patching.BackendPriority">
+            <summary>Priorities for the shipped backends. Concord wins when both libraries are loaded.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Patching.BackendPriority.Concord">
+            <summary>Priority of the Concord backend.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Patching.BackendPriority.Harmony">
+            <summary>Priority of the Harmony backend.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Patching.IPatchAttributionSource">
+            <summary>Reports which mods patched a method, so a thrown stack frame can name who touched it.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Patching.IPatchAttributionSource.OwnersFor(System.Diagnostics.StackFrame)">
+            <summary>
+            Owner ids that patched <paramref name="frame"/>'s method. Empty means the method really is
+            unpatched; <c>null</c> means this source could not answer, which is not the same claim.
+            Must never throw.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Patching.IPatchBackend">
+            <summary>
+            One patching library. A backend states RimLogging's hooks in its own terms, so the core
+            never references Harmony or Concord.
+            </summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Patching.IPatchBackend.Name">
+            <summary>Name used in the log line that reports which backend won.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Patching.IPatchBackend.Priority">
+            <summary>Higher wins when more than one library is loaded.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Patching.IPatchBackend.Apply">
+            <summary>Applies every RimLogging hook. Called on the winning backend only.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Patching.PatchAttributionGuard">
+            <summary>
+            Guards <see cref="P:RimWorks.RimLogging.Logging.AttributionProvider"/> calls. A throw becomes "could not answer"
+            rather than "nothing patched it", because reporting a clean method we never managed to check
+            is a wrong answer, not a missing one.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Patching.PatchBackends">
+            <summary>Finds the loaded patch backends and applies the best one.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Patching.PatchBackends.InstallAttribution(System.Collections.Generic.List{RimWorks.RimLogging.Patching.IPatchBackend})">
+            <summary>
+            Installs attribution from every loaded backend, not only the one that won patching.
+            Patching needs a single winner; attribution does not, and a target Concord routed into a
+            Harmony-patched method runs inside Harmony's replacement, which only Harmony can resolve.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Patching.PatchBackends.IsBackend(System.Type)">
+            <summary>Tests a scanned type without letting a broken one stop the scan.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Pipeline.BackgroundDrain">
+            <summary>
+            Drains  entries on a single, dedicated background thread (RimLogging-Drain) and dispatches each entry to
+            a caller-supplied callback.
+            </summary>
+            <remarks>
+            Back-off strategy: spin for the first 64 empty polls, then 1 ms up to poll 256, then sleep 5 ms
+            thereafter. Any successful dequeue resets the counter to zero.
+            </remarks>
+        </member>
+        <member name="M:RimWorks.RimLogging.Pipeline.BackgroundDrain.#ctor(RimWorks.RimLogging.Pipeline.MpscQueue{RimWorks.RimLogging.LogEntry},System.Action{RimWorks.RimLogging.LogEntry})">
+            <summary>
+            Initializes a new <see cref="T:RimWorks.RimLogging.Pipeline.BackgroundDrain"/> and starts the drain thread.
+            </summary>
+            <param name="queue">The MPSC queue to consume from.</param>
+            <param name="dispatch">Callback invoked for each dequeued entry.
+            Exceptions thrown by this callback are swallowed so the drain thread
+            is never killed by a misbehaving sink.</param>
+        </member>
+        <member name="M:RimWorks.RimLogging.Pipeline.BackgroundDrain.Enqueue(RimWorks.RimLogging.LogEntry)">
+            <summary>Enqueues <paramref name="e"/> and marks the queue as non-empty.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Pipeline.BackgroundDrain.WaitForDrain(System.Int32)">
+            <summary>
+            Blocks until the queue is empty or <paramref name="timeoutMs"/> elapses.
+            </summary>
+            <returns><c>true</c> if the queue drained within the timeout; <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:RimWorks.RimLogging.Pipeline.BackgroundDrain.Dispose">
+            <summary>
+            Signals the drain thread to stop, waits up to 2 s for it to finish the
+            final-drain pass, then disposes the internal event.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Pipeline.LogScope">
+            <summary>
+            Ambient key/value pairs that attach to every entry emitted inside a scope. Per-thread, because
+            a scope belongs to the call stack that opened it and logging happens on several threads.
+            </summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Pipeline.LogScope.Depth">
+            <summary>How many pairs are currently in scope on this thread.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Pipeline.LogScope.Push(System.String,System.Object)">
+            <summary>Adds a pair to the ambient scope until the returned handle is disposed.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Pipeline.LogScope.Merge(System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})">
+            <summary>
+            Merges the ambient pairs under the entry's own context. Explicit context wins, since the
+            caller naming a key at the call site meant that one.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Pipeline.LogScope.Clear">
+            <summary>Drops every frame on this thread. For tests, and for a drain thread starting clean.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Pipeline.LogThrottle">
+            <summary>
+            Keyed suppression so a caller in a tick loop writes one entry instead of sixty a second.
+            Instantiable rather than static so tests do not share a table, and the clock is passed in.
+            </summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Pipeline.LogThrottle.MaxKeys">
+            <summary>Key ceiling. Callers that build keys per pawn or per thing would otherwise grow it forever.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Pipeline.LogThrottle.Once(System.String,System.DateTime)">
+            <summary>Returns <c>true</c> the first time a key is offered, and <c>false</c> after that.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Pipeline.LogThrottle.Every(System.String,System.TimeSpan,System.DateTime)">
+            <summary>Returns <c>true</c> when the key has not fired inside <paramref name="interval"/>.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Pipeline.MpscQueue`1">
+            <summary>
+            Bounded multi-producer, single-consumer lock-free ring-buffer queue.
+            Overflow policy: drop the new entry and increment <see cref="P:RimWorks.RimLogging.Pipeline.MpscQueue`1.DroppedCount"/>.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Pipeline.ReentryGuard">
+            <summary>
+            Detects logging that happens inside a sink write, so the pipeline can short-circuit
+            instead of recursing forever when a sink's own error handler logs.
+            </summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Pipeline.ReentryGuard.IsInsideSink">
+            <summary>Gets a value indicating whether the current thread is already inside a sink write.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Pipeline.ReentryGuard.Scope">
+            <summary>
+            RAII scope token returned by <see cref="M:RimWorks.RimLogging.Pipeline.ReentryGuard.Enter"/>. Disposing the outermost scope clears
+            the flag; disposing an inner (nested) scope leaves the flag set so the outer scope remains active.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Pipeline.ReentryGuard.Enter">
+            <summary>
+            Marks the current thread as inside a sink write and returns a <see cref="T:RimWorks.RimLogging.Pipeline.ReentryGuard.Scope"/> that
+            restores the previous state on disposal. Use with a <c>using</c> statement to guarantee cleanup.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Pipeline.TimedScope">
+            <summary>
+            Times a using-block and logs the elapsed milliseconds when it closes. A struct, so a scope in
+            a tick loop costs no allocation; use it in a <c>using</c> and never store it.
+            </summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Pipeline.TimedScope.TimestampProvider">
+            <summary>Test seam: stands in for the monotonic clock so a test need not sleep.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Pipeline.TimedScope.Dispose">
+            <summary>Emits the entry with an <c>elapsed_ms</c> context value. A second call does nothing.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Settings.LogDirectory">
+            <summary>Provides the default log output directory location.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Settings.LogDirectory.Default">
+            <summary>The default log directory (a "RimLogging" folder under Unity's persistent data path), created if missing.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Settings.LogDirectoryResolver">
+            <summary>Resolves and normalizes the log directory path under a base directory.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Settings.LogDirectoryResolver.EnsureUnderBase(System.String)">
+            <summary>Returns the "RimLogging" subdirectory under <paramref name="baseDir"/>, creating it if it does not exist.</summary>
+            <param name="baseDir">The base directory to place the log folder under.</param>
+            <returns>The full path to the ensured log directory.</returns>
+        </member>
+        <member name="M:RimWorks.RimLogging.Settings.LogDirectoryResolver.Normalize(System.String,System.String)">
+            <summary>Returns <paramref name="current"/> if it is non-blank; otherwise falls back to the ensured directory under <paramref name="baseDir"/>.</summary>
+            <param name="current">The currently configured directory, possibly empty.</param>
+            <param name="baseDir">The base directory used to derive the fallback.</param>
+            <returns>The normalized log directory path.</returns>
+        </member>
+        <member name="M:RimWorks.RimLogging.Settings.LogDirectoryResolver.FolderUrl(System.String)">
+            <summary>A <c>file://</c> URL for a file manager, or empty when the path cannot be one.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Settings.LoggingMod">
+            <summary>RimWorld <see cref="T:Verse.Mod"/> entry point that loads the logging settings and applies the global minimum level.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Settings.LoggingMod.Settings">
+            <summary>The loaded logging settings instance for this mod.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Settings.LoggingMod.#ctor(Verse.ModContentPack)">
+            <summary>
+            Loads settings and runs early bootstrap. Happens during mod loading, before any static
+            constructor, so the hijack is live before other mods log.
+            </summary>
+            <param name="content">The mod content pack provided by RimWorld.</param>
+        </member>
+        <member name="M:RimWorks.RimLogging.Settings.LoggingMod.DoSettingsWindowContents(UnityEngine.Rect)">
+            <summary>Renders the settings window contents and re-applies the global minimum level from the edited settings.</summary>
+            <param name="inRect">The rect to draw the settings UI within.</param>
+        </member>
+        <member name="M:RimWorks.RimLogging.Settings.LoggingMod.SettingsCategory">
+            <summary>The category label shown for this mod in RimWorld's mod settings list.</summary>
+            <returns>The settings category name.</returns>
+        </member>
+        <member name="T:RimWorks.RimLogging.Settings.LoggingSettings">
+            <summary>Persisted RimWorld <see cref="T:Verse.ModSettings"/> for the logging framework (min level, output directory, retention, bundle proxy, filter presets).</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Settings.LoggingSettings.globalMinLevel">
+            <summary>Global minimum log level; entries below this are dropped.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Settings.LoggingSettings.logDirectory">
+            <summary>Directory where log files are written; empty until normalized to the default.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Settings.LoggingSettings.retentionCount">
+            <summary>Number of rotated log files to retain.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Settings.LoggingSettings.proxyUrl">
+            <summary>Endpoint URL used when uploading bug-report bundles.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Settings.LoggingSettings.filterPresetNames">
+            <summary>Display names of saved filter presets, parallel to <see cref="F:RimWorks.RimLogging.Settings.LoggingSettings.filterPresetExpressions"/>.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Settings.LoggingSettings.filterPresetExpressions">
+            <summary>Filter DSL expressions for saved presets, parallel to <see cref="F:RimWorks.RimLogging.Settings.LoggingSettings.filterPresetNames"/>.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Settings.LoggingSettings.sinkOverrideNames">
+            <summary>Sink def names the user set explicitly; anything absent uses the def's own default.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Settings.LoggingSettings.sinkOverrideStates">
+            <summary>On/off states parallel to <see cref="F:RimWorks.RimLogging.Settings.LoggingSettings.sinkOverrideNames"/>.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Settings.LoggingSettings.captureStackTraces">
+            <summary>When <c>true</c>, every emitted entry captures and stores a formatted stack trace. Defaults to <c>true</c>.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Settings.LoggingSettings.githubToken">
+            <summary>Optional user-supplied GitHub PAT; when set, it is relayed to the bundle proxy so gists are created under the user's account. Empty means the proxy uses its own token.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Settings.LoggingSettings.publisher">
+            <summary>Which publisher the share button uses: <c>docbin</c> or <c>gist</c>.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Settings.LoggingSettings.docbinUrl">
+            <summary>Base URL of the Docbin instance bundles are pasted to.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Settings.LoggingSettings.docbinApiKey">
+            <summary>Optional Docbin API key. When set, pastes are authenticated and the size ceiling rises from 1 MiB to 5 MiB.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Settings.LoggingSettings.docbinVisibility">
+            <summary>Visibility applied to authenticated Docbin pastes.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Settings.LoggingSettings.logViewerDetailPlacement">
+            <summary>Where the log viewer draws the detail pane. Cycled from the viewer's own toolbar.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Settings.LoggingSettings.ExposeData">
+            <summary>Serializes and deserializes the settings via RimWorld's Scribe system, applying defaults on post-load.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Settings.LoggingSettings.ToPublishOptions">
+            <summary>Copies the upload-related settings into the Verse-free shape the publishers take.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Settings.LoggingSettingsDefaults">
+            <summary>
+            Canonical default values for <see cref="T:RimWorks.RimLogging.Settings.LoggingSettings"/>. Referenced from the field initializers,
+            the Scribe_Values.Look defaults, and the Reset button so the three sites cannot drift apart.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Settings.LoggingSettingsWindow">
+            <summary>Draws the RimWorld mod settings UI for the logging framework, editing the settings in place.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Settings.LoggingSettingsWindow.Render(RimWorks.RimLogging.Settings.LoggingSettings,UnityEngine.Rect)">
+            <summary>Draws the tab strip and the selected page, mutating <paramref name="s"/> directly.</summary>
+            <param name="s">The settings instance to display and edit.</param>
+            <param name="rect">The rect to draw the UI within.</param>
+        </member>
+        <member name="M:RimWorks.RimLogging.Settings.LoggingSettingsWindow.OpenLogDirectory(RimWorks.RimLogging.Settings.LoggingSettings)">
+            <summary>Opens the log directory in the file manager, and copies the path either way.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Settings.LoggingSettingsWindow.DrawSinks(RimWorks.RimLogging.Settings.LoggingSettings,Verse.Listing_Standard)">
+            <summary>A checkbox per SinkDef. Toggling one records an override and rebuilds the sink set.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Settings.LoggingSettingsWindow.StartUpload(RimWorks.RimLogging.Settings.LoggingSettings)">
+            <summary>
+            Uploads the current log buffer through the configured publisher. Runs async and
+            marshals the resulting URL or error back to the main thread to show it.
+            </summary>
+            <param name="s">The settings supplying the publisher choice and its credentials.</param>
+        </member>
+        <member name="T:RimWorks.RimLogging.Sinks.LogFileEntry">
+            <summary>One prior session's log file, with the timestamp pulled out of its name.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Sinks.LogFileEntry.Path">
+            <summary>Full path to the ndjson file.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Sinks.LogFileEntry.Started">
+            <summary>When the session started, or <c>default</c> when the name did not parse.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Sinks.LogFileEntry.Label">
+            <summary>What to show in the picker.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Sinks.LogFileList">
+            <summary>Lists the ndjson logs left by earlier sessions, newest first.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.LogFileList.InDirectory(System.String)">
+            <summary>Files in the directory, newest first. A missing directory yields none.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.LogFileList.StampOf(System.String)">
+            <summary>Reads the session timestamp out of a file name, or <c>default</c> when it does not fit.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Sinks.MemoryLogSink">
+            <summary>
+            An in-memory, ring-buffered <see cref="T:RimWorks.RimLogging.ILogSink"/> intended for use in tests and diagnostics.
+            Thread-safe. Bounded by <c>capacity</c> to prevent unbounded growth during long-running test sessions.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.MemoryLogSink.#ctor(System.Int32,RimWorks.RimLogging.LogLevel)">
+            <summary>
+            Initializes a new <see cref="T:RimWorks.RimLogging.Sinks.MemoryLogSink"/>.
+            </summary>
+            <param name="capacity">Maximum number of entries retained. Must be &gt;= 1. Defaults to 1024.</param>
+            <param name="minLevel">Entries below this level are silently dropped. Defaults to <see cref="F:RimWorks.RimLogging.LogLevel.Trace"/>.</param>
+            <exception cref="T:System.ArgumentOutOfRangeException">Thrown when <paramref name="capacity"/> is less than 1.</exception>
+        </member>
+        <member name="P:RimWorks.RimLogging.Sinks.MemoryLogSink.Name">
+            <inheritdoc/>
+        </member>
+        <member name="P:RimWorks.RimLogging.Sinks.MemoryLogSink.MinLevel">
+            <summary>Gets or sets the minimum level; entries below this level are dropped.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Sinks.MemoryLogSink.Entries">
+            <summary>
+            Gets a snapshot of retained entries in insertion order (oldest first).
+            When the buffer is full, the oldest entries are overwritten and will not appear here.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.MemoryLogSink.Write(RimWorks.RimLogging.LogEntry)">
+            <inheritdoc/>
+        </member>
+        <member name="P:RimWorks.RimLogging.Sinks.MemoryLogSink.DroppedCount">
+            <summary>
+            How many entries the ring overwrote before a caller could read them. A full buffer that
+            never wrapped reads the same as one that dropped thousands, so a gate has to check this.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.MemoryLogSink.Clear">
+            <summary>Clears all retained entries and resets the ring buffer.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.MemoryLogSink.Flush">
+            <inheritdoc/>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.MemoryLogSink.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="T:RimWorks.RimLogging.Sinks.NdjsonLogReader">
+            <summary>Reads back the NDJSON that <see cref="T:RimWorks.RimLogging.Sinks.RollingJsonFileSink"/> writes, skipping malformed lines.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Sinks.NdjsonLogReader.DefaultMax">
+            <summary>Matches the viewer's ring, so reading past this just throws rows away.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.NdjsonLogReader.ReadFile(System.String,System.Int32)">
+            <summary>Parses a log file, keeping at most the newest entries, oldest first.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.NdjsonLogReader.ReadLines(System.Collections.Generic.IEnumerable{System.String},System.Int32)">
+            <summary>Parses ndjson lines, keeping at most the newest entries, oldest first.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Sinks.RollingFileSink">
+            <summary>
+            Shared file lifecycle for the rolling sinks: per-session stream, retention, serialised
+            writes. Subclasses supply only <see cref="P:RimWorks.RimLogging.Sinks.RollingFileSink.Name"/> and <see cref="M:RimWorks.RimLogging.Sinks.RollingFileSink.FormatLine(RimWorks.RimLogging.LogEntry)"/>.
+            </summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Sinks.RollingFileSink.Name">
+            <inheritdoc/>
+        </member>
+        <member name="P:RimWorks.RimLogging.Sinks.RollingFileSink.MinLevel">
+            <summary>Gets or sets the minimum level; entries below this level are dropped.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Sinks.RollingFileSink.FilePath">
+            <summary>Gets the full path of the log file created for this session.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.RollingFileSink.#ctor(System.String,System.Int32,RimWorks.RimLogging.LogLevel,System.String)">
+            <summary>
+            Opens the session file (creating <paramref name="logDirectory"/> if absent) after
+            pruning older files of the same extension beyond <paramref name="retainCount"/>.
+            </summary>
+            <param name="logDirectory">Directory in which log files are created; created if absent.</param>
+            <param name="retainCount">Maximum number of log files to keep; oldest beyond this count are deleted.</param>
+            <param name="minLevel">Entries below this level are silently dropped.</param>
+            <param name="extension">File extension without the leading dot (e.g. <c>log</c>, <c>ndjson</c>).</param>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.RollingFileSink.FormatLine(RimWorks.RimLogging.LogEntry)">
+            <summary>Renders a single entry into the line written to the file.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.RollingFileSink.Write(RimWorks.RimLogging.LogEntry)">
+            <inheritdoc/>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.RollingFileSink.Flush">
+            <inheritdoc/>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.RollingFileSink.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.RollingFileSink.Dispose(System.Boolean)">
+            <summary>Flushes and closes the session writer. Idempotent and thread-safe.</summary>
+            <param name="disposing"><c>true</c> when called from <see cref="M:RimWorks.RimLogging.Sinks.RollingFileSink.Dispose"/>; the sink holds only managed resources.</param>
+        </member>
+        <member name="T:RimWorks.RimLogging.Sinks.RollingJsonFileSink">
+            <summary>
+            Writes log entries as NDJSON (one JSON object per line) to a per-session file,
+            and deletes the oldest files beyond the configured retention count.
+            </summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Sinks.RollingJsonFileSink.Name">
+            <inheritdoc/>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.RollingJsonFileSink.#ctor(System.String,System.Int32,RimWorks.RimLogging.LogLevel)">
+            <summary>
+            Initializes a new <see cref="T:RimWorks.RimLogging.Sinks.RollingJsonFileSink"/>.
+            </summary>
+            <param name="logDirectory">Directory in which log files are created; created if absent.</param>
+            <param name="retainCount">Maximum number of log files to keep; oldest beyond this count are deleted.</param>
+            <param name="minLevel">Entries below this level are silently dropped.</param>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.RollingJsonFileSink.FormatLine(RimWorks.RimLogging.LogEntry)">
+            <inheritdoc/>
+        </member>
+        <member name="T:RimWorks.RimLogging.Sinks.RollingTextFileSink">
+            <summary>
+            Writes log entries to a per-session plaintext file, stripping rich text tags,
+            and deletes the oldest files beyond the configured retention count.
+            </summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Sinks.RollingTextFileSink.Name">
+            <inheritdoc/>
+        </member>
+        <member name="P:RimWorks.RimLogging.Sinks.RollingTextFileSink.FormatTemplate">
+            <summary>Gets or sets the format template used to render each log line.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.RollingTextFileSink.#ctor(System.String,System.Int32,RimWorks.RimLogging.LogLevel)">
+            <summary>
+            Initializes a new <see cref="T:RimWorks.RimLogging.Sinks.RollingTextFileSink"/>.
+            </summary>
+            <param name="logDirectory">Directory in which log files are created; created if absent.</param>
+            <param name="retainCount">Maximum number of log files to keep; oldest beyond this count are deleted.</param>
+            <param name="minLevel">Entries below this level are silently dropped.</param>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.RollingTextFileSink.FormatLine(RimWorks.RimLogging.LogEntry)">
+            <inheritdoc/>
+        </member>
+        <member name="T:RimWorks.RimLogging.Sinks.SinkDef">
+            <summary>
+            RimWorld Def that describes a log sink loaded from XML. Each def names an  implementation that the
+            bootstrap phase instantiates and registers during game startup.
+            </summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Sinks.SinkDef.sinkClass">
+            <summary>Assembly-qualified type name of the <see cref="T:RimWorks.RimLogging.ILogSink"/> implementation to instantiate.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Sinks.SinkDef.minLevel">
+            <summary>Minimum <see cref="T:RimWorks.RimLogging.LogLevel"/> this sink will receive. Entries below this level are not forwarded.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Sinks.SinkDef.enabledByDefault">
+            <summary>Whether this sink is registered on startup unless explicitly disabled by the user.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.SinkLoader.LoadDefaults">
+            <summary>
+            Reads the destination directory and retention count from global settings, then loads every  in the
+            DefDatabase. This is the single point that couples sink loading to .
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.SinkLoader.LoadFrom(System.Collections.Generic.IEnumerable{RimWorks.RimLogging.Sinks.SinkDef},System.String,System.Int32,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.Boolean})">
+            <summary>
+            Builds and registers every enabled sink. Unknown types and constructor failures are
+            warned about and skipped rather than aborting the rest.
+            </summary>
+            <param name="defs">The sink defs to load.</param>
+            <param name="logDirectory">Destination directory for file sinks.</param>
+            <param name="retentionCount">Number of rolled files to retain for file sinks.</param>
+            <param name="overrideNames">Sink def names the user set explicitly.</param>
+            <param name="overrideStates">On/off states parallel to <paramref name="overrideNames"/>.</param>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.SinkLoader.Reload">
+            <summary>Drops the sinks this loader made and builds them again from current settings.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.SinkLoader.BuildFactories(System.String,System.Int32)">
+            <summary>
+            Per-type constructor table. Anything absent falls through to the parameterless path
+            in <see cref="M:RimWorks.RimLogging.Sinks.SinkPlan.TryCreate(RimWorks.RimLogging.Sinks.SinkSpec,System.Collections.Generic.IReadOnlyDictionary{System.Type,System.Func{RimWorks.RimLogging.LogLevel,RimWorks.RimLogging.ILogSink}},System.Action{System.String})"/>.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Sinks.SinkPlan">
+            <summary>
+            Turns <see cref="T:RimWorks.RimLogging.Sinks.SinkSpec"/>s into sinks. Verse-free, so it tests without the game.
+            Prefers a <c>(LogLevel)</c> constructor so the def-supplied min level is honored.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.SinkPlan.Build(System.Collections.Generic.IEnumerable{RimWorks.RimLogging.Sinks.SinkSpec},System.Collections.Generic.IReadOnlyDictionary{System.Type,System.Func{RimWorks.RimLogging.LogLevel,RimWorks.RimLogging.ILogSink}},System.Action{System.String})">
+            <summary>Each built sink keyed by the def that named it, which is what channel destinations match.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Sinks.SinkRegistry">
+            <summary>
+            Holds the active sinks and fans entries out to them. New sinks are replayed a history buffer,
+            so one that registers late still sees entries emitted before it existed.
+            </summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Sinks.SinkRegistry.PostReplayCap">
+            <summary>
+            History cap after the first replay. Unbounded until then, so a late sink gets everything.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Sinks.SinkRegistry.Bound">
+            <summary>A registered sink paired with the <c>SinkDef</c> that loaded it, if any.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Sinks.SinkRegistry.Bound.DefName">
+            <summary>The def that loaded this sink, or <c>null</c> when it was registered from code.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Sinks.SinkSpec.Enabled">
+            <summary>The def default after the user's override is applied, not the raw XML flag.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Sinks.SinkToggles">
+            <summary>Resolves whether a sink runs, from the def's default plus the user's explicit overrides.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.SinkToggles.IsEnabled(System.String,System.Boolean,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.Boolean})">
+            <summary>The def's own default, unless the user set this sink explicitly.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.SinkToggles.Set(System.String,System.Boolean,System.Collections.Generic.List{System.String},System.Collections.Generic.List{System.Boolean})">
+            <summary>Records an explicit choice, replacing any earlier one for the same sink.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.SinkToggles.Clear(System.String,System.Collections.Generic.List{System.String},System.Collections.Generic.List{System.Boolean})">
+            <summary>Drops an explicit choice so the sink falls back to its def default.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Sinks.VerseLogSink">
+            <summary>
+            Writes entries back into vanilla's <c>Verse.Log</c> buffer, colouring the prefix from
+            the channel's <see cref="P:RimWorks.RimLogging.Channels.ChannelDef.ColorHex"/> or <see cref="M:RimWorks.RimLogging.Format.SeverityColors.GetHex(RimWorks.RimLogging.LogLevel)"/>.
+            </summary>
+            <remarks>Goes through <see cref="P:RimWorks.RimLogging.Sinks.VerseLogSink.VanillaWriter"/> so Sinks never references Hijack.</remarks>
+        </member>
+        <member name="P:RimWorks.RimLogging.Sinks.VerseLogSink.VanillaWriter">
+            <summary>
+            Pushes the formatted line into vanilla's buffer. Null in degraded mode, so writes drop.
+            </summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Sinks.VerseLogSink.Name">
+            <inheritdoc/>
+        </member>
+        <member name="P:RimWorks.RimLogging.Sinks.VerseLogSink.MinLevel">
+            <summary>Gets or sets the minimum level; entries below this level are dropped.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Sinks.VerseLogSink.FormatTemplate">
+            <summary>Gets or sets the format template used to render the log prefix.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.VerseLogSink.#ctor(RimWorks.RimLogging.LogLevel)">
+            <summary>
+            Initializes a new <see cref="T:RimWorks.RimLogging.Sinks.VerseLogSink"/>.
+            </summary>
+            <param name="minLevel">Entries below this level are silently dropped. Defaults to <see cref="F:RimWorks.RimLogging.LogLevel.Trace"/>.</param>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.VerseLogSink.Write(RimWorks.RimLogging.LogEntry)">
+            <inheritdoc/>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.VerseLogSink.Flush">
+            <inheritdoc/>
+        </member>
+        <member name="M:RimWorks.RimLogging.Sinks.VerseLogSink.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.AutoOpenDecision">
+            <summary>Decides whether the viewer takes over vanilla's auto-open. Pure so it tests without Verse.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.ChannelClassifier.UseModTable(System.Action)">
+            <summary>Installs the table filler. <c>ChannelClassifierBootstrap</c> owns the Verse dependency.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.ChannelClassifier.AddMod(System.String,System.String)">
+            <summary>Registers one running mod against the channel paths it owns.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.ChannelClassifier.Reset">
+            <summary>Drops the cached tables so the next <see cref="M:RimWorks.RimLogging.Viewer.ChannelClassifier.EnsureBuilt"/> rebuilds them.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.ChannelClassifierBootstrap">
+            <summary>Feeds the running mod list into <see cref="T:RimWorks.RimLogging.Viewer.ChannelClassifier"/>. Holds the only Verse dependency in the channel-path logic.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.ChannelLabels">
+            <summary>Display strings the channel tree needs. Passed in so the filter logic stays free of Verse.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.ChannelTally">
+            <summary>Per-channel row and error counts. Counts, not flags, so eviction can decrement.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.ContextIndex">
+            <summary>
+            Distinct context keys and their values, kept as entries land so the filter box can complete
+            <c>ctx.</c> without rescanning the buffer.
+            </summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Viewer.ContextIndex.MaxKeys">
+            <summary>Keys tracked before new ones are ignored.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Viewer.ContextIndex.MaxValuesPerKey">
+            <summary>Values kept per key. A key holding a tick or an id would grow without one.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.ContextIndex.Add(System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})">
+            <summary>Records every key and value in one entry's context. Null contexts are ignored.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.ContextIndex.Keys">
+            <summary>Every key seen, sorted, ready to be offered after <c>ctx.</c>.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.ContextIndex.ValuesFor(System.String)">
+            <summary>Values seen for one key, sorted. Empty when the key has never been seen.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.ContextIndex.Clear">
+            <summary>Drops everything, for when the viewer buffer is cleared.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.ContextIndex.FromSnapshot(System.Collections.Generic.IReadOnlyList{RimWorks.RimLogging.LogEntry})">
+            <summary>Walks a whole snapshot, for a log loaded from a file rather than streamed.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.DetailPaneLayout">
+            <summary>
+            Splits the detail pane into the strip holding the copy button and the scrolling body under
+            it. The two must never overlap. Every row in the body is a read-only text area, and a text
+            area takes the mouse down and marks it used, so a row drawn under the button would swallow
+            the click and the button would never fire.
+            </summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Viewer.DetailPaneLayout.ButtonHeight">
+            <summary>Height of the copy button itself.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Viewer.DetailPaneLayout.Gap">
+            <summary>Breathing room between the button and the first row.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Viewer.DetailPaneLayout.HeaderHeight">
+            <summary>Vertical space the button strip takes out of the pane.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.DetailPaneLayout.BodyTop(System.Single)">
+            <summary>Top edge of the scrolling body, given the pane's inner top edge.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.DetailPaneLayout.BodyHeight(System.Single)">
+            <summary>Height left for the scrolling body, never negative on a very short pane.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.DetailPaneLayout.Overlaps(System.Single,System.Single)">
+            <summary>
+            True when the button strip and the body would overlap. The body is what scrolls, so an
+            overlap puts some row under the button no matter where the user has scrolled to.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.DetailPlacement">
+            <summary>Where the viewer draws the detail pane for the selected entry.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Viewer.DetailPlacement.Bottom">
+            <summary>Full-width strip under the entry list, resizable. What vanilla's log window does.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Viewer.DetailPlacement.Right">
+            <summary>Third column beside the entry list.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Viewer.DetailPlacement.Popout">
+            <summary>Its own window, which drags, resizes and closes independently.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.Dialog_NameFilterPreset">
+            <summary>
+            Asks for a name to save the current filter under. Vanilla's Dialog_Rename needs an
+            IRenameable and force-pauses the game, neither of which suits a dev window.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.DragSelectPolicy">
+            <summary>
+            Decides whether a read-only text area should extend its own selection on a repaint.
+            Unity grows a selection only inside <c>EventType.MouseDrag</c>, and it stops emitting those
+            once the pointer creeps below roughly a pixel per frame, which strands a slow drag.
+            </summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Viewer.DragSelectPolicy.MinMove">
+            <summary>Pointer travel below this is not worth re-measuring the text for.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.DragSelectPolicy.ShouldExtend(System.Boolean,System.Int32,System.Int32,System.Boolean,System.Single,System.Single)">
+            <summary>
+            True when this frame should re-aim the selection at the pointer. Callers pass the ids
+            rather than reading them so the decision can be exercised without a live GUI.
+            </summary>
+            <param name="isRepaint">Whether the current pass is a repaint.</param>
+            <param name="hotControl">The control holding the mouse, or 0 when no button is down.</param>
+            <param name="keyboardControl">The focused control, which a text field sets alongside hot.</param>
+            <param name="ownsRect">Whether the hot control is the field being drawn right now.</param>
+            <param name="dx">Pointer movement on x since the last extension.</param>
+            <param name="dy">Pointer movement on y since the last extension.</param>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.EntryLabel">
+            <summary>
+            Builds the channel text shown in the entry list. A packageId channel says little at a glance,
+            so a mod entry shows the mod's own name instead.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.EntryLabel.Channel(System.String,System.String)">
+            <summary>
+            The channel as the list should show it. Falls back to the raw channel whenever the mod
+            name is unknown, so a row never loses the only identifier it had.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.EntryText">
+            <summary>Builds the copyable text for one entry. Pure so it tests without Verse.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.EntryText.SplitRow(System.String)">
+            <summary>
+            Splits a message into the single line a list row can show and the number of lines left
+            behind. The count is returned separately so the row can style it apart from the message.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.EntryText.ExtraLinesLabel(System.Int32)">
+            <summary>The label shown beside a collapsed row, for example <c>(+12 lines)</c>.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.ErrorJump">
+            <summary>Finds the next problem row and where to scroll for it. Pure so it tests without Unity.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.ErrorJump.Next(System.Collections.Generic.IReadOnlyList{RimWorks.RimLogging.LogEntry},System.Int32,RimWorks.RimLogging.LogLevel)">
+            <summary>
+            Returns the next index after <paramref name="fromIndex"/> whose level is at or above
+            <paramref name="minLevel"/>, wrapping to the top so repeated presses cycle. Returns -1
+            when the list holds nothing that severe.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.ErrorJump.ScrollTo(System.Int32,System.Single,System.Single,System.Int32)">
+            <summary>Returns the scroll offset that puts a row in view, roughly a third down the pane.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.Suggestions">
+            <summary>Completion candidates for the text typed so far, plus the span they replace.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.Suggestions.Apply(System.String,System.String)">
+            <summary>Splices <paramref name="item"/> into <paramref name="source"/> over the span this covers.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.FilterSuggest">
+            <summary>Works out what may legally follow a partly typed filter expression.</summary>
+            <remarks>The grammar is small, so this reads the last complete token instead of parsing incrementally.</remarks>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.FilterSuggest.For(System.String,System.Collections.Generic.IReadOnlyCollection{System.String},RimWorks.RimLogging.Viewer.ContextIndex)">
+            <summary>Candidates for the DSL box, assuming the caret sits at the end of <paramref name="source"/>.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.FilterSuggest.QuotedOperands(System.String,System.Collections.Generic.IReadOnlyCollection{System.String},RimWorks.RimLogging.Viewer.ContextIndex)">
+            <summary>The pool for an operand that has just opened a quote.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.FilterSuggest.CtxKeys(RimWorks.RimLogging.Viewer.ContextIndex)">
+            <summary>Known context keys, offered as whole `ctx.key` terms.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.FilterSuggest.ForChannelFilter(System.String,System.Collections.Generic.IReadOnlyCollection{System.String})">
+            <summary>Candidates for the plain-substring channel box, which replaces the whole field.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.FilterSuggest.OperandsFor(System.Collections.Generic.List{RimWorks.RimLogging.Filtering.Token},System.Int32,System.Collections.Generic.IReadOnlyCollection{System.String})">
+            <summary>An operator's operand depends on which keyword opened the term.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.FilterSuggest.UnclosedQuoteIndex(System.String)">
+            <summary>Index of a quote with no partner, or -1 when every quote is paired.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.LevelColors">
+            <summary>Colors the viewer draws levels and channel dots in.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.LevelColors.ForChannel(System.String)">
+            <summary>The channel's own <c>ChannelDef.color</c>, or a neutral fallback when it declares none.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.LevelCounts">
+            <summary>Per-level row counts for the toolbar pills. Fatal folds into Error: the Error pill's
+            toggle also flips Fatal, so its count has to match what that click actually shows or hides.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.LevelCounts.FromCounts(System.Int32[])">
+            <summary>Copies the array: the caller (the sink) keeps mutating its own copy after this returns.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.LinkClickPolicy">
+            <summary>
+            Tells a click on a link row apart from a drag across it. The url is a selectable text field
+            now, so copying it has to wait for the release and only fire when the pointer stayed put.
+            </summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Viewer.LinkClickPolicy.MaxTravel">
+            <summary>How far a press may drift and still count as a click rather than a drag.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.LinkClickPolicy.IsClick(System.Single,System.Single)">
+            <summary>True when the pointer barely moved between press and release.</summary>
+            <param name="dx">Pointer movement on x since the press.</param>
+            <param name="dy">Pointer movement on y since the press.</param>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.ListTailing">
+            <summary>
+            Keeps the log list pinned to the newest entry until the user scrolls away, and stays out of
+            the way while they drag. Owns the state that decides when the list may move on its own.
+            </summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Viewer.ListTailing.Following">
+            <summary>Whether the list is currently following new entries.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.ListTailing.BeforeScrollView(UnityEngine.Rect,System.Single,System.Single)">
+            <summary>Reads this frame's input and returns the scroll position to draw with.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.ListTailing.AfterScrollView(UnityEngine.Rect,System.Single,System.Single)">
+            <summary>Decides whether following resumes, once the scroll view has run.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.LogBundleShare.Upload(RimWorks.RimLogging.Viewer.ViewerLogSink,RimWorks.RimLogging.Viewer.LogViewerState,System.Action)">
+            <summary>Fire-and-forget from the UI; the body catches everything, so the task never faults.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.LogDetailView">
+            <summary>Draws the detail body for one entry. Shared by the inline pane and the popout window.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.LogDetailView.DrawLinks(System.Single@,System.Single,RimWorks.RimLogging.LogEntry,System.String)">
+            <summary>One row per link. The url selects like any other row, and a click that never drags copies it.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.LogDetailView.ExtendSlowDrag(UnityEngine.Rect)">
+            <summary>
+            Keeps a slow drag selecting. Unity grows the selection only on <c>MouseDrag</c>, and below
+            about a pixel of travel per frame it emits none at all, so the selection stops part way.
+            Measured at 233fps: a 13 second drag across 218px produced zero drag events.
+            </summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.LogDetailWindow">
+            <summary>Detail pane detached into its own dev window. Reads the selection straight off the viewer's state.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.LogFilter.BuildChannels(System.Collections.Generic.IReadOnlyDictionary{System.String,RimWorks.RimLogging.Viewer.ChannelTally},System.Int32,RimWorks.RimLogging.Viewer.LogViewerState,RimWorks.RimLogging.Viewer.ChannelLabels)">
+            <summary>Builds the tree from tallies the sink already keeps, so it never walks the entries.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.LogFilter.TallyByChannel(System.Collections.Generic.IReadOnlyList{RimWorks.RimLogging.LogEntry})">
+            <summary>Rolls a snapshot up per channel. Only used when no tally is supplied.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.LogFilter.KeyFor(System.String)">
+            <summary>Channel key used by the tree. Empty channels group under "(root)".</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.LogFilter.TalliesFrom(System.Collections.Generic.IReadOnlyList{RimWorks.RimLogging.LogEntry})">
+            <summary>Channel tallies walked from a snapshot, for a loaded file with no live sink behind it.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.LogViewerBoot.ConsumeReclaim">
+            <summary>Returns true once after the sink registers, so the patch can check for a stolen window.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Viewer.LogViewerState.Uploading">
+            <summary>Set on the UI thread, cleared from the upload continuation, so the read must not be hoisted.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.LogViewerWindow">
+            <summary>Three-pane log viewer drawn in RimWorld's dev-window skin.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.LogViewerWindow.BuildToolbarLayout(System.Single)">
+            <summary>Row-one width with counted pills, since that is what decides whether the field
+            and Presets fit on row one at all.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.LogViewerWindow.DrawIconFace(UnityEngine.Rect,UnityEngine.Texture2D)">
+            <summary>
+            Draws an icon on a button face. DevGUI.ButtonImage draws the texture alone, so an icon
+            used bare floats on the bar with no button under it.
+            </summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.LogViewerWindow.RightClusterWidth">
+            <summary>Width of the right-anchored cluster: the level pills and the buttons after them.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.LogViewerWindow.RebuildIfStale">
+            <summary>Refilters only when the sink or a filter input actually changed; this runs every frame.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.RowWindow">
+            <summary>Picks the row range a scroll view actually shows. Pure so it tests without Unity.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.RowWindow.Visible(System.Single,System.Single,System.Single,System.Int32)">
+            <summary>Returns the half-open range of row indices to draw, clamped to the row count.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.Spinner">
+            <summary>Picks a spinner glyph from a wall-clock reading. Pure so it tests without Unity.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.Spinner.Frame(System.Single)">
+            <summary>Returns the glyph for the given time in seconds, cycling ten frames a second.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.SuggestField">
+            <summary>A text field with placeholder text and a completion dropdown.</summary>
+            <remarks>Draw the field, draw the panes, then call <see cref="M:RimWorks.RimLogging.Viewer.SuggestField.DrawOverlay"/> so the list paints on top.</remarks>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.SuggestField.ReserveClicks">
+            <summary>Claims mouse events over the dropdown before the panes below can consume them.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.SuggestField.DrawOverlay">
+            <summary>Paints the dropdown and returns an accepted value, or <c>null</c> when nothing was picked.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.SuggestField.SyncEditorCaret(System.String)">
+            <summary>The live TextEditor caches its own copy, so a programmatic edit has to be pushed into it.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.TailScroll">
+            <summary>Scroll math for the tailing log list. Pure so it tests without Unity.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.ToolbarPlan">
+            <summary>The row-one width and filter-group width the toolbar drew, and where the filter
+            field landed as a result.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.ToolbarLayout">
+            <summary>Decides how the toolbar degrades as the window narrows, from real measured widths
+            rather than hardcoded thresholds, so it stays correct under a translation.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Viewer.ToolbarLayout.FilterFloor">
+            <summary>Below this the filter field is unreadable no matter how much room it is given.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.UrlScanner">
+            <summary>Pulls http and https links out of an entry, so they can be copied without dragging.</summary>
+        </member>
+        <member name="F:RimWorks.RimLogging.Viewer.UrlScanner.DefaultMax">
+            <summary>More than this in one entry is noise, and the detail pane has finite room.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.UrlScanner.Find(System.String,System.Int32)">
+            <summary>Distinct links in the order they appear, capped so one entry cannot flood the pane.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.UrlScanner.ForEntry(RimWorks.RimLogging.LogEntry,System.String,System.Int32)">
+            <summary>Every link across an entry's message and stack trace.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.ViewerHooks">
+            <summary>Log-window takeover, stated once so each patch backend only has to call it.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.ViewerHooks.OnToggleLogWindow">
+            <summary>Head of <c>DebugWindowsOpener.ToggleLogWindow</c>. Shift falls through to vanilla.</summary>
+        </member>
+        <member name="T:RimWorks.RimLogging.Viewer.ViewerLogSink">
+            <summary>In-memory ring buffer of recent entries, backing the log viewer. Holds the last 20000 entries.</summary>
+        </member>
+        <member name="E:RimWorks.RimLogging.Viewer.ViewerLogSink.EntryAdded">
+            <summary>Raised after each entry lands in the buffer.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Viewer.ViewerLogSink.Name">
+            <inheritdoc/>
+        </member>
+        <member name="P:RimWorks.RimLogging.Viewer.ViewerLogSink.MinLevel">
+            <inheritdoc/>
+        </member>
+        <member name="P:RimWorks.RimLogging.Viewer.ViewerLogSink.Revision">
+            <summary>Bumped on every write and on clear, so the viewer knows when to refilter.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.ViewerLogSink.ChannelTallies">
+            <summary>Row and error counts per channel, kept as entries land so the viewer never rescans.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.ViewerLogSink.Context">
+            <summary>Context keys and values seen so far, for completing ctx. in the filter box.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.ViewerLogSink.LevelTallies">
+            <summary>Per-level row counts, kept alongside the channel tallies so the toolbar pills never rescan.</summary>
+        </member>
+        <member name="P:RimWorks.RimLogging.Viewer.ViewerLogSink.Count">
+            <summary>Rows currently held, which is the count the channel tree shows for "all".</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.ViewerLogSink.Snapshot">
+            <summary>Copies the buffer out in oldest-first order.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.ViewerLogSink.Clear">
+            <summary>Drops every buffered entry. The viewer's Clear button calls this.</summary>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.ViewerLogSink.Write(RimWorks.RimLogging.LogEntry)">
+            <inheritdoc/>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.ViewerLogSink.Flush">
+            <inheritdoc/>
+        </member>
+        <member name="M:RimWorks.RimLogging.Viewer.ViewerLogSink.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.IsExternalInit">
+            <summary>
+            Compiler-required marker that enables init-only setters on frameworks (such as net48) that do not ship
+            the type. The compiler looks for this type by name; an internal definition satisfies it.
+            </summary>
+        </member>
+    </members>
+</doc>

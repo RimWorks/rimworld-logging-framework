@@ -4,7 +4,7 @@
         <TargetFramework>net472</TargetFramework>
         <AssemblyName>RimWorks.RimLogging.Patches.Harmony</AssemblyName>
         <RootNamespace>RimWorks.RimLogging.Patches.Harmony</RootNamespace>
-        <OutDir>$(MSBuildProjectDirectory)\..\..\Harmony\Assemblies\</OutDir>
+        <OutDir>$(MSBuildProjectDirectory)\..\..\$(GameVersion)\Harmony\Assemblies\</OutDir>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
         <IsPackable>false</IsPackable>
@@ -12,7 +12,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Krafs.Rimworld.Ref" Version="1.6.*" ExcludeAssets="runtime" PrivateAssets="all"/>
+        <Reference Include="$(GamecrateRefs)/*.dll"
+                   Exclude="$(GamecrateRefs)/System.*.dll;$(GamecrateRefs)/System.dll;$(GamecrateRefs)/Microsoft.*.dll;$(GamecrateRefs)/mscorlib.dll;$(GamecrateRefs)/netstandard.dll;$(GamecrateRefs)/WindowsBase.dll">
+            <Private>False</Private>
+        </Reference>
         <PackageReference Include="Lib.Harmony" Version="2.4.*" ExcludeAssets="runtime" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.*" PrivateAssets="all">
             <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
