@@ -13,35 +13,24 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  image-15:
+  images:
     uses: RimWorks/mod-ci/.github/workflows/game-image.yml@v1
     permissions:
       contents: read
       packages: write
     with:
-      branch: version-1.5
-    secrets: inherit
-
-  image-16:
-    uses: RimWorks/mod-ci/.github/workflows/game-image.yml@v1
-    permissions:
-      contents: read
-      packages: write
-    with:
-      branch: version-1.6.4633
+      branches: |
+        1.5=version-1.5
+        1.6=version-1.6.4633
     secrets: inherit
 
   verify:
     name: verify against current RimWorld, then republish
-    needs: [image-15, image-16]
+    needs: images
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: read
-    env:
-      # the republish uploads the working tree, so every version the mod claims gets rebuilt.
-      # test, format and restore take the default version, which is this one.
-      GameManagedDir: ${{ runner.temp }}/game-1.6/RimWorldLinux_Data/Managed
     steps:
       - uses: actions/checkout@v7
         with:
@@ -65,15 +54,19 @@ jobs:
       - name: Stage RimWorld 1.5 refs
         uses: RimWorks/mod-ci/.github/actions/stage-game-refs@v1
         with:
-          image: ${{ needs.image-15.outputs.image-ref }}
+          image: ${{ fromJSON(needs.images.outputs.image-refs)['1.5'] }}
           dest: ${{ runner.temp }}/game-1.5
 
       - name: Stage RimWorld 1.6 refs
         id: refs-16
         uses: RimWorks/mod-ci/.github/actions/stage-game-refs@v1
         with:
-          image: ${{ needs.image-16.outputs.image-ref }}
+          image: ${{ fromJSON(needs.images.outputs.image-refs)['1.6'] }}
           dest: ${{ runner.temp }}/game-1.6
+
+      # test, format and restore take the default GameVersion, so they need its refs by name
+      - name: Point msbuild at the default version
+        run: echo "GameManagedDir=${{ steps.refs-16.outputs.managed-dir }}" >> "$GITHUB_ENV"
 
       - name: dotnet restore
         run: dotnet restore RimWorks.RimLogging.slnx

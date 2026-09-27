@@ -3,12 +3,9 @@ name: ci
 on:
   workflow_call:
     outputs:
-      image-15:
-        description: RimWorld 1.5 image the build compiled against
-        value: ${{ jobs.image-15.outputs.image-ref }}
-      image-16:
-        description: RimWorld 1.6 image the build compiled against
-        value: ${{ jobs.image-16.outputs.image-ref }}
+      image-refs:
+        description: JSON map of game version to the image that version compiled against
+        value: ${{ jobs.images.outputs.image-refs }}
   pull_request:
     branches: [main, beta]
 
@@ -20,29 +17,21 @@ permissions:
   contents: read
 
 jobs:
-  # one call per version: game-image.yml returns a single image-ref and a matrix inside a
-  # reusable workflow cannot emit a map, so the caller composes the pairs
-  image-15:
+  # one call, one leg per version: the workflow matrixes internally and returns a map
+  images:
     uses: RimWorks/mod-ci/.github/workflows/game-image.yml@v1
     permissions:
       contents: read
       packages: write
     with:
-      branch: version-1.5
-    secrets: inherit
-
-  image-16:
-    uses: RimWorks/mod-ci/.github/workflows/game-image.yml@v1
-    permissions:
-      contents: read
-      packages: write
-    with:
-      branch: version-1.6.4633
+      branches: |
+        1.5=version-1.5
+        1.6=version-1.6.4633
     secrets: inherit
 
   build:
     name: build
-    needs: [image-15, image-16]
+    needs: images
     uses: RimWorks/mod-ci/.github/workflows/dotnet-build.yml@v1
     permissions:
       contents: read
@@ -58,12 +47,10 @@ jobs:
       # path segment, so a literal version folder would be stripped back out of the artifact
       artifact-paths: |
         [0-9].[0-9]/
-      game-images: |
-        1.5=${{ needs.image-15.outputs.image-ref }}
-        1.6=${{ needs.image-16.outputs.image-ref }}
+      game-images: ${{ needs.images.outputs.image-refs }}
 
   package-deps:
-    needs: [image-16]
+    needs: images
     uses: RimWorks/mod-ci/.github/workflows/package-deps.yml@v1
     permissions:
       contents: read
@@ -73,7 +60,7 @@ jobs:
       reference-packages: |
         Concord.Ref
         Microsoft.NETFramework.ReferenceAssemblies
-      game-image: ${{ needs.image-16.outputs.image-ref }}
+      game-image: ${{ fromJSON(needs.images.outputs.image-refs)['1.6'] }}
 
   prose:
     uses: RimWorks/mod-ci/.github/workflows/prose.yml@v1
