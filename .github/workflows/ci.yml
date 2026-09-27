@@ -24,6 +24,7 @@ jobs:
       contents: read
       packages: write
     with:
+      artifact-prefix: ci-image-ref
       branches: |
         1.5=version-1.5
         1.6=version-1.6.4633

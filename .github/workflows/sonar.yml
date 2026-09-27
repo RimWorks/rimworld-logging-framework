@@ -24,6 +24,7 @@ jobs:
       contents: read
       packages: write
     with:
+      artifact-prefix: sonar-image-ref
       branches: |
         1.6=version-1.6.4633
     secrets: inherit
