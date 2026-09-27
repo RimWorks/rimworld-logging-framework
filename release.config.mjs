@@ -1,56 +1,59 @@
-const plugins = [
-    [
-        '@semantic-release/commit-analyzer',
-        {
-            releaseRules: [
-                { scope: 'worker', release: false },
-                { scope: 'about', release: 'patch' },
-                { type: 'refactor', release: 'patch' },
-                { type: 'style', release: 'patch' },
-                { type: 'ci', release: 'patch' },
-                // README.template.md is the workshop description, so docs are shipped content.
-                { type: 'docs', release: 'patch' },
-            ],
-        },
-    ],
-    '@semantic-release/release-notes-generator',
-    [
-        '@semantic-release/exec',
-        {
-            prepareCmd:
-                "node scripts/write-stamp.mjs && dotnet pack Source/RimWorks.RimLogging/RimWorks.RimLogging.csproj -c Release -p:Version=${nextRelease.version} -p:PackageVersion=${nextRelease.version} -p:FileVersion=${nextRelease.version.replace(/-.*/, '')}.0 -p:AssemblyVersion=${nextRelease.version.replace(/-.*/, '')}.0 -p:InformationalVersion=${nextRelease.version} -o ./nupkgs && npx package-mod RimLogging ${nextRelease.version}",
-            publishCmd:
-                "dotnet nuget push './nupkgs/*.nupkg' --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json --skip-duplicate",
-        },
-    ],
-    [
-        '@semantic-release/github',
-        {
-            assets: [
-                { path: './nupkgs/*.nupkg' },
-                { path: './dist/RimLogging-*.zip', label: 'RimLogging mod (drop into RimWorld/Mods)' },
-            ],
-        },
-    ],
-    [
-        'semantic-release-steam',
-        {
-            appId: '294100',
-            branchTargets: { main: 'stable' },
-            mods: [
-                {
-                    name: 'RimLogging',
-                    path: '.',
-                    previewfile: new URL('./About/Preview.png', import.meta.url).pathname,
-                    workshopIds: { stable: '3733484696' },
-                },
-            ],
-        },
-    ],
-];
+import { readFileSync } from 'node:fs';
+
+import {
+    MOD_RELEASE_RULES,
+    VERSION_ARGS,
+    buildVersions,
+    declaredVersions,
+    nugetPush,
+    steamMod,
+} from '@rimworks/mod-ci';
+
+const SOLUTION = 'RimWorks.RimLogging.slnx';
+const versions = declaredVersions(readFileSync('loadFolders.xml', 'utf8'));
 
 /** @type {import('semantic-release').GlobalConfig} */
 export default {
     branches: ['main', { name: 'beta', prerelease: true }],
-    plugins,
+    plugins: [
+        [
+            '@semantic-release/commit-analyzer',
+            {
+                releaseRules: [
+                    { scope: 'worker', release: false },
+                    { scope: 'about', release: 'patch' },
+                    ...MOD_RELEASE_RULES,
+                ],
+            },
+        ],
+        '@semantic-release/release-notes-generator',
+        [
+            '@semantic-release/exec',
+            {
+                prepareCmd: [
+                    `npx write-stamp ${SOLUTION}`,
+                    ...buildVersions({ solution: SOLUTION, versions }),
+                    `dotnet pack Source/RimWorks.RimLogging/RimWorks.RimLogging.csproj -c Release ${VERSION_ARGS} -o ./nupkgs`,
+                    // after the last build, before the zip is cut
+                    'npx verify-ship-list .',
+                    'npx package-mod RimLogging ${nextRelease.version}',
+                ].join(' && '),
+                publishCmd: nugetPush('./nupkgs/*.nupkg'),
+            },
+        ],
+        [
+            '@semantic-release/github',
+            {
+                assets: [
+                    { path: './nupkgs/*.nupkg' },
+                    { path: './dist/RimLogging-*.zip', label: 'RimLogging mod (drop into RimWorld/Mods)' },
+                ],
+            },
+        ],
+        ...steamMod({
+            name: 'RimLogging',
+            workshopId: '3733484696',
+            previewfile: new URL('./About/Preview.png', import.meta.url).pathname,
+        }),
+    ],
 };

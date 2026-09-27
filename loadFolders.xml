@@ -2,9 +2,9 @@
 <loadFolders>
     <v1.5>
         <li>/</li>
+        <li>1.5</li>
         <!-- Only the backend whose library is present loads, so the other one's missing
              assembly never has to resolve. With both active, Concord wins on priority. -->
-        <li>1.5</li>
         <li IfModActive="brrainz.harmony">1.5/Harmony</li>
         <li IfModActive="concordlib.concord">1.5/Concord</li>
     </v1.5>

@@ -18,15 +18,20 @@ jobs:
     permissions:
       contents: read
       checks: write
-      packages: read
+      # write, not read: ci.yml builds the game images, and a caller is capped against every
+      # nested job's permissions
+      packages: write
+    # the image jobs log into Steam, and a called workflow sees no secret it was not handed
+    secrets: inherit
 
   sonar:
     uses: ./.github/workflows/sonar.yml
     permissions:
       contents: read
-      packages: read
-    secrets:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      # write, for the same reason as the ci job: sonar.yml builds its own game image
+      packages: write
+    # inherit, not just SONAR_TOKEN: the image job logs into Steam
+    secrets: inherit
 
   release:
     name: semantic-release
@@ -37,6 +42,7 @@ jobs:
       issues: write
       pull-requests: write
       id-token: write
+      packages: read
     steps:
       - uses: actions/checkout@v7
         with:
@@ -58,11 +64,27 @@ jobs:
       - name: Install release dependencies
         run: npm ci --ignore-scripts
 
+      # one artifact per matrix leg, named "build-output <version>"
       - name: Download build output
         uses: actions/download-artifact@v7
         with:
-          name: build-output
+          pattern: 'build-output *'
+          merge-multiple: true
           path: .
+
+      # semantic-release rebuilds every version, and every build needs real game assemblies
+      - name: Stage RimWorld 1.5 refs
+        uses: RimWorks/mod-ci/.github/actions/stage-game-refs@v1
+        with:
+          image: ${{ needs.ci.outputs.image-15 }}
+          dest: ${{ runner.temp }}/game-1.5
+
+      - name: Stage RimWorld 1.6 refs
+        id: refs-16
+        uses: RimWorks/mod-ci/.github/actions/stage-game-refs@v1
+        with:
+          image: ${{ needs.ci.outputs.image-16 }}
+          dest: ${{ runner.temp }}/game-1.6
 
       - name: NuGet login (OIDC trusted publishing)
         uses: NuGet/login@v1 # v1
@@ -85,6 +107,9 @@ jobs:
           NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
           WORKSHOP_ID: ${{ vars.WORKSHOP_ID }}
           STEAM_USERNAME: ${{ secrets.STEAM_USERNAME }}
+          # dotnet pack and the stamp both take the default version; the per-version builds
+          # pass their own -p:GameManagedDir, which beats this
+          GameManagedDir: ${{ steps.refs-16.outputs.managed-dir }}
         run: ./node_modules/.bin/semantic-release
 
       - uses: RimWorks/mod-ci/.github/actions/discord-release@v1

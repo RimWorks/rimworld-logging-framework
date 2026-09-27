@@ -2,13 +2,15 @@
 
 CONFIG ?= Debug
 SLN := RimWorks.RimLogging.slnx
+BUILD_ARGS ?=
 
 help:
 	@echo "Targets:"
 	@echo "  all              restore + build whole solution"
-	@echo "  clean            remove bin/, obj/, Assemblies/"
+	@echo "  clean            remove bin/, obj/, and the version output folders"
 	@echo "  restore          dotnet restore"
 	@echo "  build            build whole solution"
+	@echo "    build once per version loadFolders.xml declares"
 	@echo "  build-core       build only RimWorks.RimLogging"
 	@echo "  test             run xunit suites"
 	@echo "  format           dotnet format"
@@ -18,7 +20,7 @@ help:
 all: restore build
 
 clean:
-	rm -rf Assemblies/*.dll Assemblies/*.pdb Assemblies/*.xml
+	rm -rf [0-9].[0-9]
 	rm -rf Source/*/bin Source/*/obj
 
 restore:
@@ -27,6 +29,7 @@ restore:
 build:
 	dotnet build $(SLN) -c $(CONFIG) --nologo
 
+# loadFolders.xml is the one version list; a second copy here or in release.config.mjs drifts
 build-core:
 	dotnet build Source/RimWorks.RimLogging/RimWorks.RimLogging.csproj -c $(CONFIG) --nologo
 

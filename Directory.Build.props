@@ -1,10 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
-    <Import Project="$(MSBuildThisFileDirectory)node_modules/@rimworks/mod-ci/msbuild/GameVersion.props"
-            Condition="Exists('$(MSBuildThisFileDirectory)node_modules/@rimworks/mod-ci/msbuild/GameVersion.props')" />
+    <!-- Inlined from mod-ci's msbuild/GameVersion.props: a compile-time input reached through
+         node_modules makes dotnet build wait on npm ci, and only release tools live there. -->
+    <PropertyGroup>
+        <GameVersion Condition="'$(GameVersion)' == ''">1.6</GameVersion>
 
-    <Target Name="RequireModCi" BeforeTargets="ResolveAssemblyReferences" Condition="'$(GameVersion)' == ''">
-        <Error Text="mod-ci is not installed. run: npm install" />
+        <GamecrateCache Condition="'$(GamecrateCache)' == '' And '$(XDG_CACHE_HOME)' != ''">$(XDG_CACHE_HOME)</GamecrateCache>
+        <GamecrateCache Condition="'$(GamecrateCache)' == ''">$([System.IO.Path]::Combine($([System.Environment]::GetFolderPath(SpecialFolder.UserProfile)), '.cache'))</GamecrateCache>
+        <!-- CI stages the assemblies itself, so its path wins over the local gamecrate cache. -->
+        <GamecrateRefs Condition="'$(GamecrateRefs)' == '' And '$(GameManagedDir)' != ''">$(GameManagedDir)</GamecrateRefs>
+        <GamecrateRefs Condition="'$(GamecrateRefs)' == ''">$([System.IO.Path]::Combine($(GamecrateCache), 'gamecrate', 'refs', 'version', 'rimworld', $(GameVersion)))</GamecrateRefs>
+
+        <HasGameRefs>false</HasGameRefs>
+        <HasGameRefs Condition="Exists('$(GamecrateRefs)/Assembly-CSharp.dll')">true</HasGameRefs>
+
+        <DefineConstants>$(DefineConstants);RW_$(GameVersion.Replace('.','_'))</DefineConstants>
+    </PropertyGroup>
+
+    <!-- refs/current moves on every extraction, so only the versioned path is ever named -->
+    <Target Name="RequireGameRefs" BeforeTargets="ResolveAssemblyReferences" Condition="'$(HasGameRefs)' != 'true'">
+        <Error Text="no rimworld $(GameVersion) assemblies at $(GamecrateRefs). run: gamecrate steam build rimworld --beta version-$(GameVersion)" />
     </Target>
 
     <PropertyGroup>

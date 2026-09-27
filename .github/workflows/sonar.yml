@@ -16,12 +16,25 @@ permissions:
   contents: read
 
 jobs:
+  # the scan compiles the solution, so it needs real game assemblies. its own image job, because
+  # sonar.yml also runs straight off a pull_request with no caller to hand it one
+  image-16:
+    uses: RimWorks/mod-ci/.github/workflows/game-image.yml@v1
+    permissions:
+      contents: read
+      packages: write
+    with:
+      branch: version-1.6.4633
+    secrets: inherit
+
   analyze:
+    needs: [image-16]
     uses: RimWorks/mod-ci/.github/workflows/sonar.yml@v1
     permissions:
       contents: read
       packages: read
     with:
+      game-image: ${{ needs.image-16.outputs.image-ref }}
       solution: RimWorks.RimLogging.slnx
       project-key: RimWorks_rimworld-logging-framework
       coverage-exclusions: "**/Hijack/**,**/Bootstrap/**,**/Settings/LogDirectory.cs,**/Settings/LoggingSettings.cs,**/Settings/LoggingSettingsWindow.cs,**/Settings/LoggingMod.cs,**/Sinks/VerseLogSink.cs,**/Sinks/SinkDef.cs,**/Pipeline/ShutdownFlush.cs,**/Bundle/ModListSnapshot.cs,**/Bundle/BundlerSessionFactory.cs,**/Channels/ChannelDef.cs,**/Channels/ChannelRegistry.cs,**/Sinks/SinkLoader.cs,**/Viewer/LogViewerWindow.cs,**/Viewer/LogDetailWindow.cs,**/Viewer/LogDetailView.cs,**/Viewer/LogBundleShare.cs,**/Viewer/LevelColors.cs,**/Viewer/LogViewerBoot.cs,**/Viewer/ViewerHooks.cs,**/Viewer/ListTailing.cs,**/Patching/PatchBackends.cs,**/Viewer/ChannelClassifierBootstrap.cs,**/Viewer/SuggestField.cs,**/Viewer/Dialog_NameFilterPreset.cs,**/Dev/LogSeederDebugAction.cs"
