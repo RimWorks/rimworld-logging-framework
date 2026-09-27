@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   images:
-    uses: RimWorks/mod-ci/.github/workflows/game-image.yml@v1
+    uses: RimWorks/mod-ci/.github/workflows/game-image.yml@v2
     permissions:
       contents: read
       packages: write
@@ -52,14 +52,14 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Stage RimWorld 1.5 refs
-        uses: RimWorks/mod-ci/.github/actions/stage-game-refs@v1
+        uses: RimWorks/mod-ci/.github/actions/stage-game-refs@v2
         with:
           image: ${{ fromJSON(needs.images.outputs.image-refs)['1.5'] }}
           dest: ${{ runner.temp }}/game-1.5
 
       - name: Stage RimWorld 1.6 refs
         id: refs-16
-        uses: RimWorks/mod-ci/.github/actions/stage-game-refs@v1
+        uses: RimWorks/mod-ci/.github/actions/stage-game-refs@v2
         with:
           image: ${{ fromJSON(needs.images.outputs.image-refs)['1.6'] }}
           dest: ${{ runner.temp }}/game-1.6
@@ -95,7 +95,7 @@ jobs:
       - name: Verify the ship list
         run: npx verify-ship-list .
 
-      - uses: RimWorks/mod-ci/.github/actions/steam-republish@v1
+      - uses: RimWorks/mod-ci/.github/actions/steam-republish@v2
         with:
           solution: RimWorks.RimLogging.slnx
           workshop-id: ${{ vars.WORKSHOP_ID }}
