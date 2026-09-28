@@ -131,4 +131,45 @@ public class BackgroundDrainTests
 
         Assert.Equal(100, dispatched.Count);
     }
+    [Fact]
+    public void GoingIdle_FlushesOnce()
+    {
+        MpscQueue<LogEntry> queue = new MpscQueue<LogEntry>(16);
+        ManualResetEventSlim first = new ManualResetEventSlim(false);
+        ManualResetEventSlim second = new ManualResetEventSlim(false);
+
+        BackgroundDrain drain = new BackgroundDrain(queue, _ => { }, () =>
+        {
+            if (!first.IsSet) first.Set();
+            else second.Set();
+        });
+        try
+        {
+            drain.Enqueue(MakeEntry(1));
+            Assert.True(first.Wait(5000), "drain did not flush after going idle");
+            Assert.False(second.Wait(250), "drain kept flushing while idle");
+        }
+        finally
+        {
+            drain.Dispose();
+        }
+    }
+
+    [Fact]
+    public void NoEntries_NeverFlushes()
+    {
+        MpscQueue<LogEntry> queue = new MpscQueue<LogEntry>(16);
+        ManualResetEventSlim flushed = new ManualResetEventSlim(false);
+
+        BackgroundDrain drain = new BackgroundDrain(queue, _ => { }, flushed.Set);
+        try
+        {
+            Assert.False(flushed.Wait(250), "drain flushed with nothing to write");
+        }
+        finally
+        {
+            drain.Dispose();
+        }
+    }
+
 }

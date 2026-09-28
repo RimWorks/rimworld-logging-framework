@@ -338,4 +338,24 @@ public class RollingJsonFileSinkTests : IDisposable
         Assert.Equal(5, ctxEl.GetProperty("Hp").GetInt32());
         Assert.Equal("colonist", ctxEl.GetProperty("Name").GetString());
     }
+    [Fact]
+    public void InfoLine_ReachesDiskOnFlush_WithoutDisposing()
+    {
+        using RollingJsonFileSink sink = new RollingJsonFileSink(_tempDir, 5, LogLevel.Trace);
+
+        sink.Write(MakeEntry(LogLevel.Info, "buffered until something flushes"));
+        Assert.Equal(string.Empty, ReadAll(sink.FilePath));
+
+        sink.Flush();
+        Assert.Contains("buffered until something flushes", ReadAll(sink.FilePath), StringComparison.Ordinal);
+    }
+
+    private static string ReadAll(string path)
+    {
+        using System.IO.FileStream fs = new System.IO.FileStream(
+            path, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite);
+        using System.IO.StreamReader reader = new System.IO.StreamReader(fs);
+        return reader.ReadToEnd();
+    }
+
 }

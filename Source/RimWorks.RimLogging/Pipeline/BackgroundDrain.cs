@@ -15,6 +15,7 @@ internal sealed class BackgroundDrain : IDisposable
 {
     private readonly MpscQueue<LogEntry> _queue;
     private readonly Action<LogEntry> _dispatch;
+    private readonly Action? _flush;
     private readonly Thread _thread;
     private volatile bool _stop;
     private readonly ManualResetEventSlim _drained = new ManualResetEventSlim(false);
@@ -26,10 +27,13 @@ internal sealed class BackgroundDrain : IDisposable
     /// <param name="dispatch">Callback invoked for each dequeued entry.
     /// Exceptions thrown by this callback are swallowed so the drain thread
     /// is never killed by a misbehaving sink.</param>
-    public BackgroundDrain(MpscQueue<LogEntry> queue, Action<LogEntry> dispatch)
+    /// <param name="flush">Invoked once each time the queue empties after work, so a buffered
+    /// sink reaches disk without a flush on every line. Exceptions are swallowed.</param>
+    public BackgroundDrain(MpscQueue<LogEntry> queue, Action<LogEntry> dispatch, Action? flush = null)
     {
         _queue = queue;
         _dispatch = dispatch;
+        _flush = flush;
         _thread = new Thread(Loop)
         {
             IsBackground = true,
@@ -58,12 +62,34 @@ internal sealed class BackgroundDrain : IDisposable
     private void Loop()
     {
         int emptyPolls = 0;
+        bool unflushed = false;
         while (!_stop)
         {
-            if (TryDispatchNext()) emptyPolls = 0;
-            else Backoff(++emptyPolls);
+            if (TryDispatchNext())
+            {
+                emptyPolls = 0;
+                unflushed = true;
+            }
+            else
+            {
+                if (unflushed && emptyPolls >= SpinPolls)
+                {
+                    FlushSinks();
+                    unflushed = false;
+                }
+
+                Backoff(++emptyPolls);
+            }
         }
+
         FinalDrain();
+        if (unflushed) FlushSinks();
+    }
+
+    private void FlushSinks()
+    {
+        try { _flush?.Invoke(); }
+        catch { /* swallow: a sink's flush mustn't kill the drain */ }
     }
 
     private bool TryDispatchNext()
@@ -80,9 +106,11 @@ internal sealed class BackgroundDrain : IDisposable
         catch { /* swallow: a logger crash mustn't kill the drain */ }
     }
 
+    private const int SpinPolls = 64;
+
     private static void Backoff(int emptyPolls)
     {
-        if (emptyPolls < 64) Thread.SpinWait(32);
+        if (emptyPolls < SpinPolls) Thread.SpinWait(32);
         else if (emptyPolls < 256) Thread.Sleep(1);
         else Thread.Sleep(5);
     }

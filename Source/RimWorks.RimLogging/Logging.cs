@@ -86,7 +86,7 @@ public static class Logging
     {
         if (_queue != null) return;
         _queue = new MpscQueue<LogEntry>(65536);
-        _drain = new BackgroundDrain(_queue, DispatchSync);
+        _drain = new BackgroundDrain(_queue, DispatchSync, SinkRegistry.FlushAll);
     }
 
     /// <summary>

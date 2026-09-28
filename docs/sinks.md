@@ -20,6 +20,12 @@ Logging.RegisterSink(new MySink());
 Logging.RegisterSink(new MySink(), replayHistory: false);
 ```
 
+The drain thread calls `Flush` each time the queue empties after work. A buffered sink
+therefore reaches disk without paying a flush on every line.
+
+A process reading the file sees a `Trace` or `Info` line within a few milliseconds of the game
+going quiet. `Error` and higher levels still flush on write. Shutdown flushes what is left.
+
 A sink registered this way is never filtered by a channel's `destinations` list, because that
 list names `SinkDef` defNames and a code-registered sink has none. It therefore sees every
 channel. Size a bounded sink for that traffic. `MemoryLogSink` holds 1024 entries by default and
