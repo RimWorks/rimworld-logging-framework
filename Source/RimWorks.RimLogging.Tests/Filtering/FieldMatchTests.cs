@@ -12,7 +12,7 @@ public class FieldMatchTests
         Timestamp = DateTime.UtcNow,
         Level = LogLevel.Info,
         Channel = channel,
-        MessageTemplate = "",
+        MessageTemplate = string.Empty,
         RenderedMessage = message,
         Context = null,
         Source = SourceLocation.Empty,

@@ -50,7 +50,7 @@ public class PackageIdSanitizerTests
     [Fact]
     public void EmptyInput_ReturnsUnknown()
     {
-        Assert.Equal("Unknown", PackageIdSanitizer.ToChannelSegment(""));
+        Assert.Equal("Unknown", PackageIdSanitizer.ToChannelSegment(string.Empty));
     }
 
     [Fact]

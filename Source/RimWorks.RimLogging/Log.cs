@@ -43,6 +43,7 @@ public static class Log
         [CallerFilePath] string file = "")
     {
         string resolved = channel ?? DefaultChannel;
+
         // default(TimedScope) is unarmed, so a gated scope never reads the clock or emits
         return IsEnabled(level, resolved)
             ? new Pipeline.TimedScope(level, resolved, message, line, file)

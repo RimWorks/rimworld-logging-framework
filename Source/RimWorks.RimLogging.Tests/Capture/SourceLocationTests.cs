@@ -15,7 +15,7 @@ public class SourceLocationTests
     [Fact]
     public void IsCallerProvided_FalseWhenLineZeroAndFileEmpty()
     {
-        SourceLocation loc = new SourceLocation("", 0, null);
+        SourceLocation loc = new SourceLocation(string.Empty, 0, null);
         Assert.False(loc.IsCallerProvided);
     }
 

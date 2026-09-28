@@ -55,6 +55,7 @@ internal static class SinkLoader
         foreach (ILogSink sink in Loaded)
         {
             SinkRegistry.Remove(sink);
+
             // a file sink holds an open handle, so the old one has to close before the new one opens
             try
             {

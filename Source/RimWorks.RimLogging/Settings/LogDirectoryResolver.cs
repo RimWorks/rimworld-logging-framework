@@ -15,7 +15,6 @@ public static class LogDirectoryResolver
         return dir;
     }
 
-
     /// <summary>Returns <paramref name="current"/> if it is non-blank; otherwise falls back to the ensured directory under <paramref name="baseDir"/>.</summary>
     /// <param name="current">The currently configured directory, possibly empty.</param>
     /// <param name="baseDir">The base directory used to derive the fallback.</param>

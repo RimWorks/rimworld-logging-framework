@@ -27,9 +27,10 @@ internal readonly struct Suggestions
     {
         string head = source.Substring(0, ReplaceStart);
         string tail = source.Substring(ReplaceStart + ReplaceLength);
+
         // "(" and the "ctx." prefix both continue the same term, so they take no trailing space
         string joiner = item == "(" || item.EndsWith(".", StringComparison.Ordinal)
-            || tail.StartsWith(" ", StringComparison.Ordinal) ? "" : " ";
+            || tail.StartsWith(" ", StringComparison.Ordinal) ? string.Empty : " ";
         return head + item + joiner + tail;
     }
 }

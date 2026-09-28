@@ -103,7 +103,6 @@ public class StackWalkerTests : System.IDisposable
         Assert.True(loc.IsCallerProvided);
     }
 
-
     [Fact]
     public void NormalizePath_AssemblyAnchored_DropsAsmPrefix_AndReturnsRelativePath()
     {
@@ -173,7 +172,6 @@ public class StackWalkerTests : System.IDisposable
         Assert.Equal("CacheTestMod/Foo", first);
     }
 
-
     [Fact]
     public void NormalizePath_NoType_ScansLoadedAssembliesAndAnchorsByName()
     {
@@ -186,7 +184,6 @@ public class StackWalkerTests : System.IDisposable
 
         Assert.Equal("Scanned/Sample", result);
     }
-
 
     [Fact]
     public void NormalizePath_AssemblyAnchored_AcceptsPrefixSegment_UnixPath()
@@ -214,7 +211,6 @@ public class StackWalkerTests : System.IDisposable
         Assert.Equal($"Bootstrap{sep}Win", result);
     }
 
-
     [Fact]
     public void NormalizePath_AssemblyAnchored_StripsLeadingSourceSegment_UnixPath()
     {
@@ -240,7 +236,6 @@ public class StackWalkerTests : System.IDisposable
         char sep = System.IO.Path.DirectorySeparatorChar;
         Assert.Equal($"Profiling{sep}Utility{sep}Bar", result);
     }
-
 
     [Fact]
     public void NormalizePath_AssemblyAnchored_StripsSubProjectAndSourcePair_UnixPath()
@@ -274,7 +269,6 @@ public class StackWalkerTests : System.IDisposable
 
         Assert.Equal(typeof(StackWalkerTests), t);
     }
-
 
     [Fact]
     public void FormatTrace_SkipsRimLoggingFrames_AndReturnsOuterCaller()

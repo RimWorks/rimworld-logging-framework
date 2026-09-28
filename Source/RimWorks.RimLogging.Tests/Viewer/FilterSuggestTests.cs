@@ -19,7 +19,7 @@ public class FilterSuggestTests
     [Fact]
     public void For_EmptyInput_OffersTheThingsThatCanOpenATerm()
     {
-        Assert.Equal(["level", "channel", "text", "mod", "ctx.", "NOT", "("], Items(""));
+        Assert.Equal(["level", "channel", "text", "mod", "ctx.", "NOT", "("], Items(string.Empty));
     }
 
     [Fact]
@@ -120,9 +120,9 @@ public class FilterSuggestTests
     [Fact]
     public void Apply_OpenParen_DoesNotAddASeparatorAfterIt()
     {
-        Suggestions s = FilterSuggest.For("", Channels);
+        Suggestions s = FilterSuggest.For(string.Empty, Channels);
 
-        Assert.Equal("(", s.Apply("", "("));
+        Assert.Equal("(", s.Apply(string.Empty, "("));
     }
 
     [Fact]
@@ -180,8 +180,8 @@ public class FilterSuggestTests
     [Fact]
     public void Apply_CtxPrefix_DoesNotAddASeparatorAfterIt()
     {
-        Suggestions s = FilterSuggest.For("", Channels);
+        Suggestions s = FilterSuggest.For(string.Empty, Channels);
 
-        Assert.Equal("ctx.", s.Apply("", "ctx."));
+        Assert.Equal("ctx.", s.Apply(string.Empty, "ctx."));
     }
 }

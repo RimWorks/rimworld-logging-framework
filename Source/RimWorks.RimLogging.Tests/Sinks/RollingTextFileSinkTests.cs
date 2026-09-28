@@ -89,6 +89,7 @@ public class RollingTextFileSinkTests : IDisposable
         sink.Dispose();
 
         string[] remaining = Directory.GetFiles(_tempDir, "RimLogging-*.log");
+
         // 5 retained old files + 1 new session file = 6 total
         Assert.Equal(6, remaining.Length);
     }

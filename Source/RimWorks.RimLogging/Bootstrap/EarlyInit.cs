@@ -18,6 +18,7 @@ internal static class EarlyInit
         try
         {
             Logging.InstallShutdownHook = Pipeline.ShutdownFlush.Install;
+
             // before Init: a throw in there would otherwise leave the provider null, and
             // IsPrimary then reads true off a bootstrap that never finished
             Logging.IsDegradedProvider = () => DegradedMode.IsPresent;
@@ -27,8 +28,10 @@ internal static class EarlyInit
             if (Hijack.HijackBootstrap.Install())
                 Log.InfoTo(Log.SelfChannel, "RimLogging initialized");
             else
+            {
                 Log.WarnTo(Log.SelfChannel,
                     "Another RimLogging instance already installed; running in degraded mode");
+            }
         }
         catch (System.Exception ex)
         {

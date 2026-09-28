@@ -29,8 +29,7 @@ internal static class LogBundleShare
                 Messages.Message(
                     (string)"CRL_LogViewer_BundleShared".Translate(result.Url!.Named("URL")),
                     MessageTypeDefOf.PositiveEvent,
-                    false
-                );
+                    false);
             }
             else
             {

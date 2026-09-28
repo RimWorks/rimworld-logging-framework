@@ -35,8 +35,7 @@ internal static class LogFilter
                 0,
                 false,
                 false,
-                true
-            ),
+                true),
         };
 
         AppendVisibleChannels(result, sortedIds, nodes, state, hasChildrenSet, keepIds, labels);

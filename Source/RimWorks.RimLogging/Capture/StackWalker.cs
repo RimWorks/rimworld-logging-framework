@@ -49,7 +49,6 @@ public static class StackWalker
     /// A populated <see cref="SourceLocation"/> when a usable frame is found, or
     /// <see cref="SourceLocation.Empty"/> when no caller frame carries file info.
     /// </returns>
-
     public static SourceLocation WalkOnce()
     {
         System.Diagnostics.StackTrace st = new System.Diagnostics.StackTrace(1, true);
@@ -71,9 +70,11 @@ public static class StackWalker
             System.Type? declaringType = method?.DeclaringType;
             string? declaring = declaringType?.FullName;
             string? assembly = declaringType?.Assembly.GetName().Name;
+
             // Skip framework infrastructure (RimLogging, Harmony stubs, MonoMod, dynamic methods).
             if (CallerFrameClassifier.IsInternalFrame(declaring, assembly)) continue;
             string? file = frame?.GetFileName();
+
             // vanilla frames have no PDB, so keep walking rather than giving up on the
             // user-code frame underneath
             if (file == null) continue;
@@ -82,7 +83,6 @@ public static class StackWalker
         }
         return SourceLocation.Empty;
     }
-
 
     /// <summary>
     /// Returns the declaring <see cref="System.Type"/> of the first non-framework frame in
@@ -134,13 +134,16 @@ public static class StackWalker
             System.Type? declaringType = method?.DeclaringType;
             string? declaring = declaringType?.FullName;
             string? assembly = declaringType?.Assembly.GetName().Name;
+
             // a patched method's replacement frame has no declaring type, and dropping it made
             // the trace read as if the caller logged directly. vanilla keeps it, so do we
-            if (declaringType == null) { sb.Append("at (wrapper dynamic-method)\n"); continue; }
+            if (declaringType == null) { sb.Append("at (wrapper dynamic-method)\n");
+                continue; }
             if (CallerFrameClassifier.IsInternalFrame(declaring, assembly)) continue;
             AppendFrame(sb, frame, method, declaringType, declaring);
         }
         if (sb.Length > 0 && sb[sb.Length - 1] == '\n') sb.Length--;
+
         // one unanswerable frame makes the entry unanswerable: claiming the owners we did find
         // are the whole story would be a confident half-answer
         patchedBy = attributionUnavailable
@@ -201,7 +204,6 @@ public static class StackWalker
         return computed;
     }
 
-
     /// <summary>
     /// Normalises a path, anchoring on the declaring type's assembly name when it can and
     /// falling back to regex prefix stripping when it cannot.
@@ -248,6 +250,7 @@ public static class StackWalker
         if (hint.AssemblyName == null) return null;
         string? rel = TryAnchorByAssembly(file, hint.AssemblyName);
         if (rel == null) return null;
+
         // relative to the anchor only: the channel column already names the mod, and a leading
         // "Source/" is a developer convention with nothing in it for the reader
         rel = StripLeadingSourceDir(rel);
@@ -265,6 +268,7 @@ public static class StackWalker
         if (stripped != null) return stripped;
         stripped = TryStripSourcePattern(rel, '\\');
         if (stripped != null) return stripped;
+
         // collapse a repeated "<X>/<X>/", which happens when the anchor lands on an outer mod
         // folder that nests the same name inside
         stripped = TryStripDuplicatePrefix(rel, '/');
@@ -352,6 +356,7 @@ public static class StackWalker
     private static AssemblyHint ComputeAssemblyHint(System.Reflection.Assembly asm)
     {
         string? asmName = asm.GetName().Name;
+
         // prefer the Verse-supplied folder: it survives an empty Assembly.Location, which
         // happens when a mod is loaded from bytes
         string? modFolder = ModNameCache.FolderForAssembly(asm);
@@ -362,7 +367,6 @@ public static class StackWalker
         }
         return new AssemblyHint(asmName, modFolder);
     }
-
 
     /// <summary>
     /// Cached hint for the assembly, recomputed while the mod folder is unresolved so an

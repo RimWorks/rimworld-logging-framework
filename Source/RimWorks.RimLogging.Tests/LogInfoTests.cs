@@ -78,6 +78,7 @@ public class LogInfoTests : LogSinkFixtureBase
         Assert.NotNull(entry);
         Assert.True(entry.Source.IsCallerProvided);
         Assert.Equal(77, entry.Source.Line);
+
         // Caller-info paths now share StackWalker.NormalizePath: a path outside the RimWorld
         // layout keeps its relative dir structure (only the leading slash + trailing .cs go).
         Assert.Equal("proj/Foo", entry.Source.File);

@@ -18,7 +18,6 @@ internal static class TestStackWalkerHelper
         return StackWalker.FirstCallerFrame(st);
     }
 
-
     /// <summary>
     /// Cheap counterpart of <see cref="CallFirstCallerFrame"/> that exercises the
     /// no-PDB walk used by <c>Log.ResolveSource</c> for <c>[CallerFilePath]</c> paths.

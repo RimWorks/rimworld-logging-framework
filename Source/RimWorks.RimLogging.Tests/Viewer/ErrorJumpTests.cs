@@ -99,6 +99,6 @@ public class ErrorJumpTests
     {
         float y = ErrorJump.ScrollTo(499, 22f, 440f, 500);
 
-        Assert.Equal(500 * 22f - 440f, y);
+        Assert.Equal((500 * 22f) - 440f, y);
     }
 }

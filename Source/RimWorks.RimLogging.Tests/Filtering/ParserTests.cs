@@ -107,7 +107,6 @@ public class ParserTests
     }
 
     // 7. Bad inputs throw FormatException with positional info
-
     [Theory]
     [InlineData("level >= ")]
     [InlineData("level >= \t")]

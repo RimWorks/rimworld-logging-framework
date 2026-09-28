@@ -129,6 +129,7 @@ public static class NdjsonLogReader
     private static object? ValueOf(JsonElement value) => value.ValueKind switch
     {
         JsonValueKind.String => value.GetString(),
+
         // the cast matters: without it the ternary unifies to double and whole numbers lose their type
         JsonValueKind.Number => value.TryGetInt64(out long whole) ? (object)whole : value.GetDouble(),
         JsonValueKind.True => true,

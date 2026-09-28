@@ -22,6 +22,7 @@ public sealed class ViewerLogSink : ILogSink
 
     /// <inheritdoc/>
     public string Name => "ViewerLogSink";
+
     /// <inheritdoc/>
     public LogLevel MinLevel { get; set; } = LogLevel.Trace;
 

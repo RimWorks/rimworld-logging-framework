@@ -15,6 +15,6 @@ internal static class Spinner
         }
 
         // modulo before the cast keeps a large realtimeSinceStartup from overflowing the int
-        return Frames[(int)(seconds * FramesPerSecond % Frames.Length)];
+        return Frames[(int)((seconds * FramesPerSecond) % Frames.Length)];
     }
 }

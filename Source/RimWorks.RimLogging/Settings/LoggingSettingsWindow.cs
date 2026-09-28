@@ -1,6 +1,6 @@
 using System;
-using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using RimWorks.RimLogging.Bundle;
 using RimWorks.RimLogging.Sinks;
 using RimWorld;
@@ -39,6 +39,7 @@ public static class LoggingSettingsWindow
         TabDrawer.DrawTabs(body, BuildTabs());
 
         Rect inner = body.ContractedBy(TabInset);
+
         // never shorter than the visible area: Listing_Standard wraps to a new column once its rect
         // fills, so a short view rect pushes every control after the first off-screen
         float pageHeight = Mathf.Max(inner.height, contentHeight);

@@ -60,7 +60,7 @@ public class ChannelResolutionTests
     {
         string[] keys = ["default", "Cosmere"];
 
-        string? result = ChannelResolution.ResolveOwnerKey("", keys);
+        string? result = ChannelResolution.ResolveOwnerKey(string.Empty, keys);
 
         Assert.Null(result);
     }

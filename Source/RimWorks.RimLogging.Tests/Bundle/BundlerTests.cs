@@ -129,7 +129,7 @@ public class BundlerTests
         LogEntry e = MakeEntry(source: SourceLocation.Empty);
         BundlePayload p = Bundler.Build(new[] { e }, "x", "y", new List<BundlePayload.ModInfo>());
 
-        Assert.Equal("", p.Entries[0].Source);
+        Assert.Equal(string.Empty, p.Entries[0].Source);
     }
 
     [Fact]

@@ -13,9 +13,9 @@ public class LogFilterApplyTests
         ChannelClassifier.UseModTable(null);
         ChannelClassifier.EnsureBuilt();
 
-        LogViewerSession.DslSource = "";
+        LogViewerSession.DslSource = string.Empty;
         LogViewerSession.DslError = null;
-        LogViewerSession.ChannelFilter = "";
+        LogViewerSession.ChannelFilter = string.Empty;
         bool[] levels = LogViewerSession.Levels;
         for (int i = 0; i < levels.Length; i++) levels[i] = true;
 

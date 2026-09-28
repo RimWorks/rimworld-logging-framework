@@ -52,7 +52,7 @@ public sealed class ProxyClient
             try
             {
                 using System.Text.Json.JsonDocument doc = System.Text.Json.JsonDocument.Parse(body);
-                string gistUrl = doc.RootElement.GetProperty("url").GetString() ?? "";
+                string gistUrl = doc.RootElement.GetProperty("url").GetString() ?? string.Empty;
                 return new PublishResult { Success = true, Url = gistUrl };
             }
             catch (System.Text.Json.JsonException jex)

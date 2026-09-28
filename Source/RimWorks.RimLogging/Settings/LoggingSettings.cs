@@ -12,7 +12,7 @@ public sealed class LoggingSettings : ModSettings
     public LogLevel globalMinLevel = LoggingSettingsDefaults.GlobalMinLevel;
 
     /// <summary>Directory where log files are written; empty until normalized to the default.</summary>
-    public string logDirectory = "";
+    public string logDirectory = string.Empty;
 
     /// <summary>Number of rotated log files to retain.</summary>
     public int retentionCount = LoggingSettingsDefaults.RetentionCount;
@@ -57,7 +57,7 @@ public sealed class LoggingSettings : ModSettings
     public override void ExposeData()
     {
         Scribe_Values.Look(ref globalMinLevel, "globalMinLevel", LoggingSettingsDefaults.GlobalMinLevel);
-        Scribe_Values.Look(ref logDirectory, "logDirectory", "");
+        Scribe_Values.Look(ref logDirectory, "logDirectory", string.Empty);
         Scribe_Values.Look(ref retentionCount, "retentionCount", LoggingSettingsDefaults.RetentionCount);
         Scribe_Values.Look(ref proxyUrl, "proxyUrl", LoggingSettingsDefaults.ProxyUrl);
         Scribe_Values.Look(ref captureStackTraces, "captureStackTraces", LoggingSettingsDefaults.CaptureStackTraces);

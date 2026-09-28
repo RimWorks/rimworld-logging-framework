@@ -24,10 +24,11 @@ internal static class Lexer
         while (i < input.Length)
         {
             char c = input[i];
-            if (char.IsWhiteSpace(c)) { i++; continue; }
+            if (char.IsWhiteSpace(c)) { i++;
+                continue; }
             i = ScanToken(input, i, tokens);
         }
-        tokens.Add(new Token(TokenKind.End, "", input.Length));
+        tokens.Add(new Token(TokenKind.End, string.Empty, input.Length));
         return tokens;
     }
 
@@ -72,6 +73,7 @@ internal static class Lexer
     private static int ScanIdentifier(string input, int i, List<Token> tokens)
     {
         int start = i;
+
         // '.' is in the set so "ctx.pawn" lexes as one word; no other keyword contains a dot
         while (i < input.Length && (char.IsLetterOrDigit(input[i]) || input[i] == '_' || input[i] == '.')) i++;
         tokens.Add(ClassifyIdent(input.Substring(start, i - start), start));

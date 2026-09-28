@@ -16,9 +16,9 @@ public class LogFilterChannelTreeTests
         ChannelClassifier.UseModTable(null);
         ChannelClassifier.EnsureBuilt();
 
-        LogViewerSession.DslSource = "";
+        LogViewerSession.DslSource = string.Empty;
         LogViewerSession.DslError = null;
-        LogViewerSession.ChannelFilter = "";
+        LogViewerSession.ChannelFilter = string.Empty;
 
         return new LogViewerState();
     }

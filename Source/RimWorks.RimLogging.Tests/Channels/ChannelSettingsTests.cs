@@ -113,7 +113,7 @@ public class ChannelSettingsTests
     [Fact]
     public void TemplateOr_EmptyOverride_FallsBackToTheSink()
     {
-        ChannelSettings s = new ChannelSettings(null, null, null, "");
+        ChannelSettings s = new ChannelSettings(null, null, null, string.Empty);
 
         Assert.Equal("[{level}] {msg}", s.TemplateOr("[{level}] {msg}"));
     }

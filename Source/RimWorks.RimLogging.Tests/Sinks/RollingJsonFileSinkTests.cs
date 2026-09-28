@@ -191,6 +191,7 @@ public class RollingJsonFileSinkTests : IDisposable
 
         Assert.Equal("System.InvalidOperationException", exc.GetProperty("type").GetString());
         Assert.Equal("boom", exc.GetProperty("message").GetString());
+
         // exc.stack may be null since we didn't throw it; just confirm the field exists
         Assert.True(exc.TryGetProperty("stack", out _));
         Assert.Equal(JsonValueKind.Null, doc.RootElement.GetProperty("exc").GetProperty("stack").ValueKind);
@@ -357,5 +358,4 @@ public class RollingJsonFileSinkTests : IDisposable
         using System.IO.StreamReader reader = new System.IO.StreamReader(fs);
         return reader.ReadToEnd();
     }
-
 }

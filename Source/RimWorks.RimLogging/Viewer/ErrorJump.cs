@@ -18,6 +18,7 @@ internal static class ErrorJump
         {
             if (entries[i].Level >= minLevel) return i;
         }
+
         // wrap, including fromIndex itself so a lone error is still reachable
         for (int i = 0; i <= fromIndex && i < entries.Count; i++)
         {
@@ -31,8 +32,8 @@ internal static class ErrorJump
     {
         if (index < 0 || rowHeight <= 0f) return 0f;
 
-        float target = index * rowHeight - viewportHeight / 3f;
-        float max = count * rowHeight - viewportHeight;
+        float target = (index * rowHeight) - (viewportHeight / 3f);
+        float max = (count * rowHeight) - viewportHeight;
         if (max < 0f) max = 0f;
         if (target < 0f) target = 0f;
         if (target > max) target = max;

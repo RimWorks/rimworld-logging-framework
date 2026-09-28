@@ -39,7 +39,7 @@ public static class Bundler
                 Timestamp = e.Timestamp.ToString("o"),
                 Level = SerializeLevel(e.Level),
                 Channel = e.Channel,
-                Source = e.Source.IsCallerProvided ? $"{e.Source.File}:{e.Source.Line}" : "",
+                Source = e.Source.IsCallerProvided ? $"{e.Source.File}:{e.Source.Line}" : string.Empty,
                 Message = RichText.Strip(e.RenderedMessage),
                 Context = CopyContext(e.Context, e.PatchedBy),
                 Stack = e.StackTrace ?? e.Exception?.ToString(),

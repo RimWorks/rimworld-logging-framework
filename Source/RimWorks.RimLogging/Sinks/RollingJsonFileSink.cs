@@ -56,6 +56,7 @@ public sealed class RollingJsonFileSink : RollingFileSink
             ["mod"] = entry.Mod,
             ["tick"] = entry.Tick,
             ["repeats"] = entry.Repeats,
+
             // null and empty are different claims: null means attribution never ran
             ["patched"] = entry.PatchedBy,
         };

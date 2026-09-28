@@ -10,7 +10,8 @@ namespace RimWorks.RimLogging.Tests.Pipeline;
 // Value tuples cannot satisfy `where T : class`; wrap them.
 file sealed class Entry
 {
-    public Entry(int producer, int seq) { Producer = producer; Seq = seq; }
+    public Entry(int producer, int seq) { Producer = producer;
+        Seq = seq; }
     public int Producer { get; }
     public int Seq { get; }
 }
@@ -87,8 +88,10 @@ public class MpscQueueTests
             Assert.Equal(itemsPerProducer, seqs.Count);
 
             for (int i = 0; i < seqs.Count - 1; i++)
+            {
                 Assert.True(seqs[i] < seqs[i + 1],
                     $"Producer {p}: seq {seqs[i]} appeared before {seqs[i + 1]} but should be after");
+            }
         }
     }
 
@@ -185,8 +188,10 @@ public class MpscQueueTests
             Assert.Equal(itemsPerProducer, seqs.Count);
 
             for (int i = 0; i < seqs.Count - 1; i++)
+            {
                 Assert.True(seqs[i] < seqs[i + 1],
                     $"Producer {p}: out-of-order at index {i}: {seqs[i]} then {seqs[i + 1]}");
+            }
         }
     }
 }

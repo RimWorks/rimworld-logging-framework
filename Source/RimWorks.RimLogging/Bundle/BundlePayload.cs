@@ -10,10 +10,10 @@ namespace RimWorks.RimLogging.Bundle;
 public sealed class BundlePayload
 {
     /// <summary>The RimWorld game version the bundle was captured under.</summary>
-    public string RimWorldVersion { get; set; } = "";
+    public string RimWorldVersion { get; set; } = string.Empty;
 
     /// <summary>The RimLogging framework revision the bundle was captured under.</summary>
-    public string FrameworkVersion { get; set; } = "";
+    public string FrameworkVersion { get; set; } = string.Empty;
 
     /// <summary>The mods that were loaded when the bundle was captured.</summary>
     public List<ModInfo> Mods { get; set; } = new List<ModInfo>();
@@ -25,10 +25,10 @@ public sealed class BundlePayload
     public sealed class ModInfo
     {
         /// <summary>Human-readable mod name.</summary>
-        public string Name { get; set; } = "";
+        public string Name { get; set; } = string.Empty;
 
         /// <summary>The mod's package identifier (e.g. <c>author.modname</c>).</summary>
-        public string PackageId { get; set; } = "";
+        public string PackageId { get; set; } = string.Empty;
 
         /// <summary>The mod version read from its manifest, or <c>null</c> if unavailable.</summary>
         public string? Version { get; set; }
@@ -42,20 +42,20 @@ public sealed class BundlePayload
     {
         /// <summary>The entry timestamp in ISO-8601 round-trip ("o") format.</summary>
         [JsonPropertyName("ts")]
-        public string Timestamp { get; set; } = "";
+        public string Timestamp { get; set; } = string.Empty;
 
         /// <summary>The log level name.</summary>
-        public string Level { get; set; } = "";
+        public string Level { get; set; } = string.Empty;
 
         /// <summary>The channel the entry was logged to.</summary>
-        public string Channel { get; set; } = "";
+        public string Channel { get; set; } = string.Empty;
 
         /// <summary>The caller source location as <c>file:line</c>, or empty when not caller-provided.</summary>
-        public string Source { get; set; } = "";
+        public string Source { get; set; } = string.Empty;
 
         /// <summary>The rendered message with RimWorld rich-text markup stripped.</summary>
         [JsonPropertyName("msg")]
-        public string Message { get; set; } = "";
+        public string Message { get; set; } = string.Empty;
 
         /// <summary>Structured context key/value pairs attached to the entry, or <c>null</c> if none.</summary>
         [JsonPropertyName("ctx")]

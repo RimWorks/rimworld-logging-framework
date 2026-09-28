@@ -12,8 +12,8 @@ public class FilterExpressionRoundTripTests
         Timestamp = DateTime.UtcNow,
         Level = lvl,
         Channel = ch,
-        MessageTemplate = "",
-        RenderedMessage = "",
+        MessageTemplate = string.Empty,
+        RenderedMessage = string.Empty,
         Context = null,
         Source = SourceLocation.Empty,
         StackTrace = null,
@@ -115,19 +115,19 @@ public class FilterExpressionRoundTripTests
     // Expression: "level >= Warn OR channel = "Cosmere.*""
     [Theory]
     [InlineData(LogLevel.Trace, "default", false)]
-    [InlineData(LogLevel.Trace, "Cosmere.Roshar", true)]   // channel matches
-    [InlineData(LogLevel.Trace, "Cosmere.Roshar.Surgebinding", true)]   // channel matches
+    [InlineData(LogLevel.Trace, "Cosmere.Roshar", true)] // channel matches
+    [InlineData(LogLevel.Trace, "Cosmere.Roshar.Surgebinding", true)] // channel matches
     [InlineData(LogLevel.Trace, "Unity", false)]
     [InlineData(LogLevel.Trace, "Mod.foo", false)]
     [InlineData(LogLevel.Debug, "default", false)]
-    [InlineData(LogLevel.Debug, "Cosmere.Roshar", true)]   // channel matches
+    [InlineData(LogLevel.Debug, "Cosmere.Roshar", true)] // channel matches
     [InlineData(LogLevel.Info, "Unity", false)]
-    [InlineData(LogLevel.Warn, "default", true)]   // level matches
-    [InlineData(LogLevel.Warn, "Cosmere.Roshar", true)]   // both match
-    [InlineData(LogLevel.Warn, "Unity", true)]   // level matches
-    [InlineData(LogLevel.Error, "default", true)]   // level matches
-    [InlineData(LogLevel.Error, "Unity", true)]   // level matches
-    [InlineData(LogLevel.Error, "Cosmere.Roshar.Surgebinding", true)]   // both match
+    [InlineData(LogLevel.Warn, "default", true)] // level matches
+    [InlineData(LogLevel.Warn, "Cosmere.Roshar", true)] // both match
+    [InlineData(LogLevel.Warn, "Unity", true)] // level matches
+    [InlineData(LogLevel.Error, "default", true)] // level matches
+    [InlineData(LogLevel.Error, "Unity", true)] // level matches
+    [InlineData(LogLevel.Error, "Cosmere.Roshar.Surgebinding", true)] // both match
     public void Spec_LevelGteWarnOrCosmereChannel(LogLevel lvl, string ch, bool expected)
     {
         FilterExpression fe = FilterExpression.Parse("level >= Warn OR channel = \"Cosmere.*\"");
@@ -138,12 +138,12 @@ public class FilterExpressionRoundTripTests
     // Cosmere.Roshar.* matches "Cosmere.Roshar" (exact prefix) and "Cosmere.Roshar.Surgebinding"
     [Theory]
     [InlineData(LogLevel.Trace, "default", false)]
-    [InlineData(LogLevel.Trace, "Cosmere.Roshar", false)]  // level fails (Trace < Debug)
-    [InlineData(LogLevel.Trace, "Cosmere.Roshar.Surgebinding", false)]  // level fails
-    [InlineData(LogLevel.Debug, "default", false)]  // channel fails
-    [InlineData(LogLevel.Debug, "Cosmere.Roshar", true)]   // both pass
-    [InlineData(LogLevel.Debug, "Cosmere.Roshar.Surgebinding", true)]   // both pass
-    [InlineData(LogLevel.Debug, "Unity", false)]  // channel fails
+    [InlineData(LogLevel.Trace, "Cosmere.Roshar", false)] // level fails (Trace < Debug)
+    [InlineData(LogLevel.Trace, "Cosmere.Roshar.Surgebinding", false)] // level fails
+    [InlineData(LogLevel.Debug, "default", false)] // channel fails
+    [InlineData(LogLevel.Debug, "Cosmere.Roshar", true)] // both pass
+    [InlineData(LogLevel.Debug, "Cosmere.Roshar.Surgebinding", true)] // both pass
+    [InlineData(LogLevel.Debug, "Unity", false)] // channel fails
     [InlineData(LogLevel.Info, "Cosmere.Roshar", true)]
     [InlineData(LogLevel.Info, "Cosmere.Roshar.Surgebinding", true)]
     [InlineData(LogLevel.Info, "Mod.foo", false)]
@@ -206,7 +206,7 @@ public class FilterExpressionRoundTripTests
     [Fact]
     public void TryParse_EmptyInput_ReturnsFalseWithPositionInfo()
     {
-        bool ok = FilterExpression.TryParse("", out FilterExpression? fe, out string? err);
+        bool ok = FilterExpression.TryParse(string.Empty, out FilterExpression? fe, out string? err);
 
         Assert.False(ok);
         Assert.Null(fe);

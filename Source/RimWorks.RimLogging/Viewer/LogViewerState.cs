@@ -55,7 +55,7 @@ internal sealed class LogViewerState
 internal static class LogViewerSession
 {
     public static readonly bool[] Levels = { false, false, true, true, true, true };
-    public static string DslSource { get; set; } = "";
-    public static string ChannelFilter { get; set; } = "";
+    public static string DslSource { get; set; } = string.Empty;
+    public static string ChannelFilter { get; set; } = string.Empty;
     public static string? DslError { get; set; }
 }

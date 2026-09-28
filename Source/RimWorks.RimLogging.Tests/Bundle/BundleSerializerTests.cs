@@ -42,7 +42,7 @@ public class BundleSerializerTests
     public void Serialize_NullCtx_OmittedFromOutput()
     {
         BundlePayload p = new BundlePayload();
-        p.Entries.Add(new BundlePayload.EntryDto { Timestamp = "t", Level = "Info", Channel = "c", Source = "", Message = "m", Context = null });
+        p.Entries.Add(new BundlePayload.EntryDto { Timestamp = "t", Level = "Info", Channel = "c", Source = string.Empty, Message = "m", Context = null });
         string json = BundleSerializer.Serialize(p);
         Assert.DoesNotContain("\"ctx\"", json);
     }
@@ -51,7 +51,7 @@ public class BundleSerializerTests
     public void Serialize_NullStack_OmittedFromOutput()
     {
         BundlePayload p = new BundlePayload();
-        p.Entries.Add(new BundlePayload.EntryDto { Timestamp = "t", Level = "Info", Channel = "c", Source = "", Message = "m", Stack = null });
+        p.Entries.Add(new BundlePayload.EntryDto { Timestamp = "t", Level = "Info", Channel = "c", Source = string.Empty, Message = "m", Stack = null });
         string json = BundleSerializer.Serialize(p);
         Assert.DoesNotContain("\"stack\"", json);
     }
@@ -60,7 +60,7 @@ public class BundleSerializerTests
     public void Serialize_RichTextNotAutoStripped()
     {
         BundlePayload p = new BundlePayload();
-        p.Entries.Add(new BundlePayload.EntryDto { Timestamp = "t", Level = "Info", Channel = "c", Source = "", Message = "<color=red>x</color>" });
+        p.Entries.Add(new BundlePayload.EntryDto { Timestamp = "t", Level = "Info", Channel = "c", Source = string.Empty, Message = "<color=red>x</color>" });
         string json = BundleSerializer.Serialize(p);
         Assert.Contains("<color=red>x</color>", json);
     }

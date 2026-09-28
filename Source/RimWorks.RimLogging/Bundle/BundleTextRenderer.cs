@@ -56,6 +56,7 @@ internal static class BundleTextRenderer
         for (int i = 0; i < entries!.Count; i++)
         {
             BundlePayload.EntryDto e = entries[i];
+
             // upper-cased for the paste host only: its log grammar keys off ALL CAPS levels.
             // Bundler.SerializeLevel stays mixed-case, the gist worker validates against that set.
             sb.Append(Or(e.Timestamp, "?")).Append("  ").Append(Or(e.Level, "?").ToUpperInvariant())

@@ -7,7 +7,8 @@ namespace RimWorks.RimLogging.Pipeline;
 /// Bounded multi-producer, single-consumer lock-free ring-buffer queue.
 /// Overflow policy: drop the new entry and increment <see cref="DroppedCount"/>.
 /// </summary>
-internal sealed class MpscQueue<T> where T : class
+internal sealed class MpscQueue<T>
+    where T : class
 {
     private readonly T?[] _buffer;
     private readonly int _mask;

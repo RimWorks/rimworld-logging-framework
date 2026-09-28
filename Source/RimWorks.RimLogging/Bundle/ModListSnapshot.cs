@@ -18,8 +18,8 @@ public static class ModListSnapshot
         {
             result.Add(new BundlePayload.ModInfo
             {
-                Name = mcp.Name ?? "",
-                PackageId = mcp.PackageId ?? "",
+                Name = mcp.Name ?? string.Empty,
+                PackageId = mcp.PackageId ?? string.Empty,
                 Version = ManifestVersionReader.TryGetVersion(mcp.RootDir),
                 Active = true,
             });

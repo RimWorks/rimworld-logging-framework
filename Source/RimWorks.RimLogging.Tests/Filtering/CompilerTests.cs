@@ -12,8 +12,8 @@ public class CompilerTests
         Timestamp = DateTime.UtcNow,
         Level = lvl,
         Channel = ch,
-        MessageTemplate = "",
-        RenderedMessage = "",
+        MessageTemplate = string.Empty,
+        RenderedMessage = string.Empty,
         Context = null,
         Source = SourceLocation.Empty,
         StackTrace = null,
@@ -42,16 +42,16 @@ public class CompilerTests
     [InlineData(TokenKind.OpEq, LogLevel.Warn, LogLevel.Error, false)]
     [InlineData(TokenKind.OpNeq, LogLevel.Warn, LogLevel.Warn, false)]
     [InlineData(TokenKind.OpNeq, LogLevel.Warn, LogLevel.Error, true)]
-    [InlineData(TokenKind.OpLt, LogLevel.Warn, LogLevel.Info, true)]   // Info < Warn = 2 < 3 = true
-    [InlineData(TokenKind.OpLt, LogLevel.Info, LogLevel.Warn, false)]  // Warn < Info = 3 < 2 = false
-    [InlineData(TokenKind.OpLte, LogLevel.Warn, LogLevel.Warn, true)]   // Warn <= Warn = true
-    [InlineData(TokenKind.OpLte, LogLevel.Warn, LogLevel.Info, true)]   // Info <= Warn = 2 <= 3 = true
-    [InlineData(TokenKind.OpLte, LogLevel.Info, LogLevel.Warn, false)]  // Warn <= Info = 3 <= 2 = false
-    [InlineData(TokenKind.OpGt, LogLevel.Info, LogLevel.Warn, true)]   // Warn > Info = 3 > 2 = true
-    [InlineData(TokenKind.OpGt, LogLevel.Warn, LogLevel.Info, false)]  // Info > Warn = 2 > 3 = false
-    [InlineData(TokenKind.OpGte, LogLevel.Warn, LogLevel.Warn, true)]   // Warn >= Warn = true
-    [InlineData(TokenKind.OpGte, LogLevel.Info, LogLevel.Warn, true)]   // Warn >= Info = 3 >= 2 = true
-    [InlineData(TokenKind.OpGte, LogLevel.Warn, LogLevel.Info, false)]  // Info >= Warn = 2 >= 3 = false
+    [InlineData(TokenKind.OpLt, LogLevel.Warn, LogLevel.Info, true)] // Info < Warn = 2 < 3 = true
+    [InlineData(TokenKind.OpLt, LogLevel.Info, LogLevel.Warn, false)] // Warn < Info = 3 < 2 = false
+    [InlineData(TokenKind.OpLte, LogLevel.Warn, LogLevel.Warn, true)] // Warn <= Warn = true
+    [InlineData(TokenKind.OpLte, LogLevel.Warn, LogLevel.Info, true)] // Info <= Warn = 2 <= 3 = true
+    [InlineData(TokenKind.OpLte, LogLevel.Info, LogLevel.Warn, false)] // Warn <= Info = 3 <= 2 = false
+    [InlineData(TokenKind.OpGt, LogLevel.Info, LogLevel.Warn, true)] // Warn > Info = 3 > 2 = true
+    [InlineData(TokenKind.OpGt, LogLevel.Warn, LogLevel.Info, false)] // Info > Warn = 2 > 3 = false
+    [InlineData(TokenKind.OpGte, LogLevel.Warn, LogLevel.Warn, true)] // Warn >= Warn = true
+    [InlineData(TokenKind.OpGte, LogLevel.Info, LogLevel.Warn, true)] // Warn >= Info = 3 >= 2 = true
+    [InlineData(TokenKind.OpGte, LogLevel.Warn, LogLevel.Info, false)] // Info >= Warn = 2 >= 3 = false
     public void AllComparisonOps_CorrectResult(TokenKind op, LogLevel rightValue, LogLevel entryLevel, bool expected)
     {
         Func<LogEntry, bool> pred = Compiler.Compile(

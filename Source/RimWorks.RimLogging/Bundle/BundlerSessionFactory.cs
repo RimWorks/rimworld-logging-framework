@@ -21,8 +21,7 @@ public static class BundlerSessionFactory
             entries,
             RimWorld.VersionControl.CurrentVersionString,
             Revision(),
-            ModListSnapshot.Capture()
-        );
+            ModListSnapshot.Capture());
     }
 
     // comes from the build, so a release stamps it without touching tracked source

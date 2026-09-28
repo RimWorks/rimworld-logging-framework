@@ -7,7 +7,7 @@ namespace RimWorks.RimLogging.Sinks;
 public class SinkDef : Verse.Def
 {
     /// <summary>Assembly-qualified type name of the <see cref="ILogSink"/> implementation to instantiate.</summary>
-    public string sinkClass = "";
+    public string sinkClass = string.Empty;
 
     /// <summary>Minimum <see cref="LogLevel"/> this sink will receive. Entries below this level are not forwarded.</summary>
     public LogLevel minLevel = LogLevel.Trace;

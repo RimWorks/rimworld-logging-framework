@@ -30,6 +30,7 @@ internal static class EntryText
                 extra++;
             }
         }
+
         // a trailing newline closes the last line rather than starting another
         if (message[message.Length - 1] != '\n')
         {

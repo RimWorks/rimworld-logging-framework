@@ -96,7 +96,7 @@ internal static class LogDetailView
     {
         int rows = 3 + (string.IsNullOrEmpty(entry.Mod) ? 0 : 1) + (entry.PatchedBy is null or { Count: > 0 } ? 1 : 0)
             + (entry.Context?.Count ?? 0) + UrlScanner.ForEntry(entry, trace).Count;
-        float h = rows * RowHeight + 6f;
+        float h = (rows * RowHeight) + 6f;
 
         Text.Font = GameFont.Small;
         return h + RowHeight + BlockHeight(MessageAndStack(entry, trace), width) + 6f;

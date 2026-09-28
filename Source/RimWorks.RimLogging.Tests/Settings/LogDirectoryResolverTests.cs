@@ -58,7 +58,6 @@ public sealed class LogDirectoryResolverTests : IDisposable
         Assert.Equal(Path.Combine(_tempBase, "RimLogging"), result);
     }
 
-
     [Fact]
     public void Normalize_ReturnsExistingValue_WhenCurrentNonEmpty()
     {

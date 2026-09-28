@@ -10,7 +10,7 @@ public class MessageTemplateTests
 {
     private static readonly string[] NameHpHoles = ["Name", "Hp"];
     private static readonly string[] DeathSegments = ["player ", " died at ", "hp"];
-    private static readonly string[] EmptySegment = [""];
+    private static readonly string[] EmptySegment = [string.Empty];
 
     [Fact]
     public void Construct_StoresRawTemplate()
@@ -28,8 +28,8 @@ public class MessageTemplateTests
     [Fact]
     public void Construct_AllowsEmptyTemplate()
     {
-        MessageTemplate t = new MessageTemplate("", Array.Empty<string>(), EmptySegment);
-        Assert.Equal("", t.Raw);
+        MessageTemplate t = new MessageTemplate(string.Empty, Array.Empty<string>(), EmptySegment);
+        Assert.Equal(string.Empty, t.Raw);
         Assert.Empty(t.Holes);
     }
 

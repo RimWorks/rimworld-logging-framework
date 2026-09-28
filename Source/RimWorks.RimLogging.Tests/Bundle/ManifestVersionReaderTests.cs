@@ -39,8 +39,7 @@ public class ManifestVersionReaderTests : IDisposable
         Directory.CreateDirectory(Path.Combine(_tempRoot, "About"));
         File.WriteAllText(
             Path.Combine(_tempRoot, "About", "Manifest.xml"),
-            "<Manifest><version>1.2.3</version></Manifest>"
-        );
+            "<Manifest><version>1.2.3</version></Manifest>");
         Assert.Equal("1.2.3", RimWorks.RimLogging.Bundle.ManifestVersionReader.TryGetVersion(_tempRoot));
     }
 
@@ -50,8 +49,7 @@ public class ManifestVersionReaderTests : IDisposable
         Directory.CreateDirectory(Path.Combine(_tempRoot, "About"));
         File.WriteAllText(
             Path.Combine(_tempRoot, "About", "Manifest.xml"),
-            "<Manifest><identifier>foo</identifier></Manifest>"
-        );
+            "<Manifest><identifier>foo</identifier></Manifest>");
         Assert.Null(RimWorks.RimLogging.Bundle.ManifestVersionReader.TryGetVersion(_tempRoot));
     }
 
@@ -61,8 +59,7 @@ public class ManifestVersionReaderTests : IDisposable
         Directory.CreateDirectory(Path.Combine(_tempRoot, "About"));
         File.WriteAllText(
             Path.Combine(_tempRoot, "About", "Manifest.xml"),
-            "<broken xml"
-        );
+            "<broken xml");
         Assert.Null(RimWorks.RimLogging.Bundle.ManifestVersionReader.TryGetVersion(_tempRoot));
     }
 }

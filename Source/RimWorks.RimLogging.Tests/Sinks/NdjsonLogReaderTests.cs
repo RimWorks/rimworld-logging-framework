@@ -85,6 +85,7 @@ public class NdjsonLogReaderTests : IDisposable
 
         Assert.NotNull(back.Context);
         Assert.Equal("Syl", back.Context!["Spren"]);
+
         // numbers come back as long, not the int that went in; the value survives, the box type does not
         Assert.Equal(3L, Assert.IsType<long>(back.Context["count"]));
     }
@@ -129,7 +130,7 @@ public class NdjsonLogReaderTests : IDisposable
     [Fact]
     public void ReadLines_BlankLines_AreSkipped()
     {
-        string[] lines = { "", "   ", "{\"level\":\"WARN\",\"channel\":\"a\",\"msg\":\"kept\"}" };
+        string[] lines = { string.Empty, "   ", "{\"level\":\"WARN\",\"channel\":\"a\",\"msg\":\"kept\"}" };
 
         Assert.Single(NdjsonLogReader.ReadLines(lines));
     }

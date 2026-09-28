@@ -41,7 +41,8 @@ public class LoggingLifecycleTests : IDisposable
 
         // A second Init must not replace the drain -- queue/drain same instance means drain thread is alive.
         // Verify the drain thread is still running by posting and receiving via the sink.
-        ThreadCaptureSink captureSink = new ThreadCaptureSink(_ => { dispatched = true; ready.Set(); });
+        ThreadCaptureSink captureSink = new ThreadCaptureSink(_ => { dispatched = true;
+            ready.Set(); });
         SinkRegistry.Register(captureSink);
 
         Log.Info("idempotency-check");
@@ -114,7 +115,8 @@ public class LoggingLifecycleTests : IDisposable
 
         bool dispatched = false;
         ManualResetEventSlim ready = new ManualResetEventSlim(false);
-        ThreadCaptureSink captureSink = new ThreadCaptureSink(_ => { dispatched = true; ready.Set(); });
+        ThreadCaptureSink captureSink = new ThreadCaptureSink(_ => { dispatched = true;
+            ready.Set(); });
         SinkRegistry.Register(captureSink);
 
         Logging.Init(); // must be a no-op for queue/drain
@@ -125,4 +127,3 @@ public class LoggingLifecycleTests : IDisposable
         Assert.True(dispatched);
     }
 }
-

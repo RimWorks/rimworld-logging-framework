@@ -63,4 +63,3 @@ public class LoggingEmitTests : IDisposable
         Assert.NotEqual(callingThreadId, dispatchedThreadId);
     }
 }
-

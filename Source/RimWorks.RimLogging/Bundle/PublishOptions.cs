@@ -7,17 +7,17 @@ internal sealed class PublishOptions
     internal string Publisher = "docbin";
 
     /// <summary>The Docbin base URL.</summary>
-    internal string DocbinUrl = "";
+    internal string DocbinUrl = string.Empty;
 
     /// <summary>The Docbin API key; empty means an anonymous paste.</summary>
-    internal string DocbinApiKey = "";
+    internal string DocbinApiKey = string.Empty;
 
     /// <summary>The visibility applied to authenticated Docbin pastes.</summary>
     internal string DocbinVisibility = "unlisted";
 
     /// <summary>The gist proxy endpoint, used only by the gist publisher.</summary>
-    internal string ProxyUrl = "";
+    internal string ProxyUrl = string.Empty;
 
     /// <summary>The user's GitHub PAT, relayed by the gist publisher.</summary>
-    internal string GitHubToken = "";
+    internal string GitHubToken = string.Empty;
 }

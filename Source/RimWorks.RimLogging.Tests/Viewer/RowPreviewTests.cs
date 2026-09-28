@@ -43,7 +43,7 @@ public class RowPreviewTests
     [Fact]
     public void Empty_IsEmpty()
     {
-        Assert.Equal((string.Empty, 0), EntryText.SplitRow(""));
+        Assert.Equal((string.Empty, 0), EntryText.SplitRow(string.Empty));
     }
 
     [Fact]

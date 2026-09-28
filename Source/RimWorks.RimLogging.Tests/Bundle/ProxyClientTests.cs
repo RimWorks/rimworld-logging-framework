@@ -4,8 +4,8 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Xunit;
 using RimWorks.RimLogging.Bundle;
+using Xunit;
 
 namespace RimWorks.RimLogging.Tests.Bundle;
 

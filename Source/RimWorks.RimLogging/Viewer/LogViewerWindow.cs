@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using LudeonTK;
-using RimWorld;
 using RimWorks.RimLogging.Filtering;
 using RimWorks.RimLogging.Settings;
 using RimWorks.RimLogging.Sinks;
+using RimWorld;
 using UnityEngine;
 using Verse;
 
@@ -151,6 +151,7 @@ internal sealed class LogViewerWindow : EditWindow
         selectNewestPending = selectNewest;
         optionalTitle = "CRL_LogViewer_Title".Translate();
         onlyOneOfTypeAllowed = true;
+
         // the filter box swallows Enter as "apply", and Window would otherwise read it as accept
         closeOnAccept = false;
     }
@@ -195,6 +196,7 @@ internal sealed class LogViewerWindow : EditWindow
         dslField.ReserveClicks();
 
         DropPopoutIfUserClosedIt();
+
         // IMGUI runs several passes per frame and needs the same layout in each. entries arrive on
         // a background thread, so refreshing mid-frame changes the view rect under the scroll view.
         if (Event.current.type == EventType.Layout || cachedRevision < 0)
@@ -208,7 +210,6 @@ internal sealed class LogViewerWindow : EditWindow
 
         Rect body = inRect;
         body.yMin += toolbarPlan.TwoRows ? ToolbarHeight * 2f : ToolbarHeight;
-
 
         if (state.ChannelsOpen)
         {
@@ -224,7 +225,6 @@ internal sealed class LogViewerWindow : EditWindow
         DrawSuggestionOverlays();
         ReleaseSplitterOnMouseUp();
     }
-
 
     private void DrawToolbar(Rect inRect)
     {
@@ -284,6 +284,7 @@ internal sealed class LogViewerWindow : EditWindow
     {
         float pillsWidth = ComputePillWidths(compact: false);
         float rowOneFixed = (6 * (ButtonSize + ButtonGap)) + (3 * GroupDividerWidth) + pillsWidth;
+
         // filter group is: gap + presets button (with its own trailing gap) + gap, all baked into DrawFilterGroup.
         float filterGroupWidth = FilterGroupFixed;
         toolbarPlan = ToolbarLayout.Compute(availableWidth, rowOneFixed, filterGroupWidth);
@@ -329,7 +330,7 @@ internal sealed class LogViewerWindow : EditWindow
             InvalidateCache();
         }
 
-        Rect searchIconRect = new Rect(fieldRect.x + 2f, fieldRect.y + (fieldRect.height - 13f) / 2f, 13f, 13f);
+        Rect searchIconRect = new Rect(fieldRect.x + 2f, fieldRect.y + ((fieldRect.height - 13f) / 2f), 13f, 13f);
         GUI.DrawTexture(searchIconRect, TexButton.Search);
         TooltipHandler.TipRegion(fieldRect, "CRL_Tip_Filter".Translate());
 
@@ -611,7 +612,6 @@ internal sealed class LogViewerWindow : EditWindow
         SyncPopout();
     }
 
-
     private void DrawChannelPane(Rect rect)
     {
         Widgets.DrawBoxSolid(rect, new Color(1f, 1f, 1f, 0.02f));
@@ -666,7 +666,7 @@ internal sealed class LogViewerWindow : EditWindow
         }
         Widgets.DrawHighlightIfMouseover(rect);
 
-        float x = rect.x + 4f + channel.Depth * IndentPerDepth;
+        float x = rect.x + 4f + (channel.Depth * IndentPerDepth);
 
         if (channel.HasChildren)
         {
@@ -713,7 +713,6 @@ internal sealed class LogViewerWindow : EditWindow
             Event.current.Use();
         }
     }
-
 
     private void DrawContent(Rect rect)
     {
@@ -829,6 +828,7 @@ internal sealed class LogViewerWindow : EditWindow
         Widgets.DrawHighlightIfMouseover(rect);
 
         Text.Anchor = TextAnchor.MiddleLeft;
+
         // Text.CalcSize strips <...> before measuring, so Truncate can return a string that
         // draws wider than the column, and a wrapped line is dropped whole, blanking the row.
         Text.WordWrap = false;
@@ -845,6 +845,7 @@ internal sealed class LogViewerWindow : EditWindow
         GUI.color = LevelColors.For(entry.Level);
         float messageX = rect.x + 8f + TimestampWidth + ChannelColumnWidth;
         float messageWidth = rect.xMax - messageX - 4f;
+
         // Draw the repeat count separately. Composing a new string per frame missed
         // GenText.Truncate's cache every time and grew it without bound.
         if (entry.Repeats > 1)
@@ -857,6 +858,7 @@ internal sealed class LogViewerWindow : EditWindow
         }
         messageX += RepeatColumnWidth;
         messageWidth -= RepeatColumnWidth;
+
         // the cache is keyed by string only, so it has to be dropped when the column resizes
         if (Mathf.Abs(messageWidth - lastMessageWidth) > 0.5f)
         {
@@ -936,7 +938,6 @@ internal sealed class LogViewerWindow : EditWindow
         Messages.Message("CRL_LogViewer_Copy".Translate(), MessageTypeDefOf.TaskCompletion, false);
     }
 
-
     private void DoSplitter(Rect handle, Splitter which)
     {
         Widgets.DrawBoxSolid(handle, new Color(1f, 1f, 1f, Mouse.IsOver(handle) || dragging == which ? 0.20f : 0.08f));
@@ -975,7 +976,6 @@ internal sealed class LogViewerWindow : EditWindow
             dragging = Splitter.None;
         }
     }
-
 
     /// <summary>Refilters only when the sink or a filter input actually changed; this runs every frame.</summary>
     private void RebuildIfStale()
@@ -1118,7 +1118,6 @@ internal sealed class LogViewerWindow : EditWindow
         }
         CopyToClipboard(builder.ToString());
     }
-
 
     private void SyncPopout()
     {

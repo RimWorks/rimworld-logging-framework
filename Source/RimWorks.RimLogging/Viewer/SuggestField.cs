@@ -62,7 +62,6 @@ internal sealed class SuggestField
         Event.current.Use();
     }
 
-
     public string Draw(Rect rect, string value, string placeholderKey, Suggestions suggest)
     {
         fieldRect = rect;
@@ -110,7 +109,7 @@ internal sealed class SuggestField
 
         for (int i = 0; i < rows; i++)
         {
-            Rect row = new Rect(box.x, box.y + i * RowHeight, box.width, RowHeight);
+            Rect row = new Rect(box.x, box.y + (i * RowHeight), box.width, RowHeight);
             if (i == highlight)
             {
                 Widgets.DrawHighlightSelected(row);
