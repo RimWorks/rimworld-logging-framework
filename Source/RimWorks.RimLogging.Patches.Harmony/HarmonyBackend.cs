@@ -43,11 +43,12 @@ public sealed class HarmonyBackend : IPatchBackend, IPatchAttributionSource
     // Concord's bridge into an already-Harmony-patched target, not a mod; never surfaced as one
     private const string ConcordBridgeOwnerId = "concord.bridge";
 
+    private static readonly object CacheLock = new object();
+
     // keyed by the resolved original, not the frame: repeat frames for the same patched
     // method are common (a hot error loop), copy-on-write like ChannelRegistry.SettingsFor
     private static volatile Dictionary<MethodBase, IReadOnlyList<string>> _ownerCache =
         new Dictionary<MethodBase, IReadOnlyList<string>>();
-    private static readonly object CacheLock = new object();
 
     /// <inheritdoc/>
     public IReadOnlyList<string>? OwnersFor(StackFrame frame)

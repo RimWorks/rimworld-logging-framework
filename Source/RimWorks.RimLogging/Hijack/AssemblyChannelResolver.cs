@@ -15,7 +15,7 @@ internal static class AssemblyChannelResolver
         return AssemblyChannelMatcher.Match(asm, RunningMods());
     }
 
-    private static IEnumerable<(string, IReadOnlyList<Assembly>)> RunningMods()
+    private static IEnumerable<(string PackageId, IReadOnlyList<Assembly> Assemblies)> RunningMods()
     {
         foreach (Verse.ModContentPack mcp in Verse.LoadedModManager.RunningMods)
             yield return (mcp.PackageId, mcp.assemblies.loadedAssemblies);

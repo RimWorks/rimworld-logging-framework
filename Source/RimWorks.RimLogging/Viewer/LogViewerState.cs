@@ -4,6 +4,8 @@ namespace RimWorks.RimLogging.Viewer;
 
 internal sealed class LogViewerState
 {
+    public readonly Dictionary<string, bool> ExpandedChannels = new Dictionary<string, bool>(System.StringComparer.Ordinal);
+
     public bool ChannelsOpen = true;
     public string ActiveChannel = AllChannels;
 
@@ -31,8 +33,6 @@ internal sealed class LogViewerState
 
     /// <summary>Set on the UI thread, cleared from the upload continuation, so the read must not be hoisted.</summary>
     public volatile bool Uploading = false;
-
-    public readonly Dictionary<string, bool> ExpandedChannels = new Dictionary<string, bool>(System.StringComparer.Ordinal);
 
     public const string AllChannels = "*all*";
 

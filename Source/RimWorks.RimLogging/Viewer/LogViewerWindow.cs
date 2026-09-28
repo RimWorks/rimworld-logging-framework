@@ -92,6 +92,18 @@ internal sealed class LogViewerWindow : EditWindow
 
     private readonly ViewerLogSink sink;
     private readonly LogViewerState state = new LogViewerState();
+    private readonly ListTailing tailing = new ListTailing();
+    private readonly SuggestField channelField = new SuggestField("rimlog-channel-filter");
+    private readonly SuggestField dslField = new SuggestField("rimlog-dsl-filter");
+    private readonly Dictionary<string, string> messageTruncation = new Dictionary<string, string>();
+    private readonly Dictionary<string, (string Head, int Extra)> rowPreview =
+        new Dictionary<string, (string Head, int Extra)>(StringComparer.Ordinal);
+    private readonly Dictionary<string, string> headTruncation = new Dictionary<string, string>();
+    private readonly Dictionary<int, string> extraLabels = new Dictionary<int, string>();
+    private readonly Dictionary<string, string> channelTruncation = new Dictionary<string, string>();
+    private readonly Dictionary<string, string> channelNameTruncation = new Dictionary<string, string>();
+    private readonly string[] pillLabels = new string[ToggleLevels.Length];
+    private readonly float[] pillWidths = new float[ToggleLevels.Length];
 
     private Vector2 channelScroll;
     private Vector2 listScroll;
@@ -103,7 +115,6 @@ internal sealed class LogViewerWindow : EditWindow
     private float detailPaneHeight = 220f;
     private float detailPaneWidth = 356f;
 
-    private readonly ListTailing tailing = new ListTailing();
     private float listContentHeight;
     private float channelContentHeight;
     private int listFirstRow;
@@ -115,19 +126,8 @@ internal sealed class LogViewerWindow : EditWindow
     private Splitter dragging = Splitter.None;
     private LogDetailWindow? popout;
 
-    private readonly SuggestField channelField = new SuggestField("rimlog-channel-filter");
-    private readonly SuggestField dslField = new SuggestField("rimlog-dsl-filter");
     private List<string> channelNames = new List<string>();
 
-    // Truncate does no caching without one of these, and re-measures the font per character.
-    // Keep them string-keyed: the TaggedString overload caches the untruncated value.
-    private readonly Dictionary<string, string> messageTruncation = new Dictionary<string, string>();
-    private readonly Dictionary<string, (string Head, int Extra)> rowPreview =
-        new Dictionary<string, (string Head, int Extra)>(StringComparer.Ordinal);
-    private readonly Dictionary<string, string> headTruncation = new Dictionary<string, string>();
-    private readonly Dictionary<int, string> extraLabels = new Dictionary<int, string>();
-    private readonly Dictionary<string, string> channelTruncation = new Dictionary<string, string>();
-    private readonly Dictionary<string, string> channelNameTruncation = new Dictionary<string, string>();
     private float lastMessageWidth = -1f;
     private float lastChannelNameWidth = -1f;
     private ContextIndex? contextIndex;
@@ -142,8 +142,6 @@ internal sealed class LogViewerWindow : EditWindow
     private LevelCounts levelCounts;
 
     private ToolbarPlan toolbarPlan = new ToolbarPlan(false, false, ToolbarLayout.FilterFloor);
-    private readonly string[] pillLabels = new string[ToggleLevels.Length];
-    private readonly float[] pillWidths = new float[ToggleLevels.Length];
 
     public LogViewerWindow(ViewerLogSink sink, bool selectNewest = false)
     {

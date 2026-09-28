@@ -17,8 +17,8 @@ internal sealed class BackgroundDrain : IDisposable
     private readonly Action<LogEntry> _dispatch;
     private readonly Action? _flush;
     private readonly Thread _thread;
-    private volatile bool _stop;
     private readonly ManualResetEventSlim _drained = new ManualResetEventSlim(false);
+    private volatile bool _stop;
 
     /// <summary>
     /// Initializes a new <see cref="BackgroundDrain"/> and starts the drain thread.

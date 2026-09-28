@@ -639,7 +639,7 @@ public static class Log
     /// Renders the message template against  and merges in any structured context object. Returns the rendered
     /// string and the combined context dictionary (null when no context was supplied).
     /// </summary>
-    private static (string rendered, IReadOnlyDictionary<string, object?>? context) RenderMessage(
+    private static (string Rendered, IReadOnlyDictionary<string, object?>? Context) RenderMessage(
         string template, object?[]? args, object? structuredContext)
     {
         string rendered;

@@ -7,14 +7,14 @@ namespace RimWorks.RimLogging.Channels;
 /// <summary>In-memory lookup of <see cref="ChannelDef"/>s loaded from the DefDatabase, with prefix-based channel name resolution.</summary>
 public static class ChannelRegistry
 {
+    private static readonly object SettingsLock = new object();
+
     private static Dictionary<string, ChannelDef>? _byName;
 
     // resolving a channel walks its dot-segments and allocates a substring per level, which is
     // fine once and far too expensive per emit. copy-on-write so the read side never locks.
     private static volatile Dictionary<string, ChannelSettings> _settings =
         new Dictionary<string, ChannelSettings>(StringComparer.Ordinal);
-
-    private static readonly object SettingsLock = new object();
 
     internal static void Boot()
     {

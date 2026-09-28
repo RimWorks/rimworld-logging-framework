@@ -122,7 +122,7 @@ namespace RimWorks.RimLogging
         return (await fixedDocument.GetTextAsync()).ToString();
     }
 
-    private static async Task<(ImmutableArray<Diagnostic>, ImmutableArray<CodeAction>)> RegisterAsync(
+    private static async Task<(ImmutableArray<Diagnostic> Diagnostics, ImmutableArray<CodeAction> Actions)> RegisterAsync(
         string statement)
     {
         (Document document, ImmutableArray<Diagnostic> diagnostics) = await DiagnoseAsync(statement);
@@ -138,7 +138,7 @@ namespace RimWorks.RimLogging
         return (diagnostics, actions.ToImmutableArray());
     }
 
-    private static async Task<(Document, ImmutableArray<Diagnostic>)> DiagnoseAsync(string statement)
+    private static async Task<(Document Document, ImmutableArray<Diagnostic> Diagnostics)> DiagnoseAsync(string statement)
     {
         string caller = "class Caller { void Run() { " + statement + " } }";
 

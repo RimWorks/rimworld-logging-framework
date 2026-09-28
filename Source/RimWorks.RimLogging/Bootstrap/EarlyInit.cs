@@ -26,7 +26,9 @@ internal static class EarlyInit
             Logging.GlobalMinLevel = settings.globalMinLevel;
             Logging.CaptureStackTraces = settings.captureStackTraces;
             if (Hijack.HijackBootstrap.Install())
+            {
                 Log.InfoTo(Log.SelfChannel, "RimLogging initialized");
+            }
             else
             {
                 Log.WarnTo(Log.SelfChannel,

@@ -27,7 +27,6 @@ public sealed class MessageTemplate
     }
 
     /// <summary>Parses a raw template string into named holes and surrounding literal segments.</summary>
-    /// <summary>Parses a raw template string into named holes and surrounding literal segments.</summary>
     public static MessageTemplate Parse(string raw)
     {
         if (raw == null) throw new ArgumentNullException(nameof(raw));
