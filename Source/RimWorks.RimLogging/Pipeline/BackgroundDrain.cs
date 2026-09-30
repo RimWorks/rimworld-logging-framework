@@ -44,8 +44,11 @@ internal sealed class BackgroundDrain : IDisposable
     }
 
     /// <summary>Enqueues <paramref name="e"/> and marks the queue as non-empty.</summary>
-    public void Enqueue(LogEntry e) { _queue.TryEnqueue(e);
-        _drained.Reset(); }
+    public void Enqueue(LogEntry e)
+    {
+        _queue.TryEnqueue(e);
+        _drained.Reset();
+    }
 
     /// <summary>
     /// Blocks until the queue is empty or <paramref name="timeoutMs"/> elapses.
@@ -58,9 +61,12 @@ internal sealed class BackgroundDrain : IDisposable
     /// Signals the drain thread to stop, waits up to 2 s for it to finish the
     /// final-drain pass, then disposes the internal event.
     /// </summary>
-    public void Dispose() { _stop = true;
+    public void Dispose()
+    {
+        _stop = true;
         _thread.Join(2000);
-        _drained.Dispose(); }
+        _drained.Dispose();
+    }
 
     private void Loop()
     {

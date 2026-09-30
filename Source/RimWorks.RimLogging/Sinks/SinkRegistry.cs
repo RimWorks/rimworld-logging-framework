@@ -78,8 +78,11 @@ internal static class SinkRegistry
         {
             for (int i = 0; i < snap.Length; i++)
             {
-                if (snap[i].Routable(channel)) { restrict = true;
-                    break; }
+                if (snap[i].Routable(channel))
+                {
+                    restrict = true;
+                    break;
+                }
             }
         }
 

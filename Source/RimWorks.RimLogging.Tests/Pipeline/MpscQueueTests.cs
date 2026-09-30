@@ -10,8 +10,11 @@ namespace RimWorks.RimLogging.Tests.Pipeline;
 // Value tuples cannot satisfy `where T : class`; wrap them.
 file sealed class Entry
 {
-    public Entry(int producer, int seq) { Producer = producer;
-        Seq = seq; }
+    public Entry(int producer, int seq)
+    {
+        Producer = producer;
+        Seq = seq;
+    }
     public int Producer { get; }
     public int Seq { get; }
 }

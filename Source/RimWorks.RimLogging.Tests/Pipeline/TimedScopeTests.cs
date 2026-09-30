@@ -89,8 +89,11 @@ public class TimedScopeTests : LogSinkFixtureBase
     {
         Logging.GlobalMinLevel = LogLevel.Warn;
         bool clockRead = false;
-        TimedScope.TimestampProvider = () => { clockRead = true;
-            return 0; };
+        TimedScope.TimestampProvider = () =>
+        {
+            clockRead = true;
+            return 0;
+        };
         int before = _sink.Entries.Count;
 
         using (Log.Timed("gated out", LogLevel.Debug))
