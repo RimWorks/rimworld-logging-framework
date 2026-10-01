@@ -33,7 +33,8 @@ calls at build time. Most work lands in `Source/RimWorks.RimLogging/`. See `docs
 - `Source/RimWorks.RimLogging.Tests/` - xunit suites
 - `worker/` - the Cloudflare Worker that stores and serves shared log bundles
 - `docs/` - contributor documentation
-- `About/`, `Defs/`, `Languages/`, `Styles/`, `Textures/` - RimWorld mod content
+- `About/`, `Defs/`, `Languages/`, `Textures/` - RimWorld mod content, shipped in the release zip
+- `Styles/` - Vale prose rules, used by CI only
 
 ## Setup and build
 

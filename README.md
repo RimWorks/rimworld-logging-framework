@@ -92,7 +92,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for build commands, commit conventions, a
 
 | Tool | What it does |
 | --- | --- |
-| [RimObs](https://github.com/RimWorks/rimworld-observability-collector) | Performance profiler and telemetry that finds which mod is eating your TPS |
 | [Pickle](https://github.com/RimWorks/Rimworld-Pickle) | Run Gherkin tests against a live RimWorld session, in the game |
 | [Quickstarts](https://github.com/RimWorks/Rimworld-Quickstarts) | Boot straight into a configured colony from the dev quicktest menu |
 

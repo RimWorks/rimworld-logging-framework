@@ -48,7 +48,6 @@ Then declare the Workshop item as a dependency in your `About.xml` so subscriber
 
 ## More modding tools from RimWorks
 
-- [RimObs](https://steamcommunity.com/sharedfiles/filedetails/?id=3733585062): performance profiler that finds which mod is eating your TPS.
 - [Pickle](https://steamcommunity.com/sharedfiles/filedetails/?id=3791648678): run Gherkin tests against a live RimWorld session.
 - [Quickstarts](https://steamcommunity.com/sharedfiles/filedetails/?id=3793646067): boot straight into a configured colony from the dev quicktest menu.
 
