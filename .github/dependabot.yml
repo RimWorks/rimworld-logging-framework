@@ -45,5 +45,6 @@ updates:
       # major bump broke the worker suite
       - dependency-name: "vitest"
         update-types: ["version-update:semver-major"]
+      - dependency-name: "@rimworks/mod-ci"
     commit-message:
       prefix: "chore(deps)"
