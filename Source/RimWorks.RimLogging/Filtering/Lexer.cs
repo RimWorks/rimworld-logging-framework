@@ -24,8 +24,11 @@ internal static class Lexer
         while (i < input.Length)
         {
             char c = input[i];
-            if (char.IsWhiteSpace(c)) { i++;
-                continue; }
+            if (char.IsWhiteSpace(c))
+            {
+                i++;
+                continue;
+            }
             i = ScanToken(input, i, tokens);
         }
         tokens.Add(new Token(TokenKind.End, string.Empty, input.Length));
