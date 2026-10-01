@@ -84,8 +84,11 @@ public abstract class RollingFileSink : ILogSink
         {
             if (_disposed) return;
             _disposed = true;
-            try { _writer.Flush();
-                _writer.Dispose(); }
+            try
+            {
+                _writer.Flush();
+                _writer.Dispose();
+            }
             catch
             {
                 // Best-effort close during shutdown; the OS reclaims the file handle regardless.

@@ -47,8 +47,11 @@ public sealed class MessageTemplate
     private static int AppendNext(string raw, int i, System.Text.StringBuilder seg, List<string> holes, List<string> segments)
     {
         char c = raw[i];
-        if (IsEscapedBrace(raw, i)) { seg.Append(c);
-            return i + 2; }
+        if (IsEscapedBrace(raw, i))
+        {
+            seg.Append(c);
+            return i + 2;
+        }
         if (c == '{') return ReadHole(raw, i, seg, holes, segments);
         seg.Append(c);
         return i + 1;
