@@ -11,12 +11,13 @@
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.22.0",
-    "@cloudflare/workers-types": "^5.20260918.1",
+    "@cloudflare/workers-types": "^5.20260925.1",
     "typescript": "^7.0.2",
     "vitest": "^4.1.7",
-    "wrangler": "^4.135.0"
+    "wrangler": "^4.140.0"
   },
   "overrides": {
-    "sharp": ">=0.35.4"
+    "sharp": ">=0.35.4",
+    "undici": "~7.29.1"
   }
 }
