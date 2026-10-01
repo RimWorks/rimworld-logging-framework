@@ -66,7 +66,7 @@ jobs:
 
       # one artifact per matrix leg, named "build-output <version>"
       - name: Download build output
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           pattern: 'build-output *'
           merge-multiple: true
