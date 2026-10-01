@@ -79,7 +79,7 @@ jobs:
           echo "resolved RimWorld ref: $version"
 
       - name: dotnet build
-        run: npx build-mod RimWorks.RimLogging.slnx
+        run: ./node_modules/.bin/build-mod RimWorks.RimLogging.slnx
 
       - name: dotnet test
         run: |
@@ -94,7 +94,7 @@ jobs:
 
       # the republish pushes whatever is on disk, so check it before Steam sees it
       - name: Verify the ship list
-        run: npx verify-ship-list .
+        run: ./node_modules/.bin/verify-ship-list .
 
       - uses: RimWorks/mod-ci/.github/actions/steam-republish@v3
         with:
