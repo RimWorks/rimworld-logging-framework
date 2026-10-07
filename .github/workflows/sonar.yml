@@ -27,7 +27,7 @@ jobs:
       artifact-prefix: sonar-image-ref
       image: ghcr.io/${{ github.repository_owner }}/rimworld-game
       branches: |
-        1.6=version-1.6.4633
+        1.6=public
     secrets: inherit
 
   analyze:
