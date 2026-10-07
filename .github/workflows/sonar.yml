@@ -19,19 +19,20 @@ jobs:
   # the scan compiles the solution, so it needs real game assemblies. its own image job, because
   # sonar.yml also runs straight off a pull_request with no caller to hand it one
   images:
-    uses: RimWorks/mod-ci/.github/workflows/game-image.yml@v3
+    uses: RimWorks/mod-ci/.github/workflows/game-image.yml@v4
     permissions:
       contents: read
       packages: write
     with:
       artifact-prefix: sonar-image-ref
+      image: ghcr.io/${{ github.repository_owner }}/rimworld-game
       branches: |
         1.6=version-1.6.4633
     secrets: inherit
 
   analyze:
     needs: images
-    uses: RimWorks/mod-ci/.github/workflows/sonar.yml@v3
+    uses: RimWorks/mod-ci/.github/workflows/sonar.yml@v4
     permissions:
       contents: read
       packages: read
