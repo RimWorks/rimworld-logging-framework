@@ -23,7 +23,7 @@ jobs:
       image: ghcr.io/${{ github.repository_owner }}/rimworld-game
       branches: |
         1.5=version-1.5
-        1.6=version-1.6.4633
+        1.6=public
     secrets: inherit
 
   verify:
