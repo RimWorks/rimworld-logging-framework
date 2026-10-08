@@ -19,6 +19,10 @@
         <HasGameRefs Condition="Exists('$(GamecrateRefs)/Assembly-CSharp.dll')">true</HasGameRefs>
 
         <DefineConstants>$(DefineConstants);RW_$(GameVersion.Replace('.','_'))</DefineConstants>
+
+        <HarmonyDir Condition="'$(HarmonyDir)' == ''">$([System.IO.Path]::Combine($([System.Environment]::GetFolderPath(SpecialFolder.UserProfile)), '.local', 'share', 'harmony3', '$(GameTfm)'))</HarmonyDir>
+        <HarmonyLocal>false</HarmonyLocal>
+        <HarmonyLocal Condition="Exists('$(HarmonyDir)/0Harmony.dll')">true</HarmonyLocal>
     </PropertyGroup>
 
     <!-- refs/current moves on every extraction, so only the versioned path is ever named -->
