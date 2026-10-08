@@ -3,6 +3,8 @@
 CONFIG ?= Debug
 SLN := RimWorks.RimLogging.slnx
 BUILD_ARGS ?=
+GameVersion ?=
+VERSION_ARG := $(if $(GameVersion),-p:GameVersion=$(GameVersion),)
 
 help:
 	@echo "Targets:"
@@ -10,6 +12,7 @@ help:
 	@echo "  clean            remove bin/, obj/, and the version output folders"
 	@echo "  restore          dotnet restore"
 	@echo "  build            build whole solution"
+	@echo "    GameVersion=1.7  target that version's runtime instead of the default"
 	@echo "    build once per version loadFolders.xml declares"
 	@echo "  build-core       build only RimWorks.RimLogging"
 	@echo "  test             run xunit suites"
@@ -27,11 +30,11 @@ restore:
 	dotnet restore $(SLN)
 
 build:
-	dotnet build $(SLN) -c $(CONFIG) --nologo
+	dotnet build $(SLN) -c $(CONFIG) $(VERSION_ARG) $(BUILD_ARGS) --nologo
 
 # loadFolders.xml is the one version list; a second copy here or in release.config.mjs drifts
 build-core:
-	dotnet build Source/RimWorks.RimLogging/RimWorks.RimLogging.csproj -c $(CONFIG) --nologo
+	dotnet build Source/RimWorks.RimLogging/RimWorks.RimLogging.csproj -c $(CONFIG) $(VERSION_ARG) $(BUILD_ARGS) --nologo
 
 test:
 	dotnet test $(SLN) -c $(CONFIG) --nologo

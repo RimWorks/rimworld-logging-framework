@@ -52,9 +52,12 @@ internal static class AssemblyChannelCache
             case "UnityEngine":
             case "UnityEngine.CoreModule":
             case "Verse":
+            case "RimWorld":
+            case "UnityStubs":
                 return true;
             default:
-                return false;
+                return name.StartsWith("Brutal.", StringComparison.Ordinal)
+                    || name.StartsWith("Waylith.", StringComparison.Ordinal);
         }
     }
 

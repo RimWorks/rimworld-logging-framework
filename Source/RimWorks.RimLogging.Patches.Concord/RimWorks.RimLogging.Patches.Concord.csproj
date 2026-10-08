@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>net472</TargetFramework>
+        <TargetFramework>$(GameTfm)</TargetFramework>
         <AssemblyName>RimWorks.RimLogging.Patches.Concord</AssemblyName>
         <RootNamespace>RimWorks.RimLogging.Patches.Concord</RootNamespace>
         <OutDir>$(MSBuildProjectDirectory)\..\..\$(GameVersion)\Concord\Assemblies\</OutDir>
@@ -18,7 +18,7 @@
         </Reference>
         <PackageReference Include="Concord.Ref" Version="0.24.*" ExcludeAssets="runtime" PrivateAssets="all"/>
         <PackageReference Include="Concord.Analyzers" Version="0.24.*" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.*" PrivateAssets="all">
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.*" PrivateAssets="all" Condition="'$(GameTfm)' != 'net10.0'">
             <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
