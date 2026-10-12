@@ -86,6 +86,12 @@ jobs:
           image: ${{ fromJSON(needs.ci.outputs.image-refs)['1.6'] }}
           dest: ${{ runner.temp }}/game-1.6
 
+      - name: Stage RimWorld 1.7 refs
+        uses: RimWorks/mod-ci/.github/actions/stage-game-refs@v4
+        with:
+          image: ${{ fromJSON(needs.ci.outputs.image-refs)['1.7'] }}
+          dest: ${{ runner.temp }}/game-1.7
+
       - name: NuGet login (OIDC trusted publishing)
         uses: NuGet/login@v1 # v1
         id: nuget-login

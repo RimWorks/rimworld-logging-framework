@@ -29,6 +29,7 @@ jobs:
       branches: |
         1.5=version-1.5
         1.6=public
+        1.7=unstable
     secrets: inherit
 
   build:
