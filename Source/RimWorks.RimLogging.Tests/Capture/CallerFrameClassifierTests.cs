@@ -32,6 +32,19 @@ public class CallerFrameClassifierTests
     }
 
     [Fact]
+    public void IsInternalFrame_HarmonyGeneratedCollectibleAssemblyType_IsSkipped()
+    {
+        Assert.True(CallerFrameClassifier.IsInternalFrame("HarmonyGenerated", "DMD<Verse.Log::Message>"));
+        Assert.True(CallerFrameClassifier.IsInternalFrame("HarmonyGenerated", null));
+    }
+
+    [Fact]
+    public void IsInternalFrame_HarmonyGeneratedPrefixCollision_IsNotSkipped()
+    {
+        Assert.False(CallerFrameClassifier.IsInternalFrame("HarmonyGeneratedThings.Patcher", "SomeMod"));
+    }
+
+    [Fact]
     public void IsInternalFrame_NullNamespace_IsSkipped()
     {
         // DynamicMethod-emitted Harmony stubs frequently surface with a null DeclaringType.
