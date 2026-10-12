@@ -42,6 +42,7 @@ calls at build time. Most work lands in `Source/RimWorks.RimLogging/`. See `docs
 make restore                 # dotnet restore
 make build                   # whole solution, CONFIG=Debug by default
 make build CONFIG=Release    # what CI builds
+make build GameVersion=1.7   # RimWorld 1.7 runs WaylithCLR, so this one targets net10.0
 ```
 
 Analyzers run inside the build, so a warning is a failure in practice. CI also runs Vale over
@@ -68,11 +69,11 @@ The Worker has its own suite: `npm --prefix worker test` runs vitest.
 
 | Project | Targets | Holds |
 | --- | --- | --- |
-| `RimWorks.RimLogging` | `net472;net48` | The library and the mod assembly: emit API, pipeline, channels, sinks, filter DSL, log viewer, bundle sharing |
+| `RimWorks.RimLogging` | `net472;net48`, or `net10.0` for 1.7 | The library and the mod assembly: emit API, pipeline, channels, sinks, filter DSL, log viewer, bundle sharing |
 | `RimWorks.RimLogging.Analyzers` | `netstandard2.0` | The Roslyn analyzer, shipped in the NuGet package |
 | `RimWorks.RimLogging.CodeFixes` | `netstandard2.0` | Its fixes |
-| `RimWorks.RimLogging.Patches.Harmony` | `net472` | The `Verse.Log` hijack as Harmony patches |
-| `RimWorks.RimLogging.Patches.Concord` | `net472` | The same hijack as Concord injections |
+| `RimWorks.RimLogging.Patches.Harmony` | `net472`, or `net10.0` for 1.7 | The `Verse.Log` hijack as Harmony patches |
+| `RimWorks.RimLogging.Patches.Concord` | `net472`, or `net10.0` for 1.7 | The same hijack as Concord injections |
 | `RimWorks.RimLogging.Tests` | `net10.0` | xunit over linked library source, plus analyzer tests |
 | `worker/` | Cloudflare Worker | Stores and serves shared log bundles |
 

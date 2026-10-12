@@ -91,7 +91,14 @@ public class AssemblyMappingTests : IDisposable
         Assert.True(AssemblyChannelCache.IsVanillaAssembly("UnityEngine"));
         Assert.True(AssemblyChannelCache.IsVanillaAssembly("UnityEngine.CoreModule"));
         Assert.True(AssemblyChannelCache.IsVanillaAssembly("Verse"));
+        Assert.True(AssemblyChannelCache.IsVanillaAssembly("RimWorld"));
+        Assert.True(AssemblyChannelCache.IsVanillaAssembly("UnityStubs"));
+        Assert.True(AssemblyChannelCache.IsVanillaAssembly("Brutal.Core.Common"));
+        Assert.True(AssemblyChannelCache.IsVanillaAssembly("Waylith.UnityCompat"));
+
         Assert.False(AssemblyChannelCache.IsVanillaAssembly("SomeMod.Something"));
+        Assert.False(AssemblyChannelCache.IsVanillaAssembly("BrutalMod.Something"));
+        Assert.False(AssemblyChannelCache.IsVanillaAssembly("WaylithTweaks"));
 
         // a renamed Assembly cannot be synthesized cheaply, so check IsVanillaAssembly directly
         Assert.False(hookInvoked);

@@ -132,7 +132,7 @@ internal static class PatchBackends
         }
         catch (ReflectionTypeLoadException ex)
         {
-            return ex.Types.Where(type => type != null).ToList();
+            return ex.Types.OfType<Type>().ToList();
         }
         catch (Exception)
         {

@@ -1,0 +1,35 @@
+game: rimworld
+defaultProfile: rimlogging
+build: always
+replace: true
+resolution: 2560x1440
+log: game.log
+profiles:
+  rimlogging:
+    mods:
+      - concordlib.concord
+      - RimWorks.RimLogging
+    aliases:
+      - rimlog
+      - logging
+    autoDependencies: true
+  rimlogging-harmony:
+    mods:
+      - brrainz.harmony
+      - RimWorks.RimLogging
+    aliases:
+      - rimlog-harmony
+    autoDependencies: false
+    exclude:
+      - concordlib.concord
+      - CryptikLemur.NoSteamPopup
+  rimlogging-17:
+    extends: rimlogging
+    gameVersion: '1.7'
+    aliases:
+      - rimlog17
+  rimlogging-17-harmony:
+    extends: rimlogging-harmony
+    gameVersion: '1.7'
+    aliases:
+      - rimlog17-harmony
