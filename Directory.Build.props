@@ -15,6 +15,12 @@
         <GameTfm Condition="'$(GameVersion)' == '1.7'">net10.0</GameTfm>
         <GameTfm Condition="'$(GameTfm)' == ''">net472</GameTfm>
 
+        <GamecrateRefs17 Condition="'$(GamecrateRefs17)' == '' And '$(GAME_MANAGED_1_7)' != ''">$(GAME_MANAGED_1_7)</GamecrateRefs17>
+        <GamecrateRefs17 Condition="'$(GamecrateRefs17)' == ''">$([System.IO.Path]::Combine($(GamecrateCache), 'gamecrate', 'refs', 'version', 'rimworld', '1.7'))</GamecrateRefs17>
+        <GamecrateRefs Condition="'$(TargetFramework)' == 'net10.0' And '$(GameTfm)' != 'net10.0'">$(GamecrateRefs17)</GamecrateRefs>
+        <GameRefsVersion>$(GameVersion)</GameRefsVersion>
+        <GameRefsVersion Condition="'$(TargetFramework)' == 'net10.0' And '$(GameTfm)' != 'net10.0'">1.7</GameRefsVersion>
+
         <HasGameRefs>false</HasGameRefs>
         <HasGameRefs Condition="Exists('$(GamecrateRefs)/Assembly-CSharp.dll')">true</HasGameRefs>
 
@@ -23,7 +29,7 @@
 
     <!-- refs/current moves on every extraction, so only the versioned path is ever named -->
     <Target Name="RequireGameRefs" BeforeTargets="ResolveAssemblyReferences" Condition="'$(HasGameRefs)' != 'true'">
-        <Error Text="no rimworld $(GameVersion) assemblies at $(GamecrateRefs). run: gamecrate steam build rimworld --beta version-$(GameVersion)" />
+        <Error Text="no rimworld $(GameRefsVersion) assemblies at $(GamecrateRefs). run: gamecrate steam build rimworld --beta version-$(GameRefsVersion)" />
     </Target>
 
     <PropertyGroup>
