@@ -30,6 +30,7 @@ internal static class CallerFrameClassifier
     {
         if (declaringNamespace == null) return true;
         if (declaringNamespace.StartsWith("HarmonyLib.", StringComparison.Ordinal)) return true;
+        if (string.Equals(declaringNamespace, "HarmonyGenerated", StringComparison.Ordinal)) return true;
         if (declaringNamespace.StartsWith("Concord.", StringComparison.Ordinal)) return true;
         if (declaringNamespace.StartsWith("MonoMod.", StringComparison.Ordinal)) return true;
         if (declaringNamespace.StartsWith("RimWorks.RimLogging.", StringComparison.Ordinal)) return true;
