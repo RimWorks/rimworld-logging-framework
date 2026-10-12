@@ -19,6 +19,7 @@ export default releaseConfig({
         },
     ],
     pack: 'Source/RimWorks.RimLogging/RimWorks.RimLogging.csproj',
+    packArgs: '-p:PackAllTfms=true',
     packOut: './nupkgs',
     nupkgGlob: './nupkgs/*.nupkg',
     assets: [

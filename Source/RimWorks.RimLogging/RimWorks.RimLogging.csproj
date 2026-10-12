@@ -5,6 +5,7 @@
         <TargetFramework></TargetFramework>
         <TargetFrameworks>net472;net48</TargetFrameworks>
         <TargetFrameworks Condition="'$(GameTfm)' == 'net10.0'">net10.0</TargetFrameworks>
+        <TargetFrameworks Condition="'$(PackAllTfms)' == 'true'">net472;net48;net10.0</TargetFrameworks>
         <!-- GameTfm is what RimWorld runs, so that build is the one the mod ships. -->
         <OutDir Condition="'$(TargetFramework)' == '$(GameTfm)'">..\..\$(GameVersion)\Assemblies\</OutDir>
         <RootNamespace>RimWorks.RimLogging</RootNamespace>
@@ -27,12 +28,12 @@
     <ItemGroup>
         <!-- net10 has all three in the shared framework, so they only ship on the net472 side -->
         <!-- ships to Assemblies/: Directory.Build.props excludes runtime assets by default -->
-        <PackageReference Include="System.Text.Json" Version="10.0.*" ExcludeAssets="" Condition="'$(GameTfm)' != 'net10.0'"/>
+        <PackageReference Include="System.Text.Json" Version="10.0.*" ExcludeAssets="" Condition="'$(TargetFramework)' != 'net10.0'"/>
         <!-- net472 counts ValueTuple as framework provided so the SDK skips it, but System.Text.Json binds the real assembly -->
-        <PackageReference Include="System.ValueTuple" Version="4.6.*" GeneratePathProperty="true" Condition="'$(GameTfm)' != 'net10.0'"/>
+        <PackageReference Include="System.ValueTuple" Version="4.6.*" GeneratePathProperty="true" Condition="'$(TargetFramework)' != 'net10.0'"/>
         <PackageReference Include="Concord.Ref" Version="0.24.*" PrivateAssets="all"/>
         <PackageReference Include="Concord.Analyzers" Version="0.24.*" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.*" PrivateAssets="all" Condition="'$(GameTfm)' != 'net10.0'">
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.*" PrivateAssets="all" Condition="'$(TargetFramework)' != 'net10.0'">
             <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
 
@@ -40,7 +41,7 @@
                    Exclude="$(GamecrateRefs)/System.*.dll;$(GamecrateRefs)/System.dll;$(GamecrateRefs)/Microsoft.*.dll;$(GamecrateRefs)/mscorlib.dll;$(GamecrateRefs)/netstandard.dll;$(GamecrateRefs)/WindowsBase.dll">
             <Private>False</Private>
         </Reference>
-        <Reference Include="System.Net.Http" Condition="'$(GameTfm)' != 'net10.0'"/>
+        <Reference Include="System.Net.Http" Condition="'$(TargetFramework)' != 'net10.0'"/>
     </ItemGroup>
 
     <ItemGroup>
