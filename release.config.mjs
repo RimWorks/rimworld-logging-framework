@@ -15,7 +15,6 @@ export default releaseConfig({
         {
             name: 'RimLogging',
             workshopId: '3733484696',
-            previewfile: new URL('./About/Preview.png', import.meta.url).pathname,
         },
     ],
     pack: 'Source/RimWorks.RimLogging/RimWorks.RimLogging.csproj',
