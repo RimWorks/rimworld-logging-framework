@@ -14,6 +14,7 @@ export default releaseConfig({
     mods: [
         {
             name: 'RimLogging',
+            title: 'RimLogging: RimWorld log viewer and bug report sharing',
             workshopId: '3733484696',
         },
     ],
