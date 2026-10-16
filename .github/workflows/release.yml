@@ -78,20 +78,20 @@ jobs:
 
       # semantic-release rebuilds every version, and every build needs real game assemblies
       - name: Stage RimWorld 1.5 refs
-        uses: RimWorks/mod-ci/.github/actions/stage-game-refs@v4
+        uses: RimWorks/mod-ci/.github/actions/stage-game-refs@v5
         with:
           image: ${{ fromJSON(needs.ci.outputs.image-refs)['1.5'] }}
           dest: ${{ runner.temp }}/game-1.5
 
       - name: Stage RimWorld 1.6 refs
         id: refs-16
-        uses: RimWorks/mod-ci/.github/actions/stage-game-refs@v4
+        uses: RimWorks/mod-ci/.github/actions/stage-game-refs@v5
         with:
           image: ${{ fromJSON(needs.ci.outputs.image-refs)['1.6'] }}
           dest: ${{ runner.temp }}/game-1.6
 
       - name: Stage RimWorld 1.7 refs
-        uses: RimWorks/mod-ci/.github/actions/stage-game-refs@v4
+        uses: RimWorks/mod-ci/.github/actions/stage-game-refs@v5
         with:
           image: ${{ fromJSON(needs.ci.outputs.image-refs)['1.7'] }}
           dest: ${{ runner.temp }}/game-1.7
@@ -177,7 +177,7 @@ jobs:
   publish:
     needs: [release, nuget]
     if: needs.release.outputs.published == 'true'
-    uses: RimWorks/mod-ci/.github/workflows/publish.yml@v4
+    uses: RimWorks/mod-ci/.github/workflows/publish.yml@v5
     permissions:
       contents: read
     secrets: inherit
