@@ -62,23 +62,18 @@ internal sealed class LogViewerWindow : EditWindow
     private static readonly Color GroupDivider = new Color(0.29f, 0.31f, 0.32f);
     private static readonly Color SegmentDivider = new Color(0.16f, 0.17f, 0.18f);
 
-    private static Texture2D? nextErrorTexture;
-    private static bool nextErrorTextureLoaded;
+    private static readonly Dictionary<string, Texture2D?> IconCache =
+        new Dictionary<string, Texture2D?>(StringComparer.Ordinal);
 
-    // ??= re-ran the lookup every frame when the texture was missing, and each miss logs an
-    // error. A logging mod flooding the log it owns is the worst version of that bug.
-    private static Texture2D NextErrorTexture
+    private static Texture2D Icon(string name)
     {
-        get
+        if (!IconCache.TryGetValue(name, out Texture2D? texture))
         {
-            if (!nextErrorTextureLoaded)
-            {
-                nextErrorTextureLoaded = true;
-                nextErrorTexture = ContentFinder<Texture2D>.Get("UI/Buttons/RimLogging/NextError");
-            }
-
-            return nextErrorTexture!;
+            texture = ContentFinder<Texture2D>.Get("UI/Buttons/RimLogging/" + name);
+            IconCache[name] = texture;
         }
+
+        return texture!;
     }
 
     private static readonly LogLevel[] ToggleLevels = {
@@ -235,7 +230,7 @@ internal sealed class LogViewerWindow : EditWindow
         float y = inRect.y;
 
         DoIconButton(ref x, y, TexButton.Delete, "CRL_Tip_Clear".Translate(), ClearEntries);
-        DoIconButton(ref x, y, TexButton.Copy, "CRL_Tip_Copy".Translate(), CopyVisibleToClipboard);
+        DoIconButton(ref x, y, Icon("Copy"), "CRL_Tip_Copy".Translate(), CopyVisibleToClipboard);
         DoShareButton(ref x, y);
         DoGroupDivider(ref x, y);
 
@@ -258,7 +253,7 @@ internal sealed class LogViewerWindow : EditWindow
 
         if (!toolbarPlan.CompactLevels)
         {
-            DoIconButton(ref x, y, NextErrorTexture, "CRL_Tip_NextError".Translate(), JumpToNextError);
+            DoIconButton(ref x, y, Icon("NextError"), "CRL_Tip_NextError".Translate(), JumpToNextError);
         }
         DoIconButton(ref x, y, TexButton.ToggleLog, "CRL_Tip_VanillaLog".Translate(), LogViewerBoot.OpenVanilla);
         DoIconButton(ref x, y, TexButton.OpenDebugActionsMenu, "CRL_Tip_More".Translate(), OpenMoreMenu);
@@ -333,7 +328,7 @@ internal sealed class LogViewerWindow : EditWindow
         TooltipHandler.TipRegion(fieldRect, "CRL_Tip_Filter".Translate());
 
         x += width + GroupGap;
-        DoIconButton(ref x, y, TexButton.NewFile, "CRL_Tip_Presets".Translate(), OpenPresetMenu);
+        DoIconButton(ref x, y, Icon("Presets"), "CRL_Tip_Presets".Translate(), OpenPresetMenu);
         x += GroupGap;
     }
 
@@ -479,7 +474,7 @@ internal sealed class LogViewerWindow : EditWindow
     {
         bool busy = state.Uploading;
         Rect rect = new Rect(x, y, ButtonSize, ButtonSize);
-        if (DrawIconFace(rect, TexButton.Save) && !busy)
+        if (DrawIconFace(rect, Icon("Upload")) && !busy)
         {
             StartShare();
         }
