@@ -3,10 +3,7 @@
     <CRL_Settings_GlobalMinLevel>全局最低日志级别</CRL_Settings_GlobalMinLevel>
     <CRL_Settings_LogDir>日志目录</CRL_Settings_LogDir>
     <CRL_Settings_Retention>保留的日志文件数</CRL_Settings_Retention>
-    <CRL_Settings_ProxyUrl>日志包上传代理 URL</CRL_Settings_ProxyUrl>
     <CRL_Settings_CaptureStackTraces>为每条记录捕获堆栈跟踪</CRL_Settings_CaptureStackTraces>
-    <CRL_Settings_GitHubToken>GitHub 个人访问令牌（可选）</CRL_Settings_GitHubToken>
-    <CRL_Settings_GitHubToken_Note>以明文形式存储在此模组的设置中。仅需要“gist”权限。设置后，上传的日志包将创建在你的 GitHub 账户下。</CRL_Settings_GitHubToken_Note>
     <CRL_Settings_UploadBundle>上传日志包</CRL_Settings_UploadBundle>
     <CRL_Settings_UploadNoBuffer>没有正在运行的内存日志缓冲区，因此没有可上传的内容。</CRL_Settings_UploadNoBuffer>
     <CRL_Settings_Reset>重置为默认值</CRL_Settings_Reset>

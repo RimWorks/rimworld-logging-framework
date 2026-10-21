@@ -32,12 +32,12 @@ public class BundleUploadCoordinatorTests
     }
 
     [Fact]
-    public void DescribeResult_Success_IncludesGistUrl()
+    public void DescribeResult_Success_IncludesBundleUrl()
     {
         string message = BundleUploadCoordinator.DescribeResult(
-            new PublishResult { Success = true, Url = "https://gist.github.com/u/abc" });
+            new PublishResult { Success = true, Url = "https://rimworks.org/b/abc" });
 
-        Assert.Contains("https://gist.github.com/u/abc", message);
+        Assert.Contains("https://rimworks.org/b/abc", message);
     }
 
     [Fact]
@@ -56,23 +56,5 @@ public class BundleUploadCoordinatorTests
         public void Write(LogEntry entry) { }
         public void Flush() { }
         public void Dispose() { }
-    }
-
-    [Theory]
-    [InlineData("gist")]
-    [InlineData("GIST")]
-    public void UsesGist_GistIdsSelectTheGistPath(string publisher)
-    {
-        Assert.True(BundleUploadCoordinator.UsesGist(publisher));
-    }
-
-    [Theory]
-    [InlineData("docbin")]
-    [InlineData("")]
-    [InlineData(null)]
-    [InlineData("something else")]
-    public void UsesGist_EverythingElseFallsBackToDocbin(string? publisher)
-    {
-        Assert.False(BundleUploadCoordinator.UsesGist(publisher));
     }
 }

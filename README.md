@@ -82,7 +82,6 @@ The first string argument is the channel only when a later argument disambiguate
 - [Custom sinks](docs/sinks.md): the `ILogSink` API, SinkDef XML, built-in sinks.
 - [Verse.Log analyzer](docs/analyzer.md): the `RIMLOG001` and `RIMLOG002` build warnings, and what to call instead.
 - [Settings and bug bundles](docs/settings.md): the mod settings page and the share-bundle payload.
-- [Bundle upload worker](worker/README.md): the Cloudflare Worker behind bug-report uploads.
 
 ## Contributing
 

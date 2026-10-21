@@ -25,8 +25,8 @@ public class UrlScannerTests
     [Fact]
     public void Find_TrimsTrailingSentencePunctuation()
     {
-        Assert.Equal(["https://docbin.app/x"], UrlScanner.Find("uploaded to https://docbin.app/x."));
-        Assert.Equal(["https://docbin.app/x"], UrlScanner.Find("(see https://docbin.app/x)"));
+        Assert.Equal(["https://rimworks.org/b/x"], UrlScanner.Find("uploaded to https://rimworks.org/b/x."));
+        Assert.Equal(["https://rimworks.org/b/x"], UrlScanner.Find("(see https://rimworks.org/b/x)"));
     }
 
     [Fact]

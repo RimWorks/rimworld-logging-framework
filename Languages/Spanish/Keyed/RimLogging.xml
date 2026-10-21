@@ -3,10 +3,7 @@
     <CRL_Settings_GlobalMinLevel>Nivel mínimo de registro global</CRL_Settings_GlobalMinLevel>
     <CRL_Settings_LogDir>Directorio de registros</CRL_Settings_LogDir>
     <CRL_Settings_Retention>Archivos de registro conservados</CRL_Settings_Retention>
-    <CRL_Settings_ProxyUrl>URL del proxy de subida de paquetes</CRL_Settings_ProxyUrl>
     <CRL_Settings_CaptureStackTraces>Capturar la traza de pila en cada entrada</CRL_Settings_CaptureStackTraces>
-    <CRL_Settings_GitHubToken>Token de acceso personal de GitHub (opcional)</CRL_Settings_GitHubToken>
-    <CRL_Settings_GitHubToken_Note>Se almacena en texto plano en los ajustes de este mod. Solo necesita el ámbito «gist». Cuando se establece, los paquetes subidos se crean en tu cuenta de GitHub.</CRL_Settings_GitHubToken_Note>
     <CRL_Settings_UploadBundle>Subir paquete de registros</CRL_Settings_UploadBundle>
     <CRL_Settings_UploadNoBuffer>No hay ningún búfer de registros en memoria activo, así que no hay nada que subir.</CRL_Settings_UploadNoBuffer>
     <CRL_Settings_Reset>Restablecer valores predeterminados</CRL_Settings_Reset>

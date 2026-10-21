@@ -31,7 +31,6 @@ calls at build time. Most work lands in `Source/RimWorks.RimLogging/`. See `docs
   shipped in the NuGet package
 - `Source/RimWorks.RimLogging.Patches.Harmony/`, `.Patches.Concord/` - the two patch backends
 - `Source/RimWorks.RimLogging.Tests/` - xunit suites
-- `worker/` - the Cloudflare Worker that stores and serves shared log bundles
 - `docs/` - contributor documentation
 - `About/`, `Defs/`, `Languages/`, `Textures/` - RimWorld mod content, shipped in the release zip
 - `Styles/` - Vale prose rules, used by CI only
@@ -56,8 +55,6 @@ dotnet test RimWorks.RimLogging.slnx --filter "FullyQualifiedName~LogEntryTests"
 make lint                                                                 # dotnet format check
 ```
 
-The Worker has its own suite: `npm --prefix worker test` runs vitest.
-
 - Run the full suite before committing. All tests must pass.
 - While iterating, run the single test closest to your change.
 - The unit tests do not cover anything that needs a live game, and cannot: those files are
@@ -75,7 +72,6 @@ The Worker has its own suite: `npm --prefix worker test` runs vitest.
 | `RimWorks.RimLogging.Patches.Harmony` | `net472`, or `net10.0` for 1.7 | The `Verse.Log` hijack as Harmony patches |
 | `RimWorks.RimLogging.Patches.Concord` | `net472`, or `net10.0` for 1.7 | The same hijack as Concord injections |
 | `RimWorks.RimLogging.Tests` | `net10.0` | xunit over linked library source, plus analyzer tests |
-| `worker/` | Cloudflare Worker | Stores and serves shared log bundles |
 
 **The test project has no project reference.** It `Compile Include`s the library's `.cs`
 files. It also carries an explicit `Exclude` list naming every file that reaches into `Verse`
@@ -162,13 +158,6 @@ with an inferred channel and no structured context.
 Both stay silent unless the compilation can see `RimWorks.RimLogging.Log`. A rule change
 means updating `docs/analyzer.md` in the same commit - that table is the published contract.
 
-## The worker
-
-`worker/` is a Cloudflare Worker: it validates a posted bundle, rate-limits by KV, and
-creates a gist. It ships and tests on its own (`npm --prefix worker test` runs vitest) and
-its secrets live in Wrangler, never in the repo. `MAX_BODY_BYTES` in `validate.ts` and the
-trimming in `BundleTrimmer` are two halves of one limit; move one and move the other.
-
 ## Code style
 
 - Formatter: `dotnet format`, via `make format`. Linter: the analyzers in the build plus
@@ -191,7 +180,6 @@ trimming in `BundleTrimmer` are two halves of one limit; move one and move the o
 - English is the source language. The bundled Chinese Simplified, French, Spanish, and German
   translations may be inaccurate. Send corrections as a pull request, but do not "fix"
   one from a guess.
-- The Worker's tokens live in Wrangler secrets, never in the repo.
 - `docs/channels.md`, `docs/sinks.md`, `docs/filter-dsl.md` and `docs/analyzer.md` document
   public contracts. A change to a def field, an NDJSON key, the DSL grammar, or a rule ID
   updates its doc in the same commit.

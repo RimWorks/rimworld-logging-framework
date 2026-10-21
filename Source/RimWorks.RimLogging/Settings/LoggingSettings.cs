@@ -5,7 +5,7 @@ using Verse;
 
 namespace RimWorks.RimLogging.Settings;
 
-/// <summary>Persisted RimWorld <see cref="ModSettings"/> for the logging framework (min level, output directory, retention, bundle proxy, filter presets).</summary>
+/// <summary>Persisted RimWorld <see cref="ModSettings"/> for the logging framework (min level, output directory, retention, bundle upload endpoint, filter presets).</summary>
 public sealed class LoggingSettings : ModSettings
 {
     /// <summary>Global minimum log level; entries below this are dropped.</summary>
@@ -16,9 +16,6 @@ public sealed class LoggingSettings : ModSettings
 
     /// <summary>Number of rotated log files to retain.</summary>
     public int retentionCount = LoggingSettingsDefaults.RetentionCount;
-
-    /// <summary>Endpoint URL used when uploading bug-report bundles.</summary>
-    public string proxyUrl = LoggingSettingsDefaults.ProxyUrl;
 
     /// <summary>Display names of saved filter presets, parallel to <see cref="filterPresetExpressions"/>.</summary>
     public List<string> filterPresetNames = new();
@@ -35,23 +32,8 @@ public sealed class LoggingSettings : ModSettings
     /// <summary>When <c>true</c>, every emitted entry captures and stores a formatted stack trace. Defaults to <c>true</c>.</summary>
     public bool captureStackTraces = LoggingSettingsDefaults.CaptureStackTraces;
 
-    /// <summary>Optional user-supplied GitHub PAT; when set, it is relayed to the bundle proxy so gists are created under the user's account. Empty means the proxy uses its own token.</summary>
-    public string githubToken = LoggingSettingsDefaults.GitHubToken;
-
-    /// <summary>Which publisher the share button uses: <c>docbin</c> or <c>gist</c>.</summary>
-    public string publisher = LoggingSettingsDefaults.Publisher;
-
-    /// <summary>Base URL of the Docbin instance bundles are pasted to.</summary>
-    public string docbinUrl = LoggingSettingsDefaults.DocbinUrl;
-
-    /// <summary>The rimworks.org upload endpoint.</summary>
+    /// <summary>The rimworks.org endpoint bug-report bundles are uploaded to.</summary>
     public string rimworksUrl = LoggingSettingsDefaults.RimWorksUrl;
-
-    /// <summary>Optional Docbin API key. When set, pastes are authenticated and the size ceiling rises from 1 MiB to 5 MiB.</summary>
-    public string docbinApiKey = LoggingSettingsDefaults.DocbinApiKey;
-
-    /// <summary>Visibility applied to authenticated Docbin pastes.</summary>
-    public string docbinVisibility = LoggingSettingsDefaults.DocbinVisibility;
 
     /// <summary>Where the log viewer draws the detail pane. Cycled from the viewer's own toolbar.</summary>
     internal Viewer.DetailPlacement logViewerDetailPlacement = Viewer.DetailPlacement.Bottom;
@@ -62,14 +44,8 @@ public sealed class LoggingSettings : ModSettings
         Scribe_Values.Look(ref globalMinLevel, "globalMinLevel", LoggingSettingsDefaults.GlobalMinLevel);
         Scribe_Values.Look(ref logDirectory, "logDirectory", string.Empty);
         Scribe_Values.Look(ref retentionCount, "retentionCount", LoggingSettingsDefaults.RetentionCount);
-        Scribe_Values.Look(ref proxyUrl, "proxyUrl", LoggingSettingsDefaults.ProxyUrl);
         Scribe_Values.Look(ref captureStackTraces, "captureStackTraces", LoggingSettingsDefaults.CaptureStackTraces);
-        Scribe_Values.Look(ref githubToken, "githubToken", LoggingSettingsDefaults.GitHubToken);
-        Scribe_Values.Look(ref publisher, "publisher", LoggingSettingsDefaults.Publisher);
-        Scribe_Values.Look(ref docbinUrl, "docbinUrl", LoggingSettingsDefaults.DocbinUrl);
         Scribe_Values.Look(ref rimworksUrl, "rimworksUrl", LoggingSettingsDefaults.RimWorksUrl);
-        Scribe_Values.Look(ref docbinApiKey, "docbinApiKey", LoggingSettingsDefaults.DocbinApiKey);
-        Scribe_Values.Look(ref docbinVisibility, "docbinVisibility", LoggingSettingsDefaults.DocbinVisibility);
         Scribe_Values.Look(ref logViewerDetailPlacement, "logViewerDetailPlacement", Viewer.DetailPlacement.Bottom);
         Scribe_Collections.Look(ref filterPresetNames, "filterPresetNames", LookMode.Value);
         Scribe_Collections.Look(ref filterPresetExpressions, "filterPresetExpressions", LookMode.Value);
@@ -85,15 +61,8 @@ public sealed class LoggingSettings : ModSettings
         }
     }
 
-    /// <summary>Copies the upload-related settings into the Verse-free shape the publishers take.</summary>
     internal PublishOptions ToPublishOptions() => new PublishOptions
     {
-        Publisher = publisher,
-        DocbinUrl = docbinUrl,
         RimWorksUrl = rimworksUrl,
-        DocbinApiKey = docbinApiKey,
-        DocbinVisibility = docbinVisibility,
-        ProxyUrl = proxyUrl,
-        GitHubToken = githubToken,
     };
 }

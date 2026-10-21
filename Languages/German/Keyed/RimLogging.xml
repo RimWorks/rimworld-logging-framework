@@ -3,10 +3,7 @@
     <CRL_Settings_GlobalMinLevel>Globale minimale Protokollstufe</CRL_Settings_GlobalMinLevel>
     <CRL_Settings_LogDir>Protokollverzeichnis</CRL_Settings_LogDir>
     <CRL_Settings_Retention>Aufbewahrte Protokolldateien</CRL_Settings_Retention>
-    <CRL_Settings_ProxyUrl>Proxy-URL für Paket-Upload</CRL_Settings_ProxyUrl>
     <CRL_Settings_CaptureStackTraces>Stacktrace für jeden Eintrag erfassen</CRL_Settings_CaptureStackTraces>
-    <CRL_Settings_GitHubToken>GitHub-Personal-Access-Token (optional)</CRL_Settings_GitHubToken>
-    <CRL_Settings_GitHubToken_Note>Wird im Klartext in den Einstellungen dieses Mods gespeichert. Benötigt nur den „gist“-Bereich. Wenn gesetzt, werden hochgeladene Pakete unter deinem GitHub-Konto erstellt.</CRL_Settings_GitHubToken_Note>
     <CRL_Settings_UploadBundle>Protokollpaket hochladen</CRL_Settings_UploadBundle>
     <CRL_Settings_UploadNoBuffer>Es ist kein Protokollpuffer im Arbeitsspeicher aktiv, daher gibt es nichts zum Hochladen.</CRL_Settings_UploadNoBuffer>
     <CRL_Settings_Reset>Auf Standardwerte zurücksetzen</CRL_Settings_Reset>

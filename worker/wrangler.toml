@@ -1,9 +1,0 @@
-name = "rimlogging-bundle"
-main = "src/index.ts"
-compatibility_date = "2024-09-23"
-workers_dev = true
-preview_urls = false
-
-[[kv_namespaces]]
-binding = "RATELIMIT"
-id = "e5da4617f76142a9bfc862afb004730a"

@@ -143,57 +143,8 @@ public static class LoggingSettingsWindow
 
     private static void DrawReports(LoggingSettings s, Listing_Standard l)
     {
-        if (l.ButtonTextLabeled("CRL_Settings_Publisher".Translate(), PublisherLabel(s)))
-        {
-            Find.WindowStack.Add(new FloatMenu(new List<FloatMenuOption>
-            {
-                new FloatMenuOption("CRL_Settings_Publisher_RimWorks".Translate(), () => s.publisher = "rimworks"),
-                new FloatMenuOption("CRL_Settings_Publisher_Docbin".Translate(), () => s.publisher = "docbin"),
-                new FloatMenuOption("CRL_Settings_Publisher_Gist".Translate(), () => s.publisher = "gist"),
-            }));
-        }
-
-        l.Gap();
         l.Label("CRL_Settings_RimWorksUrl".Translate());
         s.rimworksUrl = l.TextEntry(s.rimworksUrl);
-
-        l.Gap();
-        l.Label("CRL_Settings_DocbinUrl".Translate());
-        s.docbinUrl = l.TextEntry(s.docbinUrl);
-
-        l.Gap();
-        l.Label("CRL_Settings_DocbinApiKey".Translate());
-        s.docbinApiKey = l.TextEntry(s.docbinApiKey);
-        l.Label("CRL_Settings_DocbinApiKey_Note".Translate());
-
-        l.Gap();
-        if (Bundle.DocbinVisibility.CanChoose(s.docbinApiKey))
-        {
-            if (l.ButtonTextLabeled("CRL_Settings_DocbinVisibility".Translate(), VisibilityLabel(s)))
-            {
-                Find.WindowStack.Add(new FloatMenu(new List<FloatMenuOption>
-                {
-                    new FloatMenuOption("CRL_Settings_Visibility_Unlisted".Translate(),
-                        () => s.docbinVisibility = Bundle.DocbinVisibility.Unlisted),
-                    new FloatMenuOption("CRL_Settings_Visibility_Public".Translate(),
-                        () => s.docbinVisibility = Bundle.DocbinVisibility.Public),
-                }));
-            }
-        }
-        else
-        {
-            l.Label("CRL_Settings_DocbinVisibility".Translate() + ": " + "CRL_Settings_Visibility_Public".Translate());
-            l.Label("CRL_Settings_DocbinVisibility_AnonNote".Translate());
-        }
-
-        l.Gap();
-        l.Label("CRL_Settings_ProxyUrl".Translate());
-        s.proxyUrl = l.TextEntry(s.proxyUrl);
-
-        l.Gap();
-        l.Label("CRL_Settings_GitHubToken".Translate());
-        s.githubToken = l.TextEntry(s.githubToken);
-        l.Label("CRL_Settings_GitHubToken_Note".Translate());
 
         l.Gap();
         if (l.ButtonText("CRL_Settings_UploadBundle".Translate())) _ = StartUpload(s);
@@ -204,14 +155,8 @@ public static class LoggingSettingsWindow
         s.globalMinLevel = LoggingSettingsDefaults.GlobalMinLevel;
         s.logDirectory = LogDirectory.Default;
         s.retentionCount = LoggingSettingsDefaults.RetentionCount;
-        s.proxyUrl = LoggingSettingsDefaults.ProxyUrl;
         s.captureStackTraces = LoggingSettingsDefaults.CaptureStackTraces;
-        s.githubToken = LoggingSettingsDefaults.GitHubToken;
-        s.publisher = LoggingSettingsDefaults.Publisher;
-        s.docbinUrl = LoggingSettingsDefaults.DocbinUrl;
         s.rimworksUrl = LoggingSettingsDefaults.RimWorksUrl;
-        s.docbinApiKey = LoggingSettingsDefaults.DocbinApiKey;
-        s.docbinVisibility = LoggingSettingsDefaults.DocbinVisibility;
         s.sinkOverrideNames.Clear();
         s.sinkOverrideStates.Clear();
         SinkLoader.Reload();
@@ -240,26 +185,6 @@ public static class LoggingSettingsWindow
         }
     }
 
-    private static string VisibilityLabel(LoggingSettings s)
-        => (Bundle.DocbinVisibility.Effective(true, s.docbinVisibility) == Bundle.DocbinVisibility.Public
-            ? "CRL_Settings_Visibility_Public"
-            : "CRL_Settings_Visibility_Unlisted").Translate();
-
-    private static string PublisherLabel(LoggingSettings s)
-    {
-        if (Bundle.BundleUploadCoordinator.UsesRimWorks(s.publisher))
-            return "CRL_Settings_Publisher_RimWorks".Translate();
-
-        return (Bundle.BundleUploadCoordinator.UsesGist(s.publisher)
-            ? "CRL_Settings_Publisher_Gist"
-            : "CRL_Settings_Publisher_Docbin").Translate();
-    }
-
-    /// <summary>
-    /// Uploads the current log buffer through the configured publisher. Runs async and
-    /// marshals the resulting URL or error back to the main thread to show it.
-    /// </summary>
-    /// <param name="s">The settings supplying the publisher choice and its credentials.</param>
     private static async Task StartUpload(LoggingSettings s)
     {
         try

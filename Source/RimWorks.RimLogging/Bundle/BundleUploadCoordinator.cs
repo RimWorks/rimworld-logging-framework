@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -7,8 +6,8 @@ using RimWorks.RimLogging.Sinks;
 namespace RimWorks.RimLogging.Bundle;
 
 /// <summary>
-/// Backs the "Upload bundle" actions: finds the buffer, picks the publisher, and turns the
-/// result into a message. Verse-free so the decision logic tests without the game.
+/// Backs the "Upload bundle" actions: finds the buffer, uploads it to rimworks.org, and turns
+/// the result into a message. Verse-free so the decision logic tests without the game.
 /// </summary>
 public static class BundleUploadCoordinator
 {
@@ -31,28 +30,6 @@ public static class BundleUploadCoordinator
         return $"Bundle upload failed: {result.ErrorMessage}";
     }
 
-    /// <summary>Returns <c>true</c> when the publisher id selects the gist path.</summary>
-    internal static bool UsesGist(string? publisher)
-        => string.Equals(publisher, "gist", StringComparison.OrdinalIgnoreCase);
-
-    /// <summary>Returns <c>true</c> when the publisher id selects rimworks.org, which is the default.</summary>
-    internal static bool UsesRimWorks(string? publisher)
-        => string.Equals(publisher, "rimworks", StringComparison.OrdinalIgnoreCase);
-
-    /// <summary>Uploads the bundle through whichever publisher the options select.</summary>
     internal static Task<PublishResult> Upload(BundlePayload payload, PublishOptions options, HttpClient? http = null)
-    {
-        if (UsesRimWorks(options.Publisher))
-        {
-            return new ProxyClient(options.RimWorksUrl, http).UploadAsync(payload);
-        }
-
-        if (UsesGist(options.Publisher))
-        {
-            return new ProxyClient(options.ProxyUrl, http, options.GitHubToken).UploadAsync(payload);
-        }
-
-        return new DocbinClient(options.DocbinUrl, http, options.DocbinApiKey, options.DocbinVisibility)
-            .UploadAsync(payload);
-    }
+        => new BundleUploadClient(options.RimWorksUrl, http).UploadAsync(payload);
 }

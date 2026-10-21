@@ -9,20 +9,16 @@ using Xunit;
 
 namespace RimWorks.RimLogging.Tests.Bundle;
 
-public class ProxyClientTests
+public class BundleUploadClientTests
 {
     private sealed class StubHandler : HttpMessageHandler
     {
         public HttpStatusCode Status = HttpStatusCode.OK;
         public string Body = "{}";
         public Exception? ThrowOnSend;
-        public HttpRequestMessage? LastRequest;
-        public string? LastBody;
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            LastRequest = request;
-            LastBody = request.Content?.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
             if (ThrowOnSend != null) throw ThrowOnSend;
             HttpResponseMessage resp = new HttpResponseMessage(Status)
             {
@@ -35,12 +31,12 @@ public class ProxyClientTests
     [Fact]
     public async Task UploadAsync_Success_ReturnsUrl()
     {
-        StubHandler h = new StubHandler { Body = "{\"url\":\"https://gist.github.com/x/abc\"}" };
+        StubHandler h = new StubHandler { Body = "{\"url\":\"https://rimworks.org/b/abc\"}" };
         HttpClient client = new HttpClient(h);
-        ProxyClient proxy = new ProxyClient("https://proxy.example/upload", client);
+        BundleUploadClient proxy = new BundleUploadClient("https://rimworks.example/api/bundle", client);
         PublishResult r = await proxy.UploadAsync(new BundlePayload());
         Assert.True(r.Success);
-        Assert.Equal("https://gist.github.com/x/abc", r.Url);
+        Assert.Equal("https://rimworks.org/b/abc", r.Url);
         Assert.Null(r.ErrorMessage);
     }
 
@@ -49,7 +45,7 @@ public class ProxyClientTests
     {
         StubHandler h = new StubHandler { Status = HttpStatusCode.InternalServerError, Body = "server down" };
         HttpClient client = new HttpClient(h);
-        ProxyClient proxy = new ProxyClient("https://x/up", client);
+        BundleUploadClient proxy = new BundleUploadClient("https://x/up", client);
         PublishResult r = await proxy.UploadAsync(new BundlePayload());
         Assert.False(r.Success);
         Assert.Contains("500", r.ErrorMessage!);
@@ -61,7 +57,7 @@ public class ProxyClientTests
     {
         StubHandler h = new StubHandler { Body = "not json" };
         HttpClient client = new HttpClient(h);
-        ProxyClient proxy = new ProxyClient("https://x/up", client);
+        BundleUploadClient proxy = new BundleUploadClient("https://x/up", client);
         PublishResult r = await proxy.UploadAsync(new BundlePayload());
         Assert.False(r.Success);
         Assert.Contains("Malformed", r.ErrorMessage!);
@@ -72,7 +68,7 @@ public class ProxyClientTests
     {
         StubHandler h = new StubHandler { Body = "{\"other\":\"field\"}" };
         HttpClient client = new HttpClient(h);
-        ProxyClient proxy = new ProxyClient("https://x/up", client);
+        BundleUploadClient proxy = new BundleUploadClient("https://x/up", client);
         PublishResult r = await proxy.UploadAsync(new BundlePayload());
         Assert.False(r.Success);
         Assert.Contains("missing", r.ErrorMessage!, StringComparison.OrdinalIgnoreCase);
@@ -83,7 +79,7 @@ public class ProxyClientTests
     {
         StubHandler h = new StubHandler { ThrowOnSend = new HttpRequestException("DNS failure") };
         HttpClient client = new HttpClient(h);
-        ProxyClient proxy = new ProxyClient("https://x/up", client);
+        BundleUploadClient proxy = new BundleUploadClient("https://x/up", client);
         PublishResult r = await proxy.UploadAsync(new BundlePayload());
         Assert.False(r.Success);
         Assert.Contains("DNS failure", r.ErrorMessage!);
@@ -92,40 +88,6 @@ public class ProxyClientTests
     [Fact]
     public void Ctor_NullUrl_Throws()
     {
-        Assert.Throws<ArgumentNullException>(() => new ProxyClient(null!));
-    }
-
-    [Fact]
-    public async Task UploadAsync_WithToken_SendsXGistTokenHeader()
-    {
-        StubHandler h = new StubHandler { Body = "{\"url\":\"https://gist.github.com/x/abc\"}" };
-        HttpClient client = new HttpClient(h);
-        ProxyClient proxy = new ProxyClient("https://proxy.example/upload", client, githubToken: "ghp_secret");
-        await proxy.UploadAsync(new BundlePayload());
-        Assert.True(h.LastRequest!.Headers.TryGetValues("X-Gist-Token", out IEnumerable<string>? values));
-        Assert.Equal("ghp_secret", Assert.Single(values));
-    }
-
-    [Fact]
-    public async Task UploadAsync_WithToken_DoesNotLeakIntoBody()
-    {
-        StubHandler h = new StubHandler { Body = "{\"url\":\"https://gist.github.com/x/abc\"}" };
-        HttpClient client = new HttpClient(h);
-        ProxyClient proxy = new ProxyClient("https://proxy.example/upload", client, githubToken: "ghp_secret");
-        await proxy.UploadAsync(new BundlePayload());
-        Assert.DoesNotContain("ghp_secret", h.LastBody!);
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    public async Task UploadAsync_WithoutToken_OmitsXGistTokenHeader(string? token)
-    {
-        StubHandler h = new StubHandler { Body = "{\"url\":\"https://gist.github.com/x/abc\"}" };
-        HttpClient client = new HttpClient(h);
-        ProxyClient proxy = new ProxyClient("https://proxy.example/upload", client, githubToken: token);
-        await proxy.UploadAsync(new BundlePayload());
-        Assert.False(h.LastRequest!.Headers.Contains("X-Gist-Token"));
+        Assert.Throws<ArgumentNullException>(() => new BundleUploadClient(null!));
     }
 }
