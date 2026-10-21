@@ -3,8 +3,11 @@ namespace RimWorks.RimLogging.Bundle;
 /// <summary>Everything the upload path needs from settings, without depending on Verse.</summary>
 internal sealed class PublishOptions
 {
-    /// <summary>Which publisher to use: <c>docbin</c> or <c>gist</c>.</summary>
-    internal string Publisher = "docbin";
+    /// <summary>Which publisher to use: <c>rimworks</c>, <c>docbin</c> or <c>gist</c>.</summary>
+    internal string Publisher = "rimworks";
+
+    /// <summary>The rimworks.org upload endpoint, used only by the rimworks publisher.</summary>
+    internal string RimWorksUrl = string.Empty;
 
     /// <summary>The Docbin base URL.</summary>
     internal string DocbinUrl = string.Empty;

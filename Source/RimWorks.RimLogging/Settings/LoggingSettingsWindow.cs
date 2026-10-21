@@ -147,10 +147,15 @@ public static class LoggingSettingsWindow
         {
             Find.WindowStack.Add(new FloatMenu(new List<FloatMenuOption>
             {
+                new FloatMenuOption("CRL_Settings_Publisher_RimWorks".Translate(), () => s.publisher = "rimworks"),
                 new FloatMenuOption("CRL_Settings_Publisher_Docbin".Translate(), () => s.publisher = "docbin"),
                 new FloatMenuOption("CRL_Settings_Publisher_Gist".Translate(), () => s.publisher = "gist"),
             }));
         }
+
+        l.Gap();
+        l.Label("CRL_Settings_RimWorksUrl".Translate());
+        s.rimworksUrl = l.TextEntry(s.rimworksUrl);
 
         l.Gap();
         l.Label("CRL_Settings_DocbinUrl".Translate());
@@ -204,6 +209,7 @@ public static class LoggingSettingsWindow
         s.githubToken = LoggingSettingsDefaults.GitHubToken;
         s.publisher = LoggingSettingsDefaults.Publisher;
         s.docbinUrl = LoggingSettingsDefaults.DocbinUrl;
+        s.rimworksUrl = LoggingSettingsDefaults.RimWorksUrl;
         s.docbinApiKey = LoggingSettingsDefaults.DocbinApiKey;
         s.docbinVisibility = LoggingSettingsDefaults.DocbinVisibility;
         s.sinkOverrideNames.Clear();
@@ -240,9 +246,14 @@ public static class LoggingSettingsWindow
             : "CRL_Settings_Visibility_Unlisted").Translate();
 
     private static string PublisherLabel(LoggingSettings s)
-        => (Bundle.BundleUploadCoordinator.UsesGist(s.publisher)
+    {
+        if (Bundle.BundleUploadCoordinator.UsesRimWorks(s.publisher))
+            return "CRL_Settings_Publisher_RimWorks".Translate();
+
+        return (Bundle.BundleUploadCoordinator.UsesGist(s.publisher)
             ? "CRL_Settings_Publisher_Gist"
             : "CRL_Settings_Publisher_Docbin").Translate();
+    }
 
     /// <summary>
     /// Uploads the current log buffer through the configured publisher. Runs async and

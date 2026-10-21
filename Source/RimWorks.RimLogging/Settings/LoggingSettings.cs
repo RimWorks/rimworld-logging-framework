@@ -44,6 +44,9 @@ public sealed class LoggingSettings : ModSettings
     /// <summary>Base URL of the Docbin instance bundles are pasted to.</summary>
     public string docbinUrl = LoggingSettingsDefaults.DocbinUrl;
 
+    /// <summary>The rimworks.org upload endpoint.</summary>
+    public string rimworksUrl = LoggingSettingsDefaults.RimWorksUrl;
+
     /// <summary>Optional Docbin API key. When set, pastes are authenticated and the size ceiling rises from 1 MiB to 5 MiB.</summary>
     public string docbinApiKey = LoggingSettingsDefaults.DocbinApiKey;
 
@@ -64,6 +67,7 @@ public sealed class LoggingSettings : ModSettings
         Scribe_Values.Look(ref githubToken, "githubToken", LoggingSettingsDefaults.GitHubToken);
         Scribe_Values.Look(ref publisher, "publisher", LoggingSettingsDefaults.Publisher);
         Scribe_Values.Look(ref docbinUrl, "docbinUrl", LoggingSettingsDefaults.DocbinUrl);
+        Scribe_Values.Look(ref rimworksUrl, "rimworksUrl", LoggingSettingsDefaults.RimWorksUrl);
         Scribe_Values.Look(ref docbinApiKey, "docbinApiKey", LoggingSettingsDefaults.DocbinApiKey);
         Scribe_Values.Look(ref docbinVisibility, "docbinVisibility", LoggingSettingsDefaults.DocbinVisibility);
         Scribe_Values.Look(ref logViewerDetailPlacement, "logViewerDetailPlacement", Viewer.DetailPlacement.Bottom);
@@ -86,6 +90,7 @@ public sealed class LoggingSettings : ModSettings
     {
         Publisher = publisher,
         DocbinUrl = docbinUrl,
+        RimWorksUrl = rimworksUrl,
         DocbinApiKey = docbinApiKey,
         DocbinVisibility = docbinVisibility,
         ProxyUrl = proxyUrl,
