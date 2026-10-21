@@ -33,6 +33,9 @@ public sealed class BundlePayload
         /// <summary>The mod version read from its manifest, or <c>null</c> if unavailable.</summary>
         public string? Version { get; set; }
 
+        /// <summary>The id RimWorld shows players, which unlike <see cref="PackageId"/> carries no Steam suffix.</summary>
+        public string? PackageIdPlayerFacing { get; set; }
+
         /// <summary>Whether the mod was active in the load order.</summary>
         public bool Active { get; set; }
     }
@@ -63,5 +66,8 @@ public sealed class BundlePayload
 
         /// <summary>The stack trace, or the formatted exception when no explicit stack trace is present; <c>null</c> if neither.</summary>
         public string? Stack { get; set; }
+
+        /// <summary>How many times this line occurred in a row, or <c>null</c> when it occurred once.</summary>
+        public int? Repeats { get; set; }
     }
 }

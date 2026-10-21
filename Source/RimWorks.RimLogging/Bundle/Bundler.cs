@@ -43,6 +43,7 @@ public static class Bundler
                 Message = RichText.Strip(e.RenderedMessage),
                 Context = CopyContext(e.Context, e.PatchedBy),
                 Stack = e.StackTrace ?? e.Exception?.ToString(),
+                Repeats = e.Repeats > 1 ? e.Repeats : null,
             });
         }
         return p;

@@ -20,8 +20,8 @@ internal static class LogFilter
 
         Dictionary<string, NodeAccum> nodes = AccumulateNodes(perChannel);
 
-        string channelFilter = state.ChannelFilter;
-        bool hasFilter = !string.IsNullOrEmpty(channelFilter);
+        string channelFilter = state.ChannelFilter?.Trim() ?? string.Empty;
+        bool hasFilter = channelFilter.Length > 0;
         HashSet<string>? keepIds = hasFilter ? ComputeKeepIds(nodes, channelFilter.ToLowerInvariant()) : null;
 
         HashSet<string> hasChildrenSet = ComputeHasChildren(nodes);

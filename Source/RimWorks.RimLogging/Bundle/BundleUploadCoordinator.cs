@@ -31,13 +31,22 @@ public static class BundleUploadCoordinator
         return $"Bundle upload failed: {result.ErrorMessage}";
     }
 
-    /// <summary>Returns <c>true</c> when the publisher id selects the gist path; anything else means Docbin.</summary>
+    /// <summary>Returns <c>true</c> when the publisher id selects the gist path.</summary>
     internal static bool UsesGist(string? publisher)
         => string.Equals(publisher, "gist", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>Returns <c>true</c> when the publisher id selects rimworks.org, which is the default.</summary>
+    internal static bool UsesRimWorks(string? publisher)
+        => string.Equals(publisher, "rimworks", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>Uploads the bundle through whichever publisher the options select.</summary>
     internal static Task<PublishResult> Upload(BundlePayload payload, PublishOptions options, HttpClient? http = null)
     {
+        if (UsesRimWorks(options.Publisher))
+        {
+            return new ProxyClient(options.RimWorksUrl, http).UploadAsync(payload);
+        }
+
         if (UsesGist(options.Publisher))
         {
             return new ProxyClient(options.ProxyUrl, http, options.GitHubToken).UploadAsync(payload);

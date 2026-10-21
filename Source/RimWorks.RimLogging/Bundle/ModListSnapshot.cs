@@ -20,6 +20,7 @@ public static class ModListSnapshot
             {
                 Name = mcp.Name ?? string.Empty,
                 PackageId = mcp.PackageId ?? string.Empty,
+                PackageIdPlayerFacing = mcp.PackageIdPlayerFacing,
                 Version = ManifestVersionReader.TryGetVersion(mcp.RootDir),
                 Active = true,
             });

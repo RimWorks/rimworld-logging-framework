@@ -4,8 +4,10 @@
     <CRL_Settings_LogDir>Log directory</CRL_Settings_LogDir>
     <CRL_Settings_Retention>Retained log files</CRL_Settings_Retention>
     <CRL_Settings_Publisher>Share bundles to</CRL_Settings_Publisher>
+    <CRL_Settings_Publisher_RimWorks>rimworks.org</CRL_Settings_Publisher_RimWorks>
     <CRL_Settings_Publisher_Docbin>Docbin</CRL_Settings_Publisher_Docbin>
     <CRL_Settings_Publisher_Gist>GitHub gist</CRL_Settings_Publisher_Gist>
+    <CRL_Settings_RimWorksUrl>rimworks.org upload URL</CRL_Settings_RimWorksUrl>
     <CRL_Settings_DocbinUrl>Docbin URL</CRL_Settings_DocbinUrl>
     <CRL_Settings_DocbinApiKey>Docbin API key (optional)</CRL_Settings_DocbinApiKey>
     <CRL_Settings_DocbinApiKey_Note>Stored in plain text in this mod's settings. Without a key, bundles are pasted anonymously and capped at 1 MB. With one, the cap rises to 5 MB and the paste is named and kept under your account.</CRL_Settings_DocbinApiKey_Note>
