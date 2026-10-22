@@ -24,6 +24,8 @@ public class WorkshopIdReaderTests : IDisposable
         catch (IOException)
         {
         }
+
+        GC.SuppressFinalize(this);
     }
 
     private void WriteId(string contents)
