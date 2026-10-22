@@ -36,6 +36,9 @@ public sealed class BundlePayload
         /// <summary>The id RimWorld shows players, which unlike <see cref="PackageId"/> carries no Steam suffix.</summary>
         public string? PackageIdPlayerFacing { get; set; }
 
+        /// <summary>The Steam Workshop id, or <c>null</c> for an official or local mod.</summary>
+        public string? WorkshopId { get; set; }
+
         /// <summary>Whether the mod was active in the load order.</summary>
         public bool Active { get; set; }
     }

@@ -22,6 +22,7 @@ public static class ModListSnapshot
                 PackageId = mcp.PackageId ?? string.Empty,
                 PackageIdPlayerFacing = mcp.PackageIdPlayerFacing,
                 Version = ManifestVersionReader.TryGetVersion(mcp.RootDir),
+                WorkshopId = WorkshopIdReader.TryGetWorkshopId(mcp.RootDir),
                 Active = true,
             });
         }
