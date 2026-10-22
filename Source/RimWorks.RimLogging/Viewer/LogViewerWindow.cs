@@ -495,6 +495,8 @@ internal sealed class LogViewerWindow : EditWindow
 
     private void StartShare() => _ = LogBundleShare.Upload(sink, state, static () => { });
 
+    private void ShareFromLine(LogEntry entry) => _ = LogBundleShare.Upload(sink, state, static () => { }, entry);
+
     private static void DoIconButton(ref float x, float y, Texture2D texture, string tooltip, Action action)
     {
         Rect rect = new Rect(x, y, ButtonSize, ButtonSize);
@@ -732,7 +734,7 @@ internal sealed class LogViewerWindow : EditWindow
 
         if (Placement != DetailPlacement.Popout)
         {
-            LogDetailView.Draw(detailArea, state.Selected, ref detailScroll);
+            LogDetailView.Draw(detailArea, state.Selected, ref detailScroll, ShareFromLine);
         }
     }
 
@@ -839,8 +841,6 @@ internal sealed class LogViewerWindow : EditWindow
         float messageX = rect.x + 8f + TimestampWidth + ChannelColumnWidth;
         float messageWidth = rect.xMax - messageX - 4f;
 
-        // Draw the repeat count separately. Composing a new string per frame missed
-        // GenText.Truncate's cache every time and grew it without bound.
         if (entry.Repeats > 1)
         {
             Text.Font = GameFont.Tiny;
@@ -852,7 +852,6 @@ internal sealed class LogViewerWindow : EditWindow
         messageX += RepeatColumnWidth;
         messageWidth -= RepeatColumnWidth;
 
-        // the cache is keyed by string only, so it has to be dropped when the column resizes
         if (Mathf.Abs(messageWidth - lastMessageWidth) > 0.5f)
         {
             messageTruncation.Clear();
@@ -914,6 +913,8 @@ internal sealed class LogViewerWindow : EditWindow
                 () => CopyToClipboard(entry.Channel)),
             new FloatMenuOption("CRL_LogViewer_Menu_FilterChannel".Translate(),
                 () => state.ActiveChannel = channelId),
+            new FloatMenuOption("CRL_LogViewer_Menu_ShareFromLine".Translate(),
+                () => ShareFromLine(entry)),
         };
 
         if (state.ActiveChannel != LogViewerState.AllChannels)

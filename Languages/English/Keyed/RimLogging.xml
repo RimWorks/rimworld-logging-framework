@@ -30,6 +30,8 @@
     <CRL_LogViewer_Menu_CopyChannel>Copy channel</CRL_LogViewer_Menu_CopyChannel>
     <CRL_LogViewer_Menu_FilterChannel>Filter to this channel</CRL_LogViewer_Menu_FilterChannel>
     <CRL_LogViewer_Menu_ShowAllChannels>Show all channels</CRL_LogViewer_Menu_ShowAllChannels>
+    <CRL_LogViewer_Menu_ShareFromLine>Share from this line</CRL_LogViewer_Menu_ShareFromLine>
+    <CRL_LogViewer_Detail_ShareFromLine>Share from this line</CRL_LogViewer_Detail_ShareFromLine>
     <CRL_LogViewer_AutoOpenOn>Auto-open is ON</CRL_LogViewer_AutoOpenOn>
     <CRL_LogViewer_AutoOpenOff>Auto-open is OFF</CRL_LogViewer_AutoOpenOff>
     <CRL_LogViewer_Close>Close</CRL_LogViewer_Close>

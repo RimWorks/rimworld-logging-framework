@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using RimWorld;
 using UnityEngine;
@@ -5,7 +6,7 @@ using Verse;
 
 namespace RimWorks.RimLogging.Viewer;
 
-/// <summary>Draws the detail body for one entry. Shared by the inline pane and the popout window.</summary>
+/// <summary>Draws one entry's detail: the copy and share buttons, then the scrolling body.</summary>
 internal static class LogDetailView
 {
     private const float RowHeight = 20f;
@@ -13,6 +14,7 @@ internal static class LogDetailView
     private const float Pad = 6f;
     private const float ScrollbarWidth = 18f;
     private const float CopyButtonWidth = 92f;
+    private const float ShareButtonWidth = 128f;
 
     private static readonly Color LinkColor = new Color(0.44f, 0.68f, 0.90f);
     private static readonly Color LinkHover = new Color(0.62f, 0.81f, 1f);
@@ -21,7 +23,7 @@ internal static class LogDetailView
     private static int dragControl;
     private static Vector2 linkDown;
 
-    public static void Draw(Rect rect, LogEntry? entry, ref Vector2 scroll)
+    public static void Draw(Rect rect, LogEntry? entry, ref Vector2 scroll, Action<LogEntry>? onShare = null)
     {
         Widgets.DrawBoxSolid(rect, new Color(1f, 1f, 1f, 0.02f));
 
@@ -75,10 +77,10 @@ internal static class LogDetailView
         DrawBlock(ref y, contentWidth, "CRL_LogViewer_Detail_MessageAndStack", MessageAndStack(entry, trace));
 
         Widgets.EndScrollView();
-        DrawCopyButton(header, entry);
+        DrawHeaderButtons(header, entry, onShare);
     }
 
-    private static void DrawCopyButton(Rect header, LogEntry entry)
+    private static void DrawHeaderButtons(Rect header, LogEntry entry, Action<LogEntry>? onShare)
     {
         Rect copy = new Rect(header.xMax - ScrollbarWidth - CopyButtonWidth, header.y,
             CopyButtonWidth, DetailPaneLayout.ButtonHeight);
@@ -88,6 +90,16 @@ internal static class LogDetailView
         {
             GUIUtility.systemCopyBuffer = EntryText.Full(entry);
             Messages.Message("CRL_LogViewer_Copy".Translate(), MessageTypeDefOf.TaskCompletion, false);
+        }
+
+        if (onShare != null)
+        {
+            Rect share = new Rect(copy.x - ShareButtonWidth - DetailPaneLayout.Gap, header.y,
+                ShareButtonWidth, DetailPaneLayout.ButtonHeight);
+            if (Widgets.ButtonText(share, "CRL_LogViewer_Detail_ShareFromLine".Translate()))
+            {
+                onShare(entry);
+            }
         }
         Text.Font = GameFont.Small;
     }

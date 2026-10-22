@@ -13,21 +13,27 @@ namespace RimWorks.RimLogging.Viewer;
 internal static class LogBundleShare
 {
     /// <summary>Fire-and-forget from the UI; the body catches everything, so the task never faults.</summary>
-    public static async Task Upload(ViewerLogSink sink, LogViewerState state, Action invalidate)
+    public static async Task Upload(
+        ViewerLogSink sink,
+        LogViewerState state,
+        Action invalidate,
+        LogEntry? line = null)
     {
         state.Uploading = true;
         invalidate();
         try
         {
             IReadOnlyList<LogEntry> entries = sink.Snapshot();
+            int lineIndex = ShareLink.IndexOf(entries, line);
             BundlePayload payload = BundlerSessionFactory.BuildForRunningSession(entries);
             PublishResult result = await BundleUploadCoordinator
                 .Upload(payload, LoggingMod.Settings.ToPublishOptions()).ConfigureAwait(false);
             if (result.Success && !string.IsNullOrEmpty(result.Url))
             {
-                GUIUtility.systemCopyBuffer = result.Url;
+                string url = ShareLink.WithLine(result.Url!, lineIndex);
+                GUIUtility.systemCopyBuffer = url;
                 Messages.Message(
-                    (string)"CRL_LogViewer_BundleShared".Translate(result.Url!.Named("URL")),
+                    (string)"CRL_LogViewer_BundleShared".Translate(url.Named("URL")),
                     MessageTypeDefOf.PositiveEvent,
                     false);
             }
