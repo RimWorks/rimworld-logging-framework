@@ -53,8 +53,6 @@ internal static class LogScope
 
         internal Frame(int index) => this.index = index;
 
-        // popping to the index rather than removing one entry keeps out-of-order disposal from
-        // leaving a stale frame behind for every later entry on this thread
         public void Dispose()
         {
             if (disposed) return;

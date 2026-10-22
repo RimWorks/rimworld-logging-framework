@@ -21,7 +21,6 @@ public class DetailPaneLayoutTests
     [Fact]
     public void TheOldLayoutOverlapped_WhichIsTheBugThisGuards()
     {
-        // the body used to start at the pane's inner top, exactly where the button is drawn
         Assert.True(DetailPaneLayout.Overlaps(100f, 100f));
     }
 

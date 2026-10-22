@@ -29,8 +29,6 @@ public class AutoOpenDecisionTests
             wantsToOpen: true, hasSink, hasWindowStack, viewerBroken: false));
     }
 
-    // a failed open is logged, and that log re-arms wantsToOpen, so an unlatched retry runs
-    // every frame forever
     [Fact]
     public void ShouldTakeOver_OpenAlreadyThrewOnce_StopsRetryingForever()
     {

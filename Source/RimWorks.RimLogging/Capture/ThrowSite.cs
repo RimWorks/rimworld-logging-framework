@@ -17,7 +17,6 @@ public static class ThrowSite
         @"\sin\s(?<file>[^<\r\n]+?):(?:line\s)?(?<line>\d+)\s*$",
         RegexOptions.Compiled, RegexTimeout);
 
-    // our own FormatTrace shape, "at T.M (Path/File:15)"
     private static readonly Regex Formatted = new Regex(
         @"\((?<file>[^<>()\r\n]+?):(?<line>\d+)\)\s*$",
         RegexOptions.Compiled, RegexTimeout);

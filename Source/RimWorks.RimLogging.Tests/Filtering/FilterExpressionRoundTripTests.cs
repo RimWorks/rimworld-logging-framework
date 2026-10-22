@@ -20,7 +20,6 @@ public class FilterExpressionRoundTripTests
         Exception = null,
     };
 
-    // 1. Parse("level >= Warn").Match: info=false, error=true
     [Fact]
     public void LevelGteWarn_MatchInfoFalse_MatchErrorTrue()
     {
@@ -30,7 +29,6 @@ public class FilterExpressionRoundTripTests
         Assert.True(fe.Match(MakeEntry(LogLevel.Error, "default")));
     }
 
-    // 2. channel = "Cosmere.*" matches sub-channel, not Unity
     [Fact]
     public void ChannelPattern_MatchSubChannel_NotUnity()
     {
@@ -40,7 +38,6 @@ public class FilterExpressionRoundTripTests
         Assert.False(fe.Match(MakeEntry(LogLevel.Info, "Unity")));
     }
 
-    // 3. Source property returns the original input string verbatim
     [Fact]
     public void Source_ReturnsOriginalInput()
     {
@@ -50,7 +47,6 @@ public class FilterExpressionRoundTripTests
         Assert.Equal(input, fe.Source);
     }
 
-    // 4. ToString returns canonical form
     [Fact]
     public void ToString_LevelCompare_NoExtraParens()
     {
@@ -67,7 +63,6 @@ public class FilterExpressionRoundTripTests
         Assert.Equal("(level >= Warn OR channel = \"X\")", fe.ToString());
     }
 
-    // 5. Round-trip: Parse(ToString()) evaluates identically
     [Fact]
     public void RoundTrip_ParseStringifyParse_IdenticalEvaluation()
     {
@@ -88,8 +83,6 @@ public class FilterExpressionRoundTripTests
     }
 
     // evaluation matrix over levels Trace..Error and a few representative channels
-
-    // Expression: "level >= Warn"
     [Theory]
     [InlineData(LogLevel.Trace, "default", false)]
     [InlineData(LogLevel.Trace, "Cosmere.Roshar", false)]
@@ -112,7 +105,6 @@ public class FilterExpressionRoundTripTests
         Assert.Equal(expected, fe.Match(MakeEntry(lvl, ch)));
     }
 
-    // Expression: "level >= Warn OR channel = "Cosmere.*""
     [Theory]
     [InlineData(LogLevel.Trace, "default", false)]
     [InlineData(LogLevel.Trace, "Cosmere.Roshar", true)] // channel matches
@@ -158,7 +150,6 @@ public class FilterExpressionRoundTripTests
         Assert.Equal(expected, fe.Match(MakeEntry(lvl, ch)));
     }
 
-    // Expression: "NOT (channel = "Unity")"
     [Theory]
     [InlineData(LogLevel.Trace, "default", true)]
     [InlineData(LogLevel.Trace, "Cosmere.Roshar", true)]
@@ -177,9 +168,6 @@ public class FilterExpressionRoundTripTests
         Assert.Equal(expected, fe.Match(MakeEntry(lvl, ch)));
     }
 
-    // Task 6.8: TryParse error-handling
-
-    // 1. Valid input: returns true, non-null result, null error
     [Fact]
     public void TryParse_ValidInput_ReturnsTrueWithResult()
     {
@@ -202,7 +190,6 @@ public class FilterExpressionRoundTripTests
         Assert.Contains("9", err);  // End token Pos = input.Length = 9
     }
 
-    // 3. Empty input: parser throws on the End token
     [Fact]
     public void TryParse_EmptyInput_ReturnsFalseWithPositionInfo()
     {

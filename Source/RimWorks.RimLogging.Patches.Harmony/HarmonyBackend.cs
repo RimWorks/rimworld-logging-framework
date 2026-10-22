@@ -45,8 +45,6 @@ public sealed class HarmonyBackend : IPatchBackend, IPatchAttributionSource
 
     private static readonly object CacheLock = new object();
 
-    // keyed by the resolved original, not the frame: repeat frames for the same patched
-    // method are common (a hot error loop), copy-on-write like ChannelRegistry.SettingsFor
     private static volatile Dictionary<MethodBase, IReadOnlyList<string>> _ownerCache =
         new Dictionary<MethodBase, IReadOnlyList<string>>();
 

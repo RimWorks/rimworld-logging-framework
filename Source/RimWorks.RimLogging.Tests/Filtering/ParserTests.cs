@@ -6,7 +6,6 @@ namespace RimWorks.RimLogging.Tests.Filtering;
 
 public class ParserTests
 {
-    // 1. level >= Warn parses to LevelCompareNode { Op=OpGte, RightValue=Warn }
     [Fact]
     public void LevelGteWarn_ParsesTo_LevelCompareNode()
     {
@@ -17,7 +16,6 @@ public class ParserTests
         Assert.Equal(LogLevel.Warn, cmp.RightValue);
     }
 
-    // 2. level >= Warn OR channel = "Cosmere.*" parses to OrNode { Left=LevelCompare, Right=ChannelMatch }
     [Fact]
     public void LevelOrChannel_ParsesTo_OrNode()
     {
@@ -32,7 +30,6 @@ public class ParserTests
         Assert.Equal("Cosmere.*", right.Pattern);
     }
 
-    // 3a. channel = "Cosmere.Roshar.*" AND level >= Debug: AND at top level
     [Fact]
     public void ChannelAndLevel_ParsesTo_AndNode()
     {
@@ -82,7 +79,6 @@ public class ParserTests
         Assert.Equal("Foo", right.Pattern);
     }
 
-    // 5. NOT (channel = "Unity") produces NotNode wrapping ChannelMatch
     [Fact]
     public void Not_WrapsChannelMatch()
     {
@@ -94,7 +90,6 @@ public class ParserTests
         Assert.Equal("Unity", inner.Pattern);
     }
 
-    // 6. NOT NOT channel = "Foo" produces NotNode wrapping NotNode wrapping ChannelMatch
     [Fact]
     public void NotNot_RightAssociative()
     {
@@ -106,7 +101,6 @@ public class ParserTests
         Assert.Equal("Foo", ch.Pattern);
     }
 
-    // 7. Bad inputs throw FormatException with positional info
     [Theory]
     [InlineData("level >= ")]
     [InlineData("level >= \t")]

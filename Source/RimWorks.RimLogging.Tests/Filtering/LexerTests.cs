@@ -7,7 +7,6 @@ namespace RimWorks.RimLogging.Tests.Filtering;
 
 public class LexerTests
 {
-    // 1. Each operator emits the correct TokenKind
     [Theory]
     [InlineData("=", TokenKind.OpEq)]
     [InlineData("!=", TokenKind.OpNeq)]
@@ -45,7 +44,6 @@ public class LexerTests
         Assert.Equal(3, tokens[0].Pos);
     }
 
-    // 3. Keyword case-insensitivity: AND, OR, NOT, level, channel
     [Theory]
     [InlineData("AND")]
     [InlineData("and")]
@@ -133,7 +131,6 @@ public class LexerTests
         Assert.Equal(input, tokens[0].Text);
     }
 
-    // 5. Parentheses emit LParen / RParen
     [Fact]
     public void LParen_EmitsLParenKind()
     {
@@ -164,7 +161,6 @@ public class LexerTests
         Assert.Equal(TokenKind.End, tokens[0].Kind);
     }
 
-    // 7. End token always appended with Pos == input.Length
     [Theory]
     [InlineData("")]
     [InlineData("=")]
@@ -195,7 +191,6 @@ public class LexerTests
         Assert.Contains("6", ex.Message);
     }
 
-    // 9. Unknown identifier throws FormatException mentioning word and position
     [Fact]
     public void UnknownIdentifier_ThrowsFormatException()
     {
@@ -214,7 +209,6 @@ public class LexerTests
         Assert.Contains("6", ex.Message);
     }
 
-    // 10. Unexpected character throws FormatException with position info
     [Theory]
     [InlineData("@", 0)]
     [InlineData("#", 0)]
@@ -226,7 +220,6 @@ public class LexerTests
         Assert.Contains(expectedPos.ToString(), ex.Message);
     }
 
-    // 11. Compound expression produces correct token sequence
     [Fact]
     public void CompoundExpression_ProducesCorrectTokenSequence()
     {
@@ -255,7 +248,6 @@ public class LexerTests
     [Fact]
     public void PositionTracking_OpGteHasCorrectPos()
     {
-        // "level   >=   Info": '>' is at index 8
         string input = "level   >=   Info";
         List<Token> tokens = Lexer.Tokenize(input);
 

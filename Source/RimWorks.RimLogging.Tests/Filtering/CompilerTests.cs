@@ -36,7 +36,6 @@ public class CompilerTests
         Assert.Equal(expected, pred(MakeEntry(lvl, "default")));
     }
 
-    // 2. Each comparison op yields correct predicate
     [Theory]
     [InlineData(TokenKind.OpEq, LogLevel.Warn, LogLevel.Warn, true)]
     [InlineData(TokenKind.OpEq, LogLevel.Warn, LogLevel.Error, false)]
@@ -60,7 +59,6 @@ public class CompilerTests
         Assert.Equal(expected, pred(MakeEntry(entryLevel, "default")));
     }
 
-    // 3. FieldMatchNode: matches correct channel, respects Negated
     [Theory]
     [InlineData("Cosmere.Roshar", false, true)]
     [InlineData("Unity", false, false)]
@@ -74,7 +72,6 @@ public class CompilerTests
         Assert.Equal(expected, pred(MakeEntry(LogLevel.Info, channel)));
     }
 
-    // 4. AndNode: both conditions must hold
     [Theory]
     [InlineData(LogLevel.Warn, "Cosmere.X", true)]
     [InlineData(LogLevel.Warn, "Unity", false)]

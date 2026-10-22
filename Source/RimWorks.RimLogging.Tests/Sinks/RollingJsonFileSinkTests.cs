@@ -128,7 +128,6 @@ public class RollingJsonFileSinkTests : IDisposable
             File.WriteAllText(fakePath, string.Empty);
         }
 
-        // retainCount=5: oldest 2 deleted, leaving 5 old + 1 new session file
         RollingJsonFileSink sink = new RollingJsonFileSink(_tempDir, retainCount: 5);
         sink.Dispose();
 
@@ -237,8 +236,6 @@ public class RollingJsonFileSinkTests : IDisposable
     [Fact]
     public void Write_ModTickAndRepeats_LandInTheRow()
     {
-        // the row used to carry nine keys and drop four LogEntry fields on the floor, so anything
-        // reading these files back saw an entry with no mod, no tick and no repeat count
         RollingJsonFileSink sink = new RollingJsonFileSink(_tempDir);
         sink.Write(MakeEntry(LogLevel.Info, "msg", mod: "Some Mod", tick: 1234, repeats: 7));
         sink.Dispose();

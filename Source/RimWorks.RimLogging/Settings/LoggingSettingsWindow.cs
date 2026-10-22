@@ -67,7 +67,6 @@ public static class LoggingSettingsWindow
         new TabRecord("CRL_Settings_Tab_Reports".Translate(), () => Select(Tab.Reports), tab == Tab.Reports),
     };
 
-    // each page has its own length, so a carried-over offset can land past the bottom of the next one
     private static void Select(Tab next)
     {
         tab = next;

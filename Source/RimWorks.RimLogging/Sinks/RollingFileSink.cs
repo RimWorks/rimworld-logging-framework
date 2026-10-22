@@ -91,7 +91,7 @@ public abstract class RollingFileSink : ILogSink
             }
             catch
             {
-                // Best-effort close during shutdown; the OS reclaims the file handle regardless.
+                // the OS reclaims the handle, so a failed close during shutdown changes nothing
             }
         }
     }

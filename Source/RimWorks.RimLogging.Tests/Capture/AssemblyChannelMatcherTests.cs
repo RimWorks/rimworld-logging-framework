@@ -1,5 +1,3 @@
-// regression: every modded Verse.Log call resolved to "Mod.Unknown"
-
 using System.Collections.Generic;
 using System.Reflection;
 using RimWorks.RimLogging.Capture;

@@ -74,7 +74,6 @@ public class MpscQueueTests
         foreach (Thread t in producers)
             t.Join(TimeSpan.FromSeconds(5));
 
-        // Drain any remaining items after producers finish
         while (queue.TryDequeue(out Entry? item))
             dequeued.Add(item!);
 
@@ -180,7 +179,6 @@ public class MpscQueueTests
         Assert.Equal(producerCount * itemsPerProducer, dequeued.Count);
         Assert.Equal(0, queue.DroppedCount);
 
-        // Each producer's items must be in their own order
         for (int p = 0; p < producerCount; p++)
         {
             List<int> seqs = dequeued

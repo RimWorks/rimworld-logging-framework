@@ -27,7 +27,6 @@ public class ChannelSettingsTests
     [Fact]
     public void MinLevelOr_OverrideBelowGlobal_IsStillHonoured()
     {
-        // a channel may ask for more than the global, the emit path applies the global gate first
         ChannelSettings s = new ChannelSettings(LogLevel.Trace, null, null, null);
 
         Assert.Equal(LogLevel.Trace, s.MinLevelOr(LogLevel.Error));

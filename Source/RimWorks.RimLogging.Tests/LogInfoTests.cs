@@ -8,7 +8,6 @@ namespace RimWorks.RimLogging.Tests;
 
 public class LogInfoTests : LogSinkFixtureBase
 {
-    // pass args as an explicit array, or the (channel, template) overload wins
     [Fact]
     public void Info_DefaultChannelTemplateArgs_PopulatesEntry()
     {

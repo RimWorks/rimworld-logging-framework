@@ -266,7 +266,6 @@ public static class StackWalker
     /// </summary>
     private static string StripLeadingSourceDir(string rel)
     {
-        // Try Source/ stripping first.
         string? stripped = TryStripSourcePattern(rel, '/');
         if (stripped != null) return stripped;
         stripped = TryStripSourcePattern(rel, '\\');
@@ -322,7 +321,6 @@ public static class StackWalker
     /// </summary>
     private static string? TryAnchorByAssembly(string file, string asmName)
     {
-        // a "Foo.Library" folder builds assembly "Foo", so accept prefix segments too
         string? rel = TryAnchorSegment(file, asmName, '/');
         rel ??= TryAnchorSegment(file, asmName, '\\');
         return rel;

@@ -75,7 +75,6 @@ public class RollingTextFileSinkTests : IDisposable
     [Fact]
     public void Retention_OldFilesDeletedBeyondCount()
     {
-        // Pre-create N+2 fake log files with predictable timestamps
         Directory.CreateDirectory(_tempDir);
         for (int i = 0; i < 7; i++)
         {

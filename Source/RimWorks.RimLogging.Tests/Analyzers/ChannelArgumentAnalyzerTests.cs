@@ -23,7 +23,6 @@ public class ChannelArgumentAnalyzerTests
             Path.GetDirectoryName(typeof(object).Assembly.Location)!, "System.Runtime.dll")),
     };
 
-    // mirrors the real overload pairs: a params default-channel one next to a To sibling
     private const string RimLoggingStub = @"
 namespace RimWorks.RimLogging
 {

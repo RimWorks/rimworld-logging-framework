@@ -21,14 +21,12 @@ public class WildcardMatcherTests
         Assert.True(WildcardMatcher.Match("Cosmere.*", input));
     }
 
-    // 3. "Cosmere.*" does NOT match "CosmereExtra"
     [Fact]
     public void PrefixPattern_DoesNotMatchAdjacentPrefix()
     {
         Assert.False(WildcardMatcher.Match("Cosmere.*", "CosmereExtra"));
     }
 
-    // 4. Literal pattern matches exactly, not as prefix or suffix
     [Theory]
     [InlineData("Foo", true)]
     [InlineData("FooBar", false)]

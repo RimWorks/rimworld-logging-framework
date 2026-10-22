@@ -11,8 +11,6 @@ public static class ChannelRegistry
 
     private static Dictionary<string, ChannelDef>? _byName;
 
-    // resolving a channel walks its dot-segments and allocates a substring per level, which is
-    // fine once and far too expensive per emit. copy-on-write so the read side never locks.
     private static volatile Dictionary<string, ChannelSettings> _settings =
         new Dictionary<string, ChannelSettings>(StringComparer.Ordinal);
 

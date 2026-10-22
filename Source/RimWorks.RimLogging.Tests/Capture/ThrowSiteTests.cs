@@ -62,7 +62,6 @@ public class ThrowSiteTests
     [Fact]
     public void OurOwnFormattedShapeIsRead()
     {
-        // StackWalker.FormatTrace writes "at T.M (Path/File:15)"
         SourceLocation? site = ThrowSite.From("at Concord.Coex.Hook.Install (Concord.Detour/Hook.cs:120)");
 
         Assert.Equal("Concord.Detour/Hook.cs", site!.Value.File);

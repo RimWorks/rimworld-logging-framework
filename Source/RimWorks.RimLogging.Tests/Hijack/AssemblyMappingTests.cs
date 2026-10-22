@@ -1,5 +1,3 @@
-// covers the mappings through ResolverHook. the Verse-coupled walker needs the game.
-
 using System;
 using System.Reflection;
 using RimWorks.RimLogging.Capture;
