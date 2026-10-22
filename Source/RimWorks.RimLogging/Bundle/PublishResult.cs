@@ -14,4 +14,10 @@ public sealed class PublishResult
 
     /// <summary>A description of the failure on error; otherwise <c>null</c>.</summary>
     public string? ErrorMessage { get; set; }
+
+    /// <summary>The stored bundle's id on success; otherwise <c>null</c>.</summary>
+    public string? Id { get; set; }
+
+    /// <summary>The secret that lets this session append to the bundle; otherwise <c>null</c>.</summary>
+    public string? Token { get; set; }
 }

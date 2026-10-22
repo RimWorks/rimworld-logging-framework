@@ -30,6 +30,58 @@ public static class BundleUploadCoordinator
         return $"Bundle upload failed: {result.ErrorMessage}";
     }
 
-    internal static Task<PublishResult> Upload(BundlePayload payload, PublishOptions options, HttpClient? http = null)
-        => new BundleUploadClient(options.RimWorksUrl, http).UploadAsync(payload);
+    internal static async Task<PublishResult> Upload(BundlePayload payload, PublishOptions options, HttpClient? http = null)
+    {
+        BundleUploadClient client = new BundleUploadClient(options.RimWorksUrl, http);
+        List<List<BundlePayload.EntryDto>> chunks = ChunkPlanner.Plan(payload.Entries);
+        if (chunks.Count <= 1) return await client.UploadAsync(payload).ConfigureAwait(false);
+
+        BundlePayload head = new BundlePayload
+        {
+            RimWorldVersion = payload.RimWorldVersion,
+            FrameworkVersion = payload.FrameworkVersion,
+            Mods = payload.Mods,
+            Entries = chunks[0],
+        };
+
+        PublishResult created = await client.UploadAsync(head).ConfigureAwait(false);
+        if (!created.Success) return created;
+
+        PublishResult rest = await AppendAll(client, created, chunks, 1).ConfigureAwait(false);
+        return rest.Success ? created : rest;
+    }
+
+    internal static async Task<PublishResult> Append(
+        string id,
+        string token,
+        IReadOnlyList<BundlePayload.EntryDto> entries,
+        PublishOptions options,
+        HttpClient? http = null)
+    {
+        BundleUploadClient client = new BundleUploadClient(options.RimWorksUrl, http);
+        List<List<BundlePayload.EntryDto>> chunks = ChunkPlanner.Plan(entries);
+        PublishResult seed = new PublishResult { Success = true, Id = id, Token = token };
+        return await AppendAll(client, seed, chunks, 0).ConfigureAwait(false);
+    }
+
+    private static async Task<PublishResult> AppendAll(
+        BundleUploadClient client,
+        PublishResult created,
+        List<List<BundlePayload.EntryDto>> chunks,
+        int from)
+    {
+        if (created.Id == null || created.Token == null)
+        {
+            return new PublishResult { Success = false, ErrorMessage = "Response JSON missing 'id' or 'token'" };
+        }
+
+        for (int i = from; i < chunks.Count; i++)
+        {
+            PublishResult appended =
+                await client.AppendAsync(created.Id, created.Token, chunks[i]).ConfigureAwait(false);
+            if (!appended.Success) return appended;
+        }
+
+        return created;
+    }
 }
