@@ -38,7 +38,7 @@ As a Steam Workshop dependency (recommended for shipped mods): end users install
 </loadAfter>
 ```
 
-Or bundle it from NuGet. The build copies the dll, and its `System.Text.Json` runtime dependencies, into your mod's `Assemblies/`, so you don't need the Workshop dependency:
+Or bundle it from NuGet. The build copies the dll and its `System.Text.Json` dependencies into your mod's `Assemblies/`. You do not need the Workshop dependency.
 
 ```
 dotnet add package RimWorks.RimLogging
@@ -89,9 +89,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for build commands, commit conventions, a
 
 ## More modding tools from RimWorks
 
+These run alongside RimLogging.
+
 | Tool | What it does |
 | --- | --- |
-| [Pickle](https://github.com/RimWorks/Rimworld-Pickle) | Run Gherkin tests against a live RimWorld session, in the game |
-| [Quickstarts](https://github.com/RimWorks/Rimworld-Quickstarts) | Boot straight into a configured colony from the dev quicktest menu |
+| [Pickle](https://github.com/RimWorks/Rimworld-Pickle) | Run Gherkin tests in a live session |
+| [Quickstarts](https://github.com/RimWorks/Rimworld-Quickstarts) | Boot into a colony from the quicktest menu |
 
 MIT licensed.
