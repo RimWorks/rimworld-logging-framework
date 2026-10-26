@@ -24,6 +24,7 @@ jobs:
       branches: |
         1.5=version-1.5
         1.6=public
+        1.7=unstable
     secrets: inherit
 
   verify:
@@ -65,6 +66,12 @@ jobs:
         with:
           image: ${{ fromJSON(needs.images.outputs.image-refs)['1.6'] }}
           dest: ${{ runner.temp }}/game-1.6
+
+      - name: Stage RimWorld 1.7 refs
+        uses: RimWorks/mod-ci/.github/actions/stage-game-refs@v5
+        with:
+          image: ${{ fromJSON(needs.images.outputs.image-refs)['1.7'] }}
+          dest: ${{ runner.temp }}/game-1.7
 
       # test, format and restore take the default GameVersion, so they need its refs by name
       - name: Point msbuild at the default version

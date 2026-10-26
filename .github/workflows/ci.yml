@@ -65,6 +65,15 @@ jobs:
         Microsoft.NETFramework.ReferenceAssemblies
       game-image: ${{ fromJSON(needs.images.outputs.image-refs)['1.6'] }}
 
+  workflow-versions:
+    name: workflow versions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - run: node scripts/verify-workflow-versions.mjs
+
   prose:
     uses: RimWorks/mod-ci/.github/workflows/prose.yml@v5
 
@@ -75,7 +84,7 @@ jobs:
   gate:
     name: ci gate
     if: always()
-    needs: [images, build, package-deps, prose, links]
+    needs: [images, build, package-deps, workflow-versions, prose, links]
     runs-on: ubuntu-latest
     steps:
       - uses: RimWorks/mod-ci/.github/actions/gate@v5
