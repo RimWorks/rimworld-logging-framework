@@ -116,9 +116,11 @@ jobs:
           if [ "$tag" = "${{ steps.before.outputs.tag }}" ] || [ -z "$tag" ]; then
             echo "published=false" >> "$GITHUB_OUTPUT"
           else
-            echo "published=true" >> "$GITHUB_OUTPUT"
-            echo "tag=$tag" >> "$GITHUB_OUTPUT"
-            echo "version=${tag#v}" >> "$GITHUB_OUTPUT"
+            {
+              echo "published=true"
+              echo "tag=$tag"
+              echo "version=${tag#v}"
+            } >> "$GITHUB_OUTPUT"
           fi
 
       - name: Upload the packed nupkgs
