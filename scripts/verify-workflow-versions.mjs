@@ -7,6 +7,10 @@ const loadFolders = await readFile('loadFolders.xml', 'utf8');
 const declared = [...new Set([...loadFolders.matchAll(/<v(\d+\.\d+)>/g)].map((m) => m[1]))];
 if (declared.length === 0) throw new Error('loadFolders.xml declares no versions');
 
+const releaseConfig = await readFile('release.config.mjs', 'utf8');
+const workshopIds = [...releaseConfig.matchAll(/workshopId:\s*'(\d+)'/g)].map((m) => m[1]);
+if (workshopIds.length === 0) throw new Error('release.config.mjs declares no workshopId');
+
 const problems = [];
 
 for (const name of (await readdir(WORKFLOWS)).filter((f) => /\.ya?ml$/.test(f))) {
@@ -22,6 +26,13 @@ for (const name of (await readdir(WORKFLOWS)).filter((f) => /\.ya?ml$/.test(f)))
       problems.push(`${name}: no stage-game-refs step for ${version}`);
     }
   }
+
+  for (const [, key, raw] of text.matchAll(/^\s+([\w-]*workshop-id):\s*(.+)$/gm)) {
+    const id = raw.trim().replace(/^['"]|['"]$/g, '');
+    if (!workshopIds.includes(id)) {
+      problems.push(`${name}: ${key} is ${raw.trim()}, not one of ${workshopIds.join(', ')}`);
+    }
+  }
 }
 
 if (problems.length > 0) {
@@ -29,4 +40,7 @@ if (problems.length > 0) {
   process.exit(1);
 }
 
-process.stdout.write(`every multi-version workflow covers ${declared.join(', ')}\n`);
+process.stdout.write(
+  `every multi-version workflow covers ${declared.join(', ')}, ` +
+    `and every workshop id is one of ${workshopIds.join(', ')}\n`,
+);
