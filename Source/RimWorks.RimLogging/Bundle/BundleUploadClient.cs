@@ -6,21 +6,16 @@ public sealed class BundleUploadClient
     private const string TokenHeader = "x-bundle-token";
     private const char Separator = '/';
     private const string ChunkSegment = "chunk";
+    private const int TimeoutMs = 30_000;
 
-    private readonly System.Net.Http.HttpClient _http;
     private readonly string _url;
 
-    /// <summary>
-    /// Creates a client targeting the given upload URL. If no <see cref="System.Net.Http.HttpClient"/> is
-    /// supplied, a default one with a 30-second timeout is used.
-    /// </summary>
+    /// <summary>Creates a client targeting the given upload URL.</summary>
     /// <param name="url">The endpoint URL to POST bundles to.</param>
-    /// <param name="http">An optional HTTP client to reuse; a default client is created when <c>null</c>.</param>
     /// <exception cref="System.ArgumentNullException">Thrown when <paramref name="url"/> is <c>null</c>.</exception>
-    public BundleUploadClient(string url, System.Net.Http.HttpClient? http = null)
+    public BundleUploadClient(string url)
     {
         _url = url ?? throw new System.ArgumentNullException(nameof(url));
-        _http = http ?? new System.Net.Http.HttpClient { Timeout = System.TimeSpan.FromSeconds(30) };
     }
 
     /// <summary>POSTs the payload and returns the bundle URL, its id, and the token later appends need.</summary>
@@ -57,7 +52,7 @@ public sealed class BundleUploadClient
         };
     }
 
-    private async System.Threading.Tasks.Task<PublishResult> SendAsync(
+    private static async System.Threading.Tasks.Task<PublishResult> SendAsync(
         string url,
         string json,
         string? token,
@@ -65,30 +60,57 @@ public sealed class BundleUploadClient
     {
         try
         {
-            using System.Net.Http.StringContent content = new System.Net.Http.StringContent(
-                json, System.Text.Encoding.UTF8, "application/json");
-            using System.Net.Http.HttpRequestMessage request =
-                new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Post, url) { Content = content };
-            if (token != null) request.Headers.Add(TokenHeader, token);
+#pragma warning disable SYSLIB0014
+            System.Net.HttpWebRequest request = System.Net.WebRequest.CreateHttp(url);
+#pragma warning restore SYSLIB0014
+            request.Method = "POST";
+            request.ContentType = "application/json; charset=utf-8";
+            request.Timeout = TimeoutMs;
+            request.ReadWriteTimeout = TimeoutMs;
+            if (token != null) request.Headers[TokenHeader] = token;
 
-            using System.Net.Http.HttpResponseMessage resp = await _http.SendAsync(request).ConfigureAwait(false);
-            string body = await resp.Content.ReadAsStringAsync().ConfigureAwait(false);
-            if (!resp.IsSuccessStatusCode)
+            byte[] bytes = System.Text.Encoding.UTF8.GetBytes(json);
+            using (System.IO.Stream stream = await request.GetRequestStreamAsync().ConfigureAwait(false))
             {
-                return new PublishResult { Success = false, ErrorMessage = $"{(int)resp.StatusCode} {resp.ReasonPhrase}: {body}" };
+                await stream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
             }
 
+            System.Net.HttpWebResponse resp;
             try
             {
-                return read(body);
+                resp = (System.Net.HttpWebResponse)await request.GetResponseAsync().ConfigureAwait(false);
             }
-            catch (System.Text.Json.JsonException jex)
+            catch (System.Net.WebException wex) when (wex.Response is System.Net.HttpWebResponse refused)
             {
-                return new PublishResult { Success = false, ErrorMessage = $"Malformed response JSON: {jex.Message}" };
+                resp = refused;
             }
-            catch (System.Collections.Generic.KeyNotFoundException)
+
+            using (resp)
             {
-                return new PublishResult { Success = false, ErrorMessage = "Response JSON missing 'url' field" };
+                string body;
+                using (System.IO.StreamReader reader = new System.IO.StreamReader(resp.GetResponseStream(), System.Text.Encoding.UTF8))
+                {
+                    body = await reader.ReadToEndAsync().ConfigureAwait(false);
+                }
+
+                int status = (int)resp.StatusCode;
+                if (status < 200 || status > 299)
+                {
+                    return new PublishResult { Success = false, ErrorMessage = $"{status} {resp.StatusDescription}: {body}" };
+                }
+
+                try
+                {
+                    return read(body);
+                }
+                catch (System.Text.Json.JsonException jex)
+                {
+                    return new PublishResult { Success = false, ErrorMessage = $"Malformed response JSON: {jex.Message}" };
+                }
+                catch (System.Collections.Generic.KeyNotFoundException)
+                {
+                    return new PublishResult { Success = false, ErrorMessage = "Response JSON missing 'url' field" };
+                }
             }
         }
         catch (System.Exception ex)

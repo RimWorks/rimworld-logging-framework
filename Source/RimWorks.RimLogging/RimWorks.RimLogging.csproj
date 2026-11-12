@@ -76,4 +76,18 @@
               DestinationFiles="@(ReferenceCopyLocalPaths->'$(OutDir)%(DestinationSubDirectory)%(Filename)%(Extension)')"
               SkipUnchangedFiles="true" />
     </Target>
+
+    <ItemGroup>
+        <LoadTier Include="System.Buffers;System.Numerics.Vectors;System.Runtime.CompilerServices.Unsafe;System.ValueTuple" Tier="00" />
+        <LoadTier Include="System.Memory;System.Threading.Tasks.Extensions" Tier="01" />
+        <LoadTier Include="Microsoft.Bcl.AsyncInterfaces;System.Text.Encodings.Web;System.IO.Pipelines" Tier="02" />
+        <LoadTier Include="System.Text.Json" Tier="03" />
+    </ItemGroup>
+
+    <Target Name="OrderRimWorld15Deps" AfterTargets="Build" DependsOnTargets="CopyRimWorldRuntimeDeps;ShipValueTuple"
+            Condition="'$(GameVersion)' == '1.5' And '$(TargetFramework)' == '$(GameTfm)'">
+        <Copy SourceFiles="$(OutDir)%(LoadTier.Identity).dll" DestinationFiles="$(OutDir)%(LoadTier.Tier)%(LoadTier.Identity).dll"
+              Condition="Exists('$(OutDir)%(LoadTier.Identity).dll')" />
+        <Delete Files="$(OutDir)%(LoadTier.Identity).dll" />
+    </Target>
 </Project>

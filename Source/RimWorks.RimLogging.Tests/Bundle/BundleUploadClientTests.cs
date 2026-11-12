@@ -1,8 +1,5 @@
 using System;
 using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using RimWorks.RimLogging.Bundle;
 using Xunit;
@@ -11,29 +8,11 @@ namespace RimWorks.RimLogging.Tests.Bundle;
 
 public class BundleUploadClientTests
 {
-    private sealed class StubHandler : HttpMessageHandler
-    {
-        public HttpStatusCode Status = HttpStatusCode.OK;
-        public string Body = "{}";
-        public Exception? ThrowOnSend;
-
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            if (ThrowOnSend != null) throw ThrowOnSend;
-            HttpResponseMessage resp = new HttpResponseMessage(Status)
-            {
-                Content = new StringContent(Body, Encoding.UTF8, "application/json"),
-            };
-            return Task.FromResult(resp);
-        }
-    }
-
     [Fact]
     public async Task UploadAsync_Success_ReturnsUrl()
     {
-        StubHandler h = new StubHandler { Body = "{\"url\":\"https://rimworks.org/b/abc\"}" };
-        HttpClient client = new HttpClient(h);
-        BundleUploadClient proxy = new BundleUploadClient("https://rimworks.example/api/bundle", client);
+        using LocalBundleServer server = new LocalBundleServer { Body = _ => "{\"url\":\"https://rimworks.org/b/abc\"}" };
+        BundleUploadClient proxy = new BundleUploadClient(server.Endpoint);
         PublishResult r = await proxy.UploadAsync(new BundlePayload());
         Assert.True(r.Success);
         Assert.Equal("https://rimworks.org/b/abc", r.Url);
@@ -43,9 +22,9 @@ public class BundleUploadClientTests
     [Fact]
     public async Task UploadAsync_500_ReturnsFailureWithBody()
     {
-        StubHandler h = new StubHandler { Status = HttpStatusCode.InternalServerError, Body = "server down" };
-        HttpClient client = new HttpClient(h);
-        BundleUploadClient proxy = new BundleUploadClient("https://x/up", client);
+        using LocalBundleServer server = new LocalBundleServer { Body = _ => "server down" };
+        server.Statuses.Enqueue(HttpStatusCode.InternalServerError);
+        BundleUploadClient proxy = new BundleUploadClient(server.Endpoint);
         PublishResult r = await proxy.UploadAsync(new BundlePayload());
         Assert.False(r.Success);
         Assert.Contains("500", r.ErrorMessage!);
@@ -55,9 +34,8 @@ public class BundleUploadClientTests
     [Fact]
     public async Task UploadAsync_MalformedJson_ReportsAsError()
     {
-        StubHandler h = new StubHandler { Body = "not json" };
-        HttpClient client = new HttpClient(h);
-        BundleUploadClient proxy = new BundleUploadClient("https://x/up", client);
+        using LocalBundleServer server = new LocalBundleServer { Body = _ => "not json" };
+        BundleUploadClient proxy = new BundleUploadClient(server.Endpoint);
         PublishResult r = await proxy.UploadAsync(new BundlePayload());
         Assert.False(r.Success);
         Assert.Contains("Malformed", r.ErrorMessage!);
@@ -66,23 +44,20 @@ public class BundleUploadClientTests
     [Fact]
     public async Task UploadAsync_MissingUrlField_ReportsAsError()
     {
-        StubHandler h = new StubHandler { Body = "{\"other\":\"field\"}" };
-        HttpClient client = new HttpClient(h);
-        BundleUploadClient proxy = new BundleUploadClient("https://x/up", client);
+        using LocalBundleServer server = new LocalBundleServer { Body = _ => "{\"other\":\"field\"}" };
+        BundleUploadClient proxy = new BundleUploadClient(server.Endpoint);
         PublishResult r = await proxy.UploadAsync(new BundlePayload());
         Assert.False(r.Success);
         Assert.Contains("missing", r.ErrorMessage!, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
-    public async Task UploadAsync_NetworkException_Caught()
+    public async Task UploadAsync_NothingListening_ReturnsAFailedResult()
     {
-        StubHandler h = new StubHandler { ThrowOnSend = new HttpRequestException("DNS failure") };
-        HttpClient client = new HttpClient(h);
-        BundleUploadClient proxy = new BundleUploadClient("https://x/up", client);
+        BundleUploadClient proxy = new BundleUploadClient(LocalBundleServer.ClosedEndpoint());
         PublishResult r = await proxy.UploadAsync(new BundlePayload());
         Assert.False(r.Success);
-        Assert.Contains("DNS failure", r.ErrorMessage!);
+        Assert.False(string.IsNullOrEmpty(r.ErrorMessage));
     }
 
     [Fact]

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading.Tasks;
 using RimWorks.RimLogging.Sinks;
 
@@ -30,9 +29,9 @@ public static class BundleUploadCoordinator
         return $"Bundle upload failed: {result.ErrorMessage}";
     }
 
-    internal static async Task<PublishResult> Upload(BundlePayload payload, PublishOptions options, HttpClient? http = null)
+    internal static async Task<PublishResult> Upload(BundlePayload payload, PublishOptions options)
     {
-        BundleUploadClient client = new BundleUploadClient(options.RimWorksUrl, http);
+        BundleUploadClient client = new BundleUploadClient(options.RimWorksUrl);
         List<List<BundlePayload.EntryDto>> chunks = ChunkPlanner.Plan(payload.Entries);
         if (chunks.Count <= 1) return await client.UploadAsync(payload).ConfigureAwait(false);
 
@@ -55,10 +54,9 @@ public static class BundleUploadCoordinator
         string id,
         string token,
         IReadOnlyList<BundlePayload.EntryDto> entries,
-        PublishOptions options,
-        HttpClient? http = null)
+        PublishOptions options)
     {
-        BundleUploadClient client = new BundleUploadClient(options.RimWorksUrl, http);
+        BundleUploadClient client = new BundleUploadClient(options.RimWorksUrl);
         List<List<BundlePayload.EntryDto>> chunks = ChunkPlanner.Plan(entries);
         PublishResult seed = new PublishResult { Success = true, Id = id, Token = token };
         return await AppendAll(client, seed, chunks, 0).ConfigureAwait(false);
