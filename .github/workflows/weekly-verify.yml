@@ -30,7 +30,7 @@ jobs:
   verify:
     name: verify against current RimWorld, then republish
     needs: images
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       packages: read

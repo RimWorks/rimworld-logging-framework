@@ -67,7 +67,7 @@ jobs:
 
   workflow-versions:
     name: workflow versions
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
         with:
@@ -85,7 +85,7 @@ jobs:
     name: ci gate
     if: always()
     needs: [images, build, package-deps, workflow-versions, prose, links]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: RimWorks/mod-ci/.github/actions/gate@v5
         with:
