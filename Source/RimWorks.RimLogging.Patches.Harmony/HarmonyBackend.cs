@@ -26,7 +26,7 @@ public sealed class HarmonyBackend : IPatchBackend, IPatchAttributionSource
     public void Apply()
     {
         HarmonyLib.Harmony harmony = new HarmonyLib.Harmony(HarmonyId);
-        HarmonyMethod Prefix(string name) => new HarmonyMethod(typeof(HarmonyBackend), name);
+        static HarmonyMethod Prefix(string name) => new HarmonyMethod(typeof(HarmonyBackend), name);
 
         harmony.Patch(AccessTools.Method(typeof(Verse.Log), nameof(Verse.Log.Error), [typeof(string)]),
             prefix: Prefix(nameof(ErrorPrefix)));

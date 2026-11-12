@@ -84,7 +84,7 @@ internal sealed class LocalBundleServer : IDisposable
             context.Response.StatusCode = (int)status;
             context.Response.ContentType = "application/json";
             context.Response.ContentLength64 = bytes.Length;
-            await context.Response.OutputStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+            await context.Response.OutputStream.WriteAsync(bytes.AsMemory()).ConfigureAwait(false);
             context.Response.Close();
         }
     }

@@ -72,7 +72,11 @@ public sealed class BundleUploadClient
             byte[] bytes = System.Text.Encoding.UTF8.GetBytes(json);
             using (System.IO.Stream stream = await request.GetRequestStreamAsync().ConfigureAwait(false))
             {
+#if NET
+                await stream.WriteAsync(new System.ReadOnlyMemory<byte>(bytes)).ConfigureAwait(false);
+#else
                 await stream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+#endif
             }
 
             System.Net.HttpWebResponse resp;
