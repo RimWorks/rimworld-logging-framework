@@ -700,19 +700,7 @@ public static class Log
         IReadOnlyList<string>? patchedBy = Array.Empty<string>();
         string? captured = stackTrace ?? (walk != null ? Capture.StackWalker.FormatTrace(walk, out patchedBy) : null);
 
-        // a supplied trace is Unity's string, which carries no file info
-        SourceLocation src = SourceLocation.Empty;
-        if (walk != null) src = Capture.StackWalker.FirstCallerFrame(walk);
-        else if (callerOnStack && wantStack) src = Capture.StackWalker.WalkOnce();
-
-        // the walk finds whoever caught the exception, so fall back to where it was thrown. the
-        // message is checked too: a Verse-captured error carries its trace in the text
-        if (!src.IsCallerProvided
-            && (Capture.ThrowSite.From(captured) ?? Capture.ThrowSite.From(text)) is { } thrown)
-        {
-            src = new SourceLocation(
-                Capture.StackWalker.NormalizePath(thrown.File), thrown.Line, thrown.Method);
-        }
+        SourceLocation src = CapturedSource(walk, callerOnStack && wantStack, captured, text);
 
         LogEntry e = new LogEntry
         {
@@ -729,5 +717,21 @@ public static class Log
             PatchedBy = patchedBy,
         };
         Logging.Emit(e);
+    }
+
+    private static SourceLocation CapturedSource(System.Diagnostics.StackTrace? walk, bool walkLiveStack, string? captured, string text)
+    {
+        SourceLocation src = SourceLocation.Empty;
+        if (walk != null) src = Capture.StackWalker.FirstCallerFrame(walk);
+        else if (walkLiveStack) src = Capture.StackWalker.WalkOnce();
+        if (src.IsCallerProvided) return src;
+
+        bool walkFoundCallerWithoutFile = Capture.StackWalker.FirstCallerEndsWithoutFile
+            && src.Method != null && src.File.Length == 0;
+        SourceLocation? thrown = (walkFoundCallerWithoutFile ? null : Capture.ThrowSite.From(captured))
+            ?? Capture.ThrowSite.From(text);
+        return thrown is { } site
+            ? new SourceLocation(Capture.StackWalker.NormalizePath(site.File), site.Line, site.Method)
+            : src;
     }
 }
