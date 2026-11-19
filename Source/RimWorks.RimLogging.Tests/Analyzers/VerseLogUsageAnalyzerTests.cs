@@ -1,3 +1,5 @@
+extern alias Analyzers;
+
 using System;
 using System.Collections.Immutable;
 using System.Globalization;
@@ -8,6 +10,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using RimWorks.RimLogging.Analyzers;
 using Xunit;
+using AnalyzerMethods = Analyzers::RimWorks.RimLogging.Analyzers.VerseLogMethods;
 
 namespace RimWorks.RimLogging.Tests.Analyzers;
 
@@ -43,6 +46,8 @@ namespace Acme
     {
         public static void Error(string text) { }
         public static void ErrorOnce(string text, int key) { }
+        public static void Notice(string text) { }
+        public static void Trace(string text) { }
     }
 }";
 
@@ -195,6 +200,48 @@ class Caller { void Run() { Log.ErrorOnceTo(""MPF.Worldgen"", ""some-key"", ""bo
             sharedKey.Descriptor.Title.ToString(CultureInfo.InvariantCulture),
             StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void AddedMethodWithAFix_GetsItsRuleWithTheSignatureInTheMessage()
+    {
+        Diagnostic found = Assert.Single(Diagnose(
+            @"Acme.Log.Notice(""x"");",
+            hostStub: AcmeStub,
+            analyzer: AcmeAnalyzerWithAddedMethods()));
+
+        Assert.Equal(VerseLogUsageAnalyzer.LostChannelRuleId, found.Id);
+        Assert.Equal(
+            "Acme.Log.Notice arrives as a bare string with a guessed channel; call Log.InfoTo(channel, message) instead",
+            found.GetMessage(CultureInfo.InvariantCulture));
+    }
+
+    [Fact]
+    public void AddedMethodWithoutAFix_StillGetsItsRule()
+    {
+        Diagnostic found = Assert.Single(Diagnose(
+            @"Acme.Log.Trace(""x"");",
+            hostStub: AcmeStub,
+            analyzer: AcmeAnalyzerWithAddedMethods()));
+
+        Assert.Equal(VerseLogUsageAnalyzer.SharedKeyRuleId, found.Id);
+        Assert.Contains("Log.TraceOnceTo(channel, key, message)", found.GetMessage(CultureInfo.InvariantCulture), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void WithNoAddedMethod_AMethodOutsideTheFive_ReportsNothing()
+    {
+        Assert.Empty(Diagnose(
+            @"Acme.Log.Notice(""x""); Acme.Log.Trace(""x"");",
+            hostStub: AcmeStub,
+            analyzer: new VerseLogUsageAnalyzer("Acme.Log")));
+    }
+
+    private static VerseLogUsageAnalyzer AcmeAnalyzerWithAddedMethods() => new("Acme.Log", name => name switch
+    {
+        "Notice" => new AnalyzerMethods.Replacement(false, "Log.InfoTo(channel, message)", "Info", false),
+        "Trace" => new AnalyzerMethods.Replacement(true, "Log.TraceOnceTo(channel, key, message)", null, true),
+        _ => AnalyzerMethods.Classify(name),
+    });
 
     private static ImmutableArray<Diagnostic> Diagnose(
         string statement,

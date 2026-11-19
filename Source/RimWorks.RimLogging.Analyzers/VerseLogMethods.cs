@@ -1,12 +1,15 @@
 namespace RimWorks.RimLogging.Analyzers;
 
-/// <summary>What RimLogging call replaces a given <c>Verse.Log</c> method, and why.</summary>
-internal static class VerseLogMethods
+/// <summary>
+/// What RimLogging call replaces a given <c>Verse.Log</c> method, and why. A build that links this
+/// file can add method names by implementing <see cref="ClassifyAddedMethod"/> in a file of its own.
+/// </summary>
+internal static partial class VerseLogMethods
 {
     /// <summary>A <c>Verse.Log</c> write and the RimLogging call that should replace it.</summary>
     internal readonly struct Replacement
     {
-        internal Replacement(bool sharesVanillaKey, string signature, string fixMethodName, bool swapsArguments)
+        internal Replacement(bool sharesVanillaKey, string signature, string? fixMethodName, bool swapsArguments)
         {
             SharesVanillaKey = sharesVanillaKey;
             Signature = signature;
@@ -20,8 +23,11 @@ internal static class VerseLogMethods
         /// <summary>Signature to show the caller, argument order included.</summary>
         internal string Signature { get; }
 
-        /// <summary>Method name on <c>RimWorks.RimLogging.Log</c> the code fix rewrites the call to.</summary>
-        internal string FixMethodName { get; }
+        /// <summary>
+        /// Method name on <c>RimWorks.RimLogging.Log</c> the code fix rewrites the call to, or null
+        /// when the call gets the diagnostic and no fix.
+        /// </summary>
+        internal string? FixMethodName { get; }
 
         /// <summary>True when the fix moves the key argument in front of the message.</summary>
         internal bool SwapsArguments { get; }
@@ -46,7 +52,19 @@ internal static class VerseLogMethods
             case "WarningOnce":
                 return new Replacement(true, "Log.WarnOnceTo(channel, key, message)", "WarnOnce", true);
             default:
-                return null;
+                Replacement? added = null;
+#pragma warning disable S3251
+                ClassifyAddedMethod(method, ref added);
+#pragma warning restore S3251
+                return added;
         }
     }
+
+    /// <summary>
+    /// Sets <paramref name="replacement"/> for a method name the host adds to the five above. A
+    /// build that leaves it unimplemented flags only those five.
+    /// </summary>
+#pragma warning disable S3251
+    static partial void ClassifyAddedMethod(string method, ref Replacement? replacement);
+#pragma warning restore S3251
 }
