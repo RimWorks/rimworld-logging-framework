@@ -76,11 +76,16 @@ The fix always targets the default-channel overload, since that is the only rewr
 preserves behavior without guessing. Pick a channel by hand afterward with `Log.InfoTo`,
 `Log.WarnTo`, `Log.ErrorTo`, or the `*OnceTo` equivalents.
 
-Three call shapes get no fix, and stay squiggled for a human to handle:
+The fix also applies to a method with more parameters after the text and the key. Each extra
+parameter must be optional, and the call must leave it out.
+
+These call shapes get no fix, and stay squiggled for a human to handle:
 
 - a named argument, like `Log.ErrorOnce(text: msg, key: 1)`
 - the `Log.Message(object)` overload, which has no string to move
-- anything the fix can't tell apart from those two at the call site
+- a call that passes a value for one of those trailing optional parameters
+- a `Once` method whose key is not an `int`
+- anything the fix can't tell apart from those at the call site
 
 Fix-all only ever touches call sites that already carry the diagnostic. It never removes an
 unused `using Verse;`, since the file almost certainly uses Verse for other things too.

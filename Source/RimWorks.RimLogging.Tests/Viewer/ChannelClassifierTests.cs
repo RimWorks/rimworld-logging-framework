@@ -77,4 +77,68 @@ public class ChannelClassifierTests
 
         Assert.Equal(1, loads);
     }
+
+    private static void UseRootedMods(params (string PackageId, string[] Path, string[] Roots)[] mods)
+    {
+        ChannelClassifier.Reset();
+        ChannelClassifier.UseModTable(() =>
+        {
+            foreach ((string packageId, string[] path, string[] roots) in mods) ChannelClassifier.AddMod(packageId, path, roots);
+        });
+        ChannelClassifier.EnsureBuilt();
+    }
+
+    [Fact]
+    public void PathFor_ChannelUnderARegisteredRoot_ResolvesUnderThatModsPath()
+    {
+        UseRootedMods(("acme.tools", ["Acme Tools"], ["Acme.Tools"]));
+
+        Assert.Equal(["Mod", "Acme Tools", "Net"], ChannelClassifier.PathFor("Acme.Tools.Net"));
+        Assert.Equal(["Mod", "Acme Tools"], ChannelClassifier.PathFor("Acme.Tools"));
+    }
+
+    [Fact]
+    public void PathFor_RootMatchingIgnoresCase()
+    {
+        UseRootedMods(("acme.tools", ["Acme Tools"], ["Acme.Tools"]));
+
+        Assert.Equal(["Mod", "Acme Tools", "Net"], ChannelClassifier.PathFor("acme.TOOLS.Net"));
+    }
+
+    [Fact]
+    public void PathFor_ChannelSharingOnlyPartOfALastRootSegment_DoesNotMatch()
+    {
+        UseRootedMods(("acme.tools", ["Acme Tools"], ["Acme.Tools"]));
+
+        Assert.Equal(["Mod", "Acme", "Toolsmith"], ChannelClassifier.PathFor("Acme.Toolsmith"));
+    }
+
+    [Fact]
+    public void PathFor_TwoRootsMatch_TheLongerRootDecides()
+    {
+        UseRootedMods(
+            ("acme", ["Acme"], ["Acme"]),
+            ("acme.tools", ["Acme Tools"], ["Acme.Tools"]));
+
+        Assert.Equal(["Mod", "Acme Tools", "Net"], ChannelClassifier.PathFor("Acme.Tools.Net"));
+        Assert.Equal(["Mod", "Acme", "Other"], ChannelClassifier.PathFor("Acme.Other"));
+    }
+
+    [Fact]
+    public void PathFor_ModPathWithADotInItsName_StaysOneNode()
+    {
+        UseRootedMods(("dr.acme", ["Dr. Acme"], ["Acme"]));
+
+        Assert.Equal(["Mod", "Dr. Acme", "Net"], ChannelClassifier.PathFor("Acme.Net"));
+    }
+
+    [Fact]
+    public void PathFor_AfterReset_RegisteredRootsNoLongerMatch()
+    {
+        UseRootedMods(("acme.tools", ["Acme Tools"], ["Acme.Tools"]));
+        ChannelClassifier.Reset();
+        UseMods();
+
+        Assert.Equal(["Mod", "Acme", "Tools", "Net"], ChannelClassifier.PathFor("Acme.Tools.Net"));
+    }
 }

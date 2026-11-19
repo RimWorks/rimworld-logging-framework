@@ -15,6 +15,19 @@ internal static class CallerFrameClassifier
     internal const string HarmonyAssemblyName = "0Harmony";
 
     /// <summary>
+    /// Host hook, set once at startup. Gets the same two values as <see cref="IsInternalFrame"/> and
+    /// answers whether the frame is the host's own logging plumbing. Consulted only for a frame
+    /// the built-in list keeps, so it can add skips and never remove one.
+    /// </summary>
+    internal static Func<string?, string?, bool>? HostFrameHook { get; set; }
+
+    /// <summary>
+    /// Diagnostic hook invoked when <see cref="HostFrameHook"/> throws. The frame then counts as
+    /// the built-in list says, so a broken hook never breaks a log call.
+    /// </summary>
+    internal static Action<Exception>? OnHostFrameHookError { get; set; }
+
+    /// <summary>
     /// Returns <c>true</c> when a frame with the given declaring-type namespace and
     /// declaring-assembly simple name should be skipped during caller-channel resolution.
     /// </summary>
@@ -35,6 +48,18 @@ internal static class CallerFrameClassifier
         if (declaringNamespace.StartsWith("MonoMod.", StringComparison.Ordinal)) return true;
         if (declaringNamespace.StartsWith("RimWorks.RimLogging.", StringComparison.Ordinal)) return true;
         if (string.Equals(assemblyName, HarmonyAssemblyName, StringComparison.Ordinal)) return true;
-        return false;
+        return IsHostFrame(declaringNamespace, assemblyName);
+    }
+
+    private static bool IsHostFrame(string declaringNamespace, string? assemblyName)
+    {
+        Func<string?, string?, bool>? hook = HostFrameHook;
+        if (hook == null) return false;
+        try { return hook(declaringNamespace, assemblyName); }
+        catch (Exception ex)
+        {
+            OnHostFrameHookError?.Invoke(ex);
+            return false;
+        }
     }
 }

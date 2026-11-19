@@ -13,6 +13,19 @@ internal static class ChannelClassifier
     private static Dictionary<string, string[]>? packageIdToPath;
     private static Dictionary<string, string[]>? fullFacingToPath;
     private static Dictionary<string, string[]>? moduleNameToPath;
+    private static Dictionary<string, List<RootEntry>>? rootsByFirstSegment;
+
+    private sealed class RootEntry
+    {
+        public RootEntry(string[] segments, string[] modPath)
+        {
+            Segments = segments;
+            ModPath = modPath;
+        }
+
+        public string[] Segments { get; }
+        public string[] ModPath { get; }
+    }
 
     public static string ModGroupId => ModGroup;
     public static string VanillaGroupId => VanillaGroup;
@@ -35,6 +48,7 @@ internal static class ChannelClassifier
         packageIdToPath = new Dictionary<string, string[]>(StringComparer.Ordinal);
         fullFacingToPath = new Dictionary<string, string[]>(StringComparer.Ordinal);
         moduleNameToPath = new Dictionary<string, string[]>(StringComparer.Ordinal);
+        rootsByFirstSegment = new Dictionary<string, List<RootEntry>>(StringComparer.OrdinalIgnoreCase);
 
         modTableLoader?.Invoke();
     }
@@ -58,12 +72,64 @@ internal static class ChannelClassifier
         }
     }
 
+    /// <summary>
+    /// Registers one running mod under an explicit tree path. A native channel whose leading dotted segments equal one
+    /// of <paramref name="channelRoots"/> resolves under <paramref name="modPath"/>, with the rest of its segments below.
+    /// Roots match whole segments and ignore case, and the longest matching root wins.
+    /// </summary>
+    internal static void AddMod(string packageId, string[] modPath, string[] channelRoots)
+    {
+        if (string.IsNullOrEmpty(packageId) || modPath == null || modPath.Length == 0)
+        {
+            return;
+        }
+
+        packageIdToPath![ModChannelPrefix + PackageIdSanitizer.ToChannelSegment(packageId)] = modPath;
+
+        if (channelRoots == null)
+        {
+            return;
+        }
+
+        foreach (string root in channelRoots)
+        {
+            if (string.IsNullOrEmpty(root))
+            {
+                continue;
+            }
+
+            string[] segments = root.Split('.');
+            if (Array.IndexOf(segments, string.Empty) >= 0)
+            {
+                continue;
+            }
+
+            if (!rootsByFirstSegment!.TryGetValue(segments[0], out List<RootEntry>? bucket))
+            {
+                bucket = new List<RootEntry>();
+                rootsByFirstSegment[segments[0]] = bucket;
+            }
+
+            int existing = bucket.FindIndex(e => e.Segments.Length == segments.Length && SegmentsStartWith(e.Segments, segments, segments.Length));
+            RootEntry entry = new RootEntry(segments, modPath);
+            if (existing >= 0)
+            {
+                bucket[existing] = entry;
+            }
+            else
+            {
+                bucket.Add(entry);
+            }
+        }
+    }
+
     /// <summary>Drops the cached tables so the next <see cref="EnsureBuilt"/> rebuilds them.</summary>
     internal static void Reset()
     {
         packageIdToPath = null;
         fullFacingToPath = null;
         moduleNameToPath = null;
+        rootsByFirstSegment = null;
     }
 
     public static string[] PathFor(string? channel)
@@ -90,6 +156,25 @@ internal static class ChannelClassifier
 
     private static string[] ResolveNative(string[] segs)
     {
+        if (rootsByFirstSegment != null && segs.Length >= 1 && rootsByFirstSegment.TryGetValue(segs[0], out List<RootEntry>? bucket))
+        {
+            RootEntry? best = null;
+            for (int i = 0; i < bucket.Count; i++)
+            {
+                RootEntry candidate = bucket[i];
+                if ((best == null || candidate.Segments.Length > best.Segments.Length)
+                    && SegmentsStartWith(segs, candidate.Segments, candidate.Segments.Length))
+                {
+                    best = candidate;
+                }
+            }
+
+            if (best != null)
+            {
+                return BuildNative(best.ModPath, segs, best.Segments.Length);
+            }
+        }
+
         if (fullFacingToPath != null && segs.Length >= 2)
         {
             string twoKey = (segs[0] + "." + segs[1]).ToLowerInvariant();
@@ -105,6 +190,24 @@ internal static class ChannelClassifier
         }
 
         return Prepend(ModGroup, segs);
+    }
+
+    private static bool SegmentsStartWith(string[] segs, string[] root, int rootLength)
+    {
+        if (segs.Length < rootLength)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < rootLength; i++)
+        {
+            if (!string.Equals(segs[i], root[i], StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public static string JoinPath(string[] path)

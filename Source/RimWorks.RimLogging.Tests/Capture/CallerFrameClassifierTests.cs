@@ -1,10 +1,18 @@
+using System;
 using RimWorks.RimLogging.Capture;
 using Xunit;
 
 namespace RimWorks.RimLogging.Tests.Capture;
 
-public class CallerFrameClassifierTests
+public class CallerFrameClassifierTests : IDisposable
 {
+    public void Dispose()
+    {
+        CallerFrameClassifier.HostFrameHook = null;
+        CallerFrameClassifier.OnHostFrameHookError = null;
+        GC.SuppressFinalize(this);
+    }
+
     [Fact]
     public void IsInternalFrame_HarmonyLibNamespace_IsSkipped()
     {
@@ -96,5 +104,57 @@ public class CallerFrameClassifierTests
             "RimWorks.RimLogging.Patches.Concord.VerseLogPatch", "RimWorks.RimLogging.Patches.Concord"));
         Assert.True(CallerFrameClassifier.IsInternalFrame(
             "RimWorks.RimLogging.Patches.Harmony.HarmonyBackend", "RimWorks.RimLogging.Patches.Harmony"));
+    }
+
+    [Fact]
+    public void IsInternalFrame_HostHookMarksTypeAndAssembly_SkipsOnlyThose()
+    {
+        CallerFrameClassifier.HostFrameHook = (type, asm) => type == "Acme.Log" || asm == "Acme.Logging";
+
+        Assert.True(CallerFrameClassifier.IsInternalFrame("Acme.Log", "Acme.Game"));
+        Assert.True(CallerFrameClassifier.IsInternalFrame("Acme.Other", "Acme.Logging"));
+        Assert.False(CallerFrameClassifier.IsInternalFrame("Acme.LogHelper", "Acme.Game"));
+        Assert.False(CallerFrameClassifier.IsInternalFrame("Verse.Log", "Assembly-CSharp"));
+    }
+
+    [Fact]
+    public void IsInternalFrame_HostHookSet_KeepsEveryBuiltInSkip()
+    {
+        CallerFrameClassifier.HostFrameHook = (_, _) => false;
+
+        Assert.True(CallerFrameClassifier.IsInternalFrame("HarmonyLib.PatchProcessor", "0Harmony"));
+        Assert.True(CallerFrameClassifier.IsInternalFrame("RimWorks.RimLogging.Log", "RimWorks.RimLogging"));
+        Assert.True(CallerFrameClassifier.IsInternalFrame(null, "SomeMod"));
+        Assert.False(CallerFrameClassifier.IsInternalFrame("Verse.Log", "Assembly-CSharp"));
+    }
+
+    [Fact]
+    public void IsInternalFrame_HostHookUnset_NeverConsultedForNullType()
+    {
+        bool called = false;
+        CallerFrameClassifier.HostFrameHook = (_, _) => called = true;
+
+        Assert.True(CallerFrameClassifier.IsInternalFrame(null, "SomeMod"));
+        Assert.False(called);
+    }
+
+    [Fact]
+    public void IsInternalFrame_HostHookThrows_ReturnsBuiltInAnswerAndReports()
+    {
+        Exception? reported = null;
+        CallerFrameClassifier.HostFrameHook = (_, _) => throw new InvalidOperationException("host hook failed");
+        CallerFrameClassifier.OnHostFrameHookError = ex => reported = ex;
+
+        Assert.False(CallerFrameClassifier.IsInternalFrame("Acme.Log", "Acme.Logging"));
+        Assert.True(CallerFrameClassifier.IsInternalFrame("HarmonyLib.PatchProcessor", "0Harmony"));
+        Assert.IsType<InvalidOperationException>(reported);
+    }
+
+    [Fact]
+    public void IsInternalFrame_HostHookThrowsWithNoErrorHook_DoesNotThrow()
+    {
+        CallerFrameClassifier.HostFrameHook = (_, _) => throw new InvalidOperationException("host hook failed");
+
+        Assert.False(CallerFrameClassifier.IsInternalFrame("Acme.Log", "Acme.Logging"));
     }
 }

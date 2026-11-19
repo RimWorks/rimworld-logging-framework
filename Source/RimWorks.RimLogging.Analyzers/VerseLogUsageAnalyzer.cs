@@ -22,37 +22,50 @@ public sealed class VerseLogUsageAnalyzer : DiagnosticAnalyzer
 
     private const string Category = "RimLogging.Usage";
 
-    private const string VerseLogTypeName = "Verse.Log";
-
     private const string RimLoggingTypeName = "RimWorks.RimLogging.Log";
 
-    private static readonly DiagnosticDescriptor SharedKeyRule = new DiagnosticDescriptor(
-        SharedKeyRuleId,
-        "Verse.Log once-key is shared with every other mod",
-        "Verse.Log.{0} dedupes against a game-wide key set; call {1} instead",
-        Category,
-        DiagnosticSeverity.Warning,
-        isEnabledByDefault: true,
-        description:
-        "Verse.Log.ErrorOnce and WarningOnce record their int key in one static HashSet shared by "
-        + "the whole game. Any other mod that picks the same number silently swallows your message. "
-        + "RimLogging keys off a string in its own table, and keeps the channel you pass.");
+    private readonly string hostTypeName;
 
-    private static readonly DiagnosticDescriptor LostChannelRule = new DiagnosticDescriptor(
-        LostChannelRuleId,
-        "Verse.Log write loses its channel and context",
-        "Verse.Log.{0} arrives as a bare string with a guessed channel; call {1} instead",
-        Category,
-        DiagnosticSeverity.Warning,
-        isEnabledByDefault: true,
-        description:
-        "RimLogging's Harmony patch does capture this call, so the entry is not lost. It arrives "
-        + "as plain text though: the channel is inferred from the calling assembly rather than "
-        + "stated, and there is no message template and no structured context.");
+    private readonly DiagnosticDescriptor sharedKeyRule;
+
+    private readonly DiagnosticDescriptor lostChannelRule;
+
+    /// <summary>Initializes a new instance of the <see cref="VerseLogUsageAnalyzer"/> class.</summary>
+    public VerseLogUsageAnalyzer()
+        : this(HostLog.TypeName)
+    {
+    }
+
+    internal VerseLogUsageAnalyzer(string hostTypeName)
+    {
+        this.hostTypeName = hostTypeName;
+        sharedKeyRule = new DiagnosticDescriptor(
+            SharedKeyRuleId,
+            hostTypeName + " once-key is shared with every other mod",
+            hostTypeName + ".{0} dedupes against a game-wide key set; call {1} instead",
+            Category,
+            DiagnosticSeverity.Warning,
+            isEnabledByDefault: true,
+            description:
+            hostTypeName + ".ErrorOnce and WarningOnce record their int key in one static HashSet shared by "
+            + "the whole game. Any other mod that picks the same number silently swallows your message. "
+            + "RimLogging keys off a string in its own table, and keeps the channel you pass.");
+        lostChannelRule = new DiagnosticDescriptor(
+            LostChannelRuleId,
+            hostTypeName + " write loses its channel and context",
+            hostTypeName + ".{0} arrives as a bare string with a guessed channel; call {1} instead",
+            Category,
+            DiagnosticSeverity.Warning,
+            isEnabledByDefault: true,
+            description:
+            "RimLogging's Harmony patch does capture this call, so the entry is not lost. It arrives "
+            + "as plain text though: the channel is inferred from the calling assembly rather than "
+            + "stated, and there is no message template and no structured context.");
+        SupportedDiagnostics = ImmutableArray.Create(sharedKeyRule, lostChannelRule);
+    }
 
     /// <inheritdoc />
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; }
-        = ImmutableArray.Create(SharedKeyRule, LostChannelRule);
 
     /// <inheritdoc />
     public override void Initialize(AnalysisContext context)
@@ -61,24 +74,24 @@ public sealed class VerseLogUsageAnalyzer : DiagnosticAnalyzer
         context.EnableConcurrentExecution();
         context.RegisterCompilationStartAction(start =>
         {
-            INamedTypeSymbol? verseLog = start.Compilation.GetTypeByMetadataName(VerseLogTypeName);
-            if (verseLog == null) return;
+            INamedTypeSymbol? hostLog = start.Compilation.GetTypeByMetadataName(hostTypeName);
+            if (hostLog == null) return;
             if (start.Compilation.GetTypeByMetadataName(RimLoggingTypeName) == null) return;
-            start.RegisterOperationAction(ctx => Analyze(ctx, verseLog), OperationKind.Invocation);
+            start.RegisterOperationAction(ctx => Analyze(ctx, hostLog), OperationKind.Invocation);
         });
     }
 
-    private static void Analyze(OperationAnalysisContext context, INamedTypeSymbol verseLog)
+    private void Analyze(OperationAnalysisContext context, INamedTypeSymbol hostLog)
     {
         IInvocationOperation invocation = (IInvocationOperation)context.Operation;
         IMethodSymbol target = invocation.TargetMethod;
-        if (!SymbolEqualityComparer.Default.Equals(target.ContainingType, verseLog)) return;
+        if (!SymbolEqualityComparer.Default.Equals(target.ContainingType, hostLog)) return;
 
         VerseLogMethods.Replacement? replacement = VerseLogMethods.Classify(target.Name);
         if (replacement == null) return;
 
         context.ReportDiagnostic(Diagnostic.Create(
-            replacement.Value.SharesVanillaKey ? SharedKeyRule : LostChannelRule,
+            replacement.Value.SharesVanillaKey ? sharedKeyRule : lostChannelRule,
             CallSiteOf(invocation),
             target.Name,
             replacement.Value.Signature));

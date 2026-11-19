@@ -46,6 +46,16 @@ namespace Verse
     }
 }";
 
+    private const string TrailingOptionalStub = @"
+namespace Verse
+{
+    public static class Log
+    {
+        public static void Error(string text, bool stackTrace = false) { }
+        public static void ErrorOnce(string text, string key) { }
+    }
+}";
+
     private const string RimLoggingStub = @"
 namespace RimWorks.RimLogging
 {
@@ -144,9 +154,41 @@ namespace RimWorks.RimLogging
         Assert.Contains("Verse.Log.Clear();", fixedText, StringComparison.Ordinal);
     }
 
-    private static async Task<string> ApplyFixAsync(string statement, string extraParameters = "")
+    [Fact]
+    public async Task Error_WithTrailingOptionalParameter_LeftOut_ReplacesWithQualifiedError()
     {
-        (Document document, ImmutableArray<Diagnostic> diagnostics) = await DiagnoseAsync(statement, extraParameters);
+        string fixedText = await ApplyFixAsync(@"Verse.Log.Error(""boom"");", hostStub: TrailingOptionalStub);
+
+        Assert.Contains(@"RimWorks.RimLogging.Log.Error(""boom"")", fixedText, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Error_PassingTheTrailingOptionalArgument_OffersNoFixButDiagnosticStillFires()
+    {
+        (ImmutableArray<Diagnostic> diagnostics, ImmutableArray<CodeAction> actions) =
+            await RegisterFixesWithDiagnosticsAsync(@"Verse.Log.Error(""boom"", true);", hostStub: TrailingOptionalStub);
+
+        Assert.Single(diagnostics);
+        Assert.Empty(actions);
+    }
+
+    [Fact]
+    public async Task ErrorOnce_WithAStringKey_OffersNoFixButDiagnosticStillFires()
+    {
+        (ImmutableArray<Diagnostic> diagnostics, ImmutableArray<CodeAction> actions) =
+            await RegisterFixesWithDiagnosticsAsync(@"Verse.Log.ErrorOnce(""boom"", ""key"");", hostStub: TrailingOptionalStub);
+
+        Assert.Equal(VerseLogUsageAnalyzer.SharedKeyRuleId, Assert.Single(diagnostics).Id);
+        Assert.Empty(actions);
+    }
+
+    private static async Task<string> ApplyFixAsync(
+        string statement,
+        string extraParameters = "",
+        string hostStub = VerseStub)
+    {
+        (Document document, ImmutableArray<Diagnostic> diagnostics) =
+            await DiagnoseAsync(statement, extraParameters, hostStub);
         Diagnostic diagnostic = Assert.Single(diagnostics);
 
         var actions = new List<CodeAction>();
@@ -173,9 +215,10 @@ namespace RimWorks.RimLogging
     }
 
     private static async Task<(ImmutableArray<Diagnostic> Diagnostics, ImmutableArray<CodeAction> Actions)>
-        RegisterFixesWithDiagnosticsAsync(string statement, string extraParameters = "")
+        RegisterFixesWithDiagnosticsAsync(string statement, string extraParameters = "", string hostStub = VerseStub)
     {
-        (Document document, ImmutableArray<Diagnostic> diagnostics) = await DiagnoseAsync(statement, extraParameters);
+        (Document document, ImmutableArray<Diagnostic> diagnostics) =
+            await DiagnoseAsync(statement, extraParameters, hostStub);
 
         var actions = new List<CodeAction>();
         foreach (Diagnostic diagnostic in diagnostics)
@@ -189,7 +232,8 @@ namespace RimWorks.RimLogging
 
     private static async Task<(Document Document, ImmutableArray<Diagnostic> Diagnostics)> DiagnoseAsync(
         string statement,
-        string extraParameters)
+        string extraParameters,
+        string hostStub)
     {
         string caller = $"class Caller {{ void Run({extraParameters}) {{ {statement} }} }}";
 
@@ -201,7 +245,7 @@ namespace RimWorks.RimLogging
             .AddProject(projectId, "Test", "Test", LanguageNames.CSharp)
             .WithProjectCompilationOptions(projectId, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
             .AddMetadataReferences(projectId, FrameworkRefs)
-            .AddDocument(DocumentId.CreateNewId(projectId), "Verse.cs", SourceText.From(VerseStub))
+            .AddDocument(DocumentId.CreateNewId(projectId), "Verse.cs", SourceText.From(hostStub))
             .AddDocument(DocumentId.CreateNewId(projectId), "RimLogging.cs", SourceText.From(RimLoggingStub))
             .AddDocument(callerId, "Caller.cs", SourceText.From(caller));
 
