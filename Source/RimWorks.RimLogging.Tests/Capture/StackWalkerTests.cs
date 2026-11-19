@@ -13,6 +13,9 @@ public class StackWalkerTests : System.IDisposable
     public void Dispose()
     {
         Logging.AttributionProvider = null;
+        CallerFrameClassifier.HostFrameHook = null;
+        CallerFrameClassifier.OnHostFrameHookError = null;
+        StackWalker.FirstCallerEndsWithoutFile = false;
         System.GC.SuppressFinalize(this);
     }
 
@@ -361,5 +364,119 @@ public class StackWalkerTests : System.IDisposable
         string formatted = StackWalker.FormatTrace(st);
 
         Assert.Equal("at (wrapper dynamic-method)", formatted);
+    }
+
+    private static class HostLogFixture
+    {
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+        public static SourceLocation FirstCaller() => StackWalker.FirstCallerFrame(new StackTrace(0, true));
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+        public static string Trace() => StackWalker.FormatTrace(new StackTrace(0, true));
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+        public static System.Type? CallerType() => StackWalker.FirstCallerType(new StackTrace(0, false));
+    }
+
+    private static void MarkFixtureAsHostPlumbing()
+        => CallerFrameClassifier.HostFrameHook = (type, _) => type == typeof(HostLogFixture).FullName;
+
+    [Fact]
+    public void FirstCallerFrame_FixtureNotMarked_BlamesTheFixture()
+    {
+        SourceLocation loc = HostLogFixture.FirstCaller();
+
+        Assert.Equal(nameof(HostLogFixture.FirstCaller), loc.Method);
+    }
+
+    [Fact]
+    public void FirstCallerFrame_HostHookMarksFixture_ReturnsTheFrameUnderIt()
+    {
+        MarkFixtureAsHostPlumbing();
+
+        SourceLocation loc = HostLogFixture.FirstCaller();
+
+        Assert.Equal(nameof(FirstCallerFrame_HostHookMarksFixture_ReturnsTheFrameUnderIt), loc.Method);
+        Assert.True(loc.IsCallerProvided);
+    }
+
+    [Fact]
+    public void FirstCallerType_HostHookMarksFixture_ReturnsTheTypeUnderIt()
+    {
+        MarkFixtureAsHostPlumbing();
+
+        Assert.Equal(typeof(StackWalkerTests), HostLogFixture.CallerType());
+    }
+
+    [Fact]
+    public void FormatTrace_HostHookMarksFixture_LeavesItsFramesOut()
+    {
+        Assert.Contains(nameof(HostLogFixture), HostLogFixture.Trace());
+
+        MarkFixtureAsHostPlumbing();
+        string formatted = HostLogFixture.Trace();
+
+        Assert.DoesNotContain(nameof(HostLogFixture), formatted);
+        Assert.Contains(nameof(FormatTrace_HostHookMarksFixture_LeavesItsFramesOut), formatted);
+    }
+
+    [Fact]
+    public void Walks_HostHookThrows_DoNotThrowAndFallBackToBuiltInSkips()
+    {
+        int errors = 0;
+        CallerFrameClassifier.HostFrameHook = (_, _) => throw new System.InvalidOperationException("host hook failed");
+        CallerFrameClassifier.OnHostFrameHookError = _ => errors++;
+
+        SourceLocation loc = TestStackWalkerHelper.CallFirstCallerFrame();
+        string formatted = HostLogFixture.Trace();
+        System.Type? type = HostLogFixture.CallerType();
+
+        Assert.Equal(nameof(Walks_HostHookThrows_DoNotThrowAndFallBackToBuiltInSkips), loc.Method);
+        Assert.Contains(nameof(HostLogFixture), formatted);
+        Assert.Equal(typeof(HostLogFixture), type);
+        Assert.True(errors > 0);
+    }
+
+    [Fact]
+    public void FirstCallerFrame_FirstCallerHasNoFileAndSwitchUnset_StepsOverIt()
+    {
+        SourceLocation loc = StackWalker.FirstCallerFrame(new StackTrace(0, false));
+
+        Assert.Equal(SourceLocation.Empty, loc);
+    }
+
+    [Fact]
+    public void FirstCallerFrame_FirstCallerHasNoFileAndSwitchSet_ReturnsItsMethodWithNoFile()
+    {
+        StackWalker.FirstCallerEndsWithoutFile = true;
+
+        SourceLocation loc = StackWalker.FirstCallerFrame(new StackTrace(0, false));
+
+        Assert.Equal(nameof(FirstCallerFrame_FirstCallerHasNoFileAndSwitchSet_ReturnsItsMethodWithNoFile), loc.Method);
+        Assert.Equal(string.Empty, loc.File);
+        Assert.Equal(0, loc.Line);
+        Assert.False(loc.IsCallerProvided);
+    }
+
+    [Fact]
+    public void FirstCallerFrame_SwitchSetAndFirstCallerHasFile_ReturnsFileAndLine()
+    {
+        StackWalker.FirstCallerEndsWithoutFile = true;
+
+        SourceLocation loc = TestStackWalkerHelper.CallFirstCallerFrame();
+
+        Assert.Equal(nameof(FirstCallerFrame_SwitchSetAndFirstCallerHasFile_ReturnsFileAndLine), loc.Method);
+        Assert.True(loc.IsCallerProvided);
+    }
+
+    [Fact]
+    public void FirstCallerFrame_SwitchSetWithHostHook_EndsAtTheFrameUnderTheMarkedFixture()
+    {
+        StackWalker.FirstCallerEndsWithoutFile = true;
+        MarkFixtureAsHostPlumbing();
+
+        SourceLocation loc = HostLogFixture.FirstCaller();
+
+        Assert.Equal(nameof(FirstCallerFrame_SwitchSetWithHostHook_EndsAtTheFrameUnderTheMarkedFixture), loc.Method);
     }
 }

@@ -17,4 +17,8 @@
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.9.*" PrivateAssets="all" />
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="5.9.*" PrivateAssets="all" />
     </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="RimWorks.RimLogging.Tests" />
+    </ItemGroup>
 </Project>

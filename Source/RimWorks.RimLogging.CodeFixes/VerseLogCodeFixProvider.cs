@@ -67,6 +67,8 @@ public sealed class VerseLogCodeFixProvider : CodeFixProvider
         if (arguments.Any(a => a.NameColon != null)) return null;
 
         if (semanticModel.GetSymbolInfo(invocation).Symbol is not IMethodSymbol targetMethod) return null;
+        INamedTypeSymbol? hostLog = semanticModel.Compilation.GetTypeByMetadataName(HostLog.TypeName);
+        if (!SymbolEqualityComparer.Default.Equals(targetMethod.ContainingType, hostLog)) return null;
         if (!MatchesExpectedShape(replacement.Value, targetMethod, arguments)) return null;
 
         return CodeAction.Create(
@@ -82,8 +84,13 @@ public sealed class VerseLogCodeFixProvider : CodeFixProvider
         SeparatedSyntaxList<ArgumentSyntax> arguments)
     {
         int expectedArgCount = replacement.SwapsArguments ? 2 : 1;
-        if (arguments.Count != expectedArgCount || targetMethod.Parameters.Length != expectedArgCount)
+        if (arguments.Count != expectedArgCount || targetMethod.Parameters.Length < expectedArgCount)
             return false;
+        for (int i = expectedArgCount; i < targetMethod.Parameters.Length; i++)
+        {
+            if (!targetMethod.Parameters[i].IsOptional) return false;
+        }
+
         if (targetMethod.Parameters[0].Type.SpecialType != SpecialType.System_String) return false;
         if (replacement.SwapsArguments && targetMethod.Parameters[1].Type.SpecialType != SpecialType.System_Int32)
             return false;

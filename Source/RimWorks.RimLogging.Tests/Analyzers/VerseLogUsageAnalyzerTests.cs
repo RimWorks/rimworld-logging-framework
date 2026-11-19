@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -32,6 +33,16 @@ namespace Verse
         public static void Message(string text) { }
         public static void Message(object obj) { }
         public static void Clear() { }
+    }
+}";
+
+    private const string AcmeStub = @"
+namespace Acme
+{
+    public static class Log
+    {
+        public static void Error(string text) { }
+        public static void ErrorOnce(string text, int key) { }
     }
 }";
 
@@ -130,15 +141,72 @@ class Caller { void Run() { Log.ErrorOnceTo(""MPF.Worldgen"", ""some-key"", ""bo
         Assert.Empty(Diagnose(caller, asWholeFile: true));
     }
 
+    [Fact]
+    public void SharedKeyMessage_ForVerseLog_KeepsItsExactText()
+    {
+        Diagnostic found = Assert.Single(Diagnose(@"Verse.Log.ErrorOnce(""boom"", 42);"));
+
+        Assert.Equal(
+            "Verse.Log.ErrorOnce dedupes against a game-wide key set; call Log.ErrorOnceTo(channel, key, message) instead",
+            found.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal(
+            "Verse.Log once-key is shared with every other mod",
+            found.Descriptor.Title.ToString(CultureInfo.InvariantCulture));
+        Assert.Equal(
+            "Verse.Log.ErrorOnce and WarningOnce record their int key in one static HashSet shared by "
+            + "the whole game. Any other mod that picks the same number silently swallows your message. "
+            + "RimLogging keys off a string in its own table, and keeps the channel you pass.",
+            found.Descriptor.Description.ToString(CultureInfo.InvariantCulture));
+    }
+
+    [Fact]
+    public void LostChannelMessage_ForVerseLog_KeepsItsExactText()
+    {
+        Diagnostic found = Assert.Single(Diagnose(@"Verse.Log.Error(""boom"");"));
+
+        Assert.Equal(
+            "Verse.Log.Error arrives as a bare string with a guessed channel; call Log.ErrorTo(channel, message) instead",
+            found.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal(
+            "Verse.Log write loses its channel and context",
+            found.Descriptor.Title.ToString(CultureInfo.InvariantCulture));
+        Assert.Equal(
+            "RimLogging's Harmony patch does capture this call, so the entry is not lost. It arrives "
+            + "as plain text though: the channel is inferred from the calling assembly rather than "
+            + "stated, and there is no message template and no structured context.",
+            found.Descriptor.Description.ToString(CultureInfo.InvariantCulture));
+    }
+
+    [Fact]
+    public void AnotherHostType_GetsBothRules_WithItsNameInTheMessage()
+    {
+        ImmutableArray<Diagnostic> found = Diagnose(
+            @"Acme.Log.ErrorOnce(""boom"", 42); Acme.Log.Error(""boom""); Verse.Log.Error(""ignored"");",
+            hostStub: AcmeStub + VerseStub,
+            analyzer: new VerseLogUsageAnalyzer("Acme.Log"));
+
+        Assert.Equal(2, found.Length);
+        Diagnostic sharedKey = Assert.Single(found, d => d.Id == VerseLogUsageAnalyzer.SharedKeyRuleId);
+        Diagnostic lostChannel = Assert.Single(found, d => d.Id == VerseLogUsageAnalyzer.LostChannelRuleId);
+        Assert.StartsWith("Acme.Log.ErrorOnce ", sharedKey.GetMessage(CultureInfo.InvariantCulture), StringComparison.Ordinal);
+        Assert.StartsWith("Acme.Log.Error ", lostChannel.GetMessage(CultureInfo.InvariantCulture), StringComparison.Ordinal);
+        Assert.StartsWith(
+            "Acme.Log once-key",
+            sharedKey.Descriptor.Title.ToString(CultureInfo.InvariantCulture),
+            StringComparison.Ordinal);
+    }
+
     private static ImmutableArray<Diagnostic> Diagnose(
         string statement,
         bool withRimLogging = true,
-        bool asWholeFile = false)
+        bool asWholeFile = false,
+        string hostStub = VerseStub,
+        VerseLogUsageAnalyzer? analyzer = null)
     {
         string caller = asWholeFile ? statement : "class Caller { void Run() { " + statement + " } }";
         string[] sources = withRimLogging
-            ? new[] { VerseStub, RimLoggingStub, caller }
-            : new[] { VerseStub, caller };
+            ? new[] { hostStub, RimLoggingStub, caller }
+            : new[] { hostStub, caller };
 
         CSharpCompilation compilation = CSharpCompilation.Create(
             "VerseLogAnalyzerTest",
@@ -149,7 +217,7 @@ class Caller { void Run() { Log.ErrorOnceTo(""MPF.Worldgen"", ""some-key"", ""bo
         Assert.Empty(compilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error));
 
         return compilation
-            .WithAnalyzers(ImmutableArray.Create<DiagnosticAnalyzer>(new VerseLogUsageAnalyzer()))
+            .WithAnalyzers(ImmutableArray.Create<DiagnosticAnalyzer>(analyzer ?? new VerseLogUsageAnalyzer()))
             .GetAnalyzerDiagnosticsAsync()
             .GetAwaiter()
             .GetResult();

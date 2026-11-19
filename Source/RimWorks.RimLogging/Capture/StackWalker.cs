@@ -26,6 +26,13 @@ public static class StackWalker
         new System.Collections.Concurrent.ConcurrentDictionary<string, string>();
 
     /// <summary>
+    /// Host switch, set once at startup. When <c>true</c>, <see cref="FirstCallerFrame"/> ends at the
+    /// first frame the classifier keeps even when that frame has no file, and returns its method
+    /// with an empty file and line 0. When <c>false</c> a frame without a file is stepped over.
+    /// </summary>
+    internal static bool FirstCallerEndsWithoutFile { get; set; }
+
+    /// <summary>
     /// Anchors an embedded source path to a mod folder, so the user sees the in-game folder
     /// name rather than the developer's project layout.
     /// </summary>
@@ -77,7 +84,11 @@ public static class StackWalker
 
             // vanilla frames have no PDB, so keep walking rather than giving up on the
             // user-code frame underneath
-            if (file == null) continue;
+            if (file == null)
+            {
+                if (FirstCallerEndsWithoutFile) return new SourceLocation(string.Empty, 0, method?.Name);
+                continue;
+            }
             string clean = NormalizePath(file, declaringType);
             return new SourceLocation(clean, frame!.GetFileLineNumber(), method?.Name);
         }
