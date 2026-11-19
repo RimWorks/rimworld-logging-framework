@@ -156,23 +156,10 @@ internal static class ChannelClassifier
 
     private static string[] ResolveNative(string[] segs)
     {
-        if (rootsByFirstSegment != null && segs.Length >= 1 && rootsByFirstSegment.TryGetValue(segs[0], out List<RootEntry>? bucket))
+        RootEntry? root = LongestRoot(segs);
+        if (root != null)
         {
-            RootEntry? best = null;
-            for (int i = 0; i < bucket.Count; i++)
-            {
-                RootEntry candidate = bucket[i];
-                if ((best == null || candidate.Segments.Length > best.Segments.Length)
-                    && SegmentsStartWith(segs, candidate.Segments, candidate.Segments.Length))
-                {
-                    best = candidate;
-                }
-            }
-
-            if (best != null)
-            {
-                return BuildNative(best.ModPath, segs, best.Segments.Length);
-            }
+            return BuildNative(root.ModPath, segs, root.Segments.Length);
         }
 
         if (fullFacingToPath != null && segs.Length >= 2)
@@ -190,6 +177,27 @@ internal static class ChannelClassifier
         }
 
         return Prepend(ModGroup, segs);
+    }
+
+    private static RootEntry? LongestRoot(string[] segs)
+    {
+        if (rootsByFirstSegment == null || segs.Length == 0 || !rootsByFirstSegment.TryGetValue(segs[0], out List<RootEntry>? bucket))
+        {
+            return null;
+        }
+
+        RootEntry? best = null;
+        for (int i = 0; i < bucket.Count; i++)
+        {
+            RootEntry candidate = bucket[i];
+            if ((best == null || candidate.Segments.Length > best.Segments.Length)
+                && SegmentsStartWith(segs, candidate.Segments, candidate.Segments.Length))
+            {
+                best = candidate;
+            }
+        }
+
+        return best;
     }
 
     private static bool SegmentsStartWith(string[] segs, string[] root, int rootLength)
