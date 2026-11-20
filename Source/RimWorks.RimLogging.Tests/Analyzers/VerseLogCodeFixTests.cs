@@ -1,3 +1,6 @@
+extern alias Analyzers;
+extern alias CodeFixes;
+
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -14,6 +17,8 @@ using Microsoft.CodeAnalysis.Text;
 using RimWorks.RimLogging.Analyzers;
 using RimWorks.RimLogging.CodeFixes;
 using Xunit;
+using AnalyzerMethods = Analyzers::RimWorks.RimLogging.Analyzers.VerseLogMethods;
+using FixMethods = CodeFixes::RimWorks.RimLogging.Analyzers.VerseLogMethods;
 
 namespace RimWorks.RimLogging.Tests.Analyzers;
 
@@ -53,6 +58,18 @@ namespace Verse
     {
         public static void Error(string text, bool stackTrace = false) { }
         public static void ErrorOnce(string text, string key) { }
+    }
+}";
+
+    private const string AcmeStub = @"
+namespace Acme
+{
+    public static class Log
+    {
+        public static void ErrorOnce(string text, string key) { }
+        public static void WarningOnce(string text, long key) { }
+        public static void Notice(string text) { }
+        public static void Trace(string text) { }
     }
 }";
 
@@ -173,27 +190,90 @@ namespace RimWorks.RimLogging
     }
 
     [Fact]
-    public async Task ErrorOnce_WithAStringKey_OffersNoFixButDiagnosticStillFires()
+    public async Task ErrorOnce_WithAStringLiteralKey_MovesTheKeyFirstWithoutToString()
+    {
+        string fixedText = await ApplyFixAsync(
+            @"Acme.Log.ErrorOnce(""x"", ""key"");",
+            hostStub: AcmeStub,
+            host: AcmeHost());
+
+        Assert.Contains(@"RimWorks.RimLogging.Log.ErrorOnce(""key"", ""x"")", fixedText, StringComparison.Ordinal);
+        Assert.DoesNotContain("ToString", fixedText, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ErrorOnce_WithAStringVariableKey_PassesTheKeyThroughAsItIs()
+    {
+        string fixedText = await ApplyFixAsync(
+            @"Acme.Log.ErrorOnce(""x"", key);",
+            "string key",
+            hostStub: AcmeStub,
+            host: AcmeHost());
+
+        Assert.Contains(@"RimWorks.RimLogging.Log.ErrorOnce(key, ""x"")", fixedText, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task WarningOnce_WithALongKey_OffersNoFixButDiagnosticStillFires()
     {
         (ImmutableArray<Diagnostic> diagnostics, ImmutableArray<CodeAction> actions) =
-            await RegisterFixesWithDiagnosticsAsync(@"Verse.Log.ErrorOnce(""boom"", ""key"");", hostStub: TrailingOptionalStub);
+            await RegisterFixesWithDiagnosticsAsync(@"Acme.Log.WarningOnce(""x"", 7L);", hostStub: AcmeStub, host: AcmeHost());
 
         Assert.Equal(VerseLogUsageAnalyzer.SharedKeyRuleId, Assert.Single(diagnostics).Id);
         Assert.Empty(actions);
     }
 
+    [Fact]
+    public async Task AddedMethodWithAFix_IsRewrittenToItsFixMethod()
+    {
+        string fixedText = await ApplyFixAsync(
+            @"Acme.Log.Notice(""x"");",
+            hostStub: AcmeStub,
+            host: AcmeHost());
+
+        Assert.Contains(@"RimWorks.RimLogging.Log.Info(""x"")", fixedText, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task AddedMethodWithoutAFix_OffersNoFixButDiagnosticStillFires()
+    {
+        (ImmutableArray<Diagnostic> diagnostics, ImmutableArray<CodeAction> actions) =
+            await RegisterFixesWithDiagnosticsAsync(@"Acme.Log.Trace(""x"");", hostStub: AcmeStub, host: AcmeHost());
+
+        Assert.Equal(VerseLogUsageAnalyzer.LostChannelRuleId, Assert.Single(diagnostics).Id);
+        Assert.Empty(actions);
+    }
+
+    private static (VerseLogUsageAnalyzer Analyzer, VerseLogCodeFixProvider Provider) AcmeHost()
+    {
+        return (
+            new VerseLogUsageAnalyzer("Acme.Log", name => name switch
+            {
+                "Notice" => new AnalyzerMethods.Replacement(false, "Log.InfoTo(channel, message)", "Info", false),
+                "Trace" => new AnalyzerMethods.Replacement(false, "Log.DebugTo(channel, message)", null, false),
+                _ => AnalyzerMethods.Classify(name),
+            }),
+            new VerseLogCodeFixProvider("Acme.Log", name => name switch
+            {
+                "Notice" => new FixMethods.Replacement(false, "Log.InfoTo(channel, message)", "Info", false),
+                "Trace" => new FixMethods.Replacement(false, "Log.DebugTo(channel, message)", null, false),
+                _ => FixMethods.Classify(name),
+            }));
+    }
+
     private static async Task<string> ApplyFixAsync(
         string statement,
         string extraParameters = "",
-        string hostStub = VerseStub)
+        string hostStub = VerseStub,
+        (VerseLogUsageAnalyzer Analyzer, VerseLogCodeFixProvider Provider)? host = null)
     {
         (Document document, ImmutableArray<Diagnostic> diagnostics) =
-            await DiagnoseAsync(statement, extraParameters, hostStub);
+            await DiagnoseAsync(statement, extraParameters, hostStub, host?.Analyzer);
         Diagnostic diagnostic = Assert.Single(diagnostics);
 
         var actions = new List<CodeAction>();
         var context = new CodeFixContext(document, diagnostic, (action, _) => actions.Add(action), CancellationToken.None);
-        await new VerseLogCodeFixProvider().RegisterCodeFixesAsync(context);
+        await (host?.Provider ?? new VerseLogCodeFixProvider()).RegisterCodeFixesAsync(context);
 
         CodeAction fix = Assert.Single(actions);
         ImmutableArray<CodeActionOperation> operations = await fix.GetOperationsAsync(CancellationToken.None);
@@ -215,16 +295,20 @@ namespace RimWorks.RimLogging
     }
 
     private static async Task<(ImmutableArray<Diagnostic> Diagnostics, ImmutableArray<CodeAction> Actions)>
-        RegisterFixesWithDiagnosticsAsync(string statement, string extraParameters = "", string hostStub = VerseStub)
+        RegisterFixesWithDiagnosticsAsync(
+            string statement,
+            string extraParameters = "",
+            string hostStub = VerseStub,
+            (VerseLogUsageAnalyzer Analyzer, VerseLogCodeFixProvider Provider)? host = null)
     {
         (Document document, ImmutableArray<Diagnostic> diagnostics) =
-            await DiagnoseAsync(statement, extraParameters, hostStub);
+            await DiagnoseAsync(statement, extraParameters, hostStub, host?.Analyzer);
 
         var actions = new List<CodeAction>();
         foreach (Diagnostic diagnostic in diagnostics)
         {
             var context = new CodeFixContext(document, diagnostic, (action, _) => actions.Add(action), CancellationToken.None);
-            await new VerseLogCodeFixProvider().RegisterCodeFixesAsync(context);
+            await (host?.Provider ?? new VerseLogCodeFixProvider()).RegisterCodeFixesAsync(context);
         }
 
         return (diagnostics, actions.ToImmutableArray());
@@ -233,7 +317,8 @@ namespace RimWorks.RimLogging
     private static async Task<(Document Document, ImmutableArray<Diagnostic> Diagnostics)> DiagnoseAsync(
         string statement,
         string extraParameters,
-        string hostStub)
+        string hostStub,
+        VerseLogUsageAnalyzer? analyzer = null)
     {
         string caller = $"class Caller {{ void Run({extraParameters}) {{ {statement} }} }}";
 
@@ -254,7 +339,7 @@ namespace RimWorks.RimLogging
         Assert.Empty(compilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error));
 
         ImmutableArray<Diagnostic> diagnostics = await compilation
-            .WithAnalyzers(ImmutableArray.Create<DiagnosticAnalyzer>(new VerseLogUsageAnalyzer()))
+            .WithAnalyzers(ImmutableArray.Create<DiagnosticAnalyzer>(analyzer ?? new VerseLogUsageAnalyzer()))
             .GetAnalyzerDiagnosticsAsync();
 
         Document callerDocument = project.GetDocument(callerId)!;

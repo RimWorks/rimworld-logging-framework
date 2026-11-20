@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Globalization;
@@ -21,6 +22,22 @@ namespace RimWorks.RimLogging.CodeFixes;
 public sealed class VerseLogCodeFixProvider : CodeFixProvider
 {
     private const string RimLoggingLogTypeName = "RimWorks.RimLogging.Log";
+
+    private readonly string hostTypeName;
+
+    private readonly Func<string, VerseLogMethods.Replacement?> classify;
+
+    /// <summary>Initializes a new instance of the <see cref="VerseLogCodeFixProvider"/> class.</summary>
+    public VerseLogCodeFixProvider()
+        : this(HostLog.TypeName, VerseLogMethods.Classify)
+    {
+    }
+
+    internal VerseLogCodeFixProvider(string hostTypeName, Func<string, VerseLogMethods.Replacement?> classify)
+    {
+        this.hostTypeName = hostTypeName;
+        this.classify = classify;
+    }
 
     /// <inheritdoc />
     public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(
@@ -48,7 +65,7 @@ public sealed class VerseLogCodeFixProvider : CodeFixProvider
         }
     }
 
-    private static CodeAction? BuildFix(
+    private CodeAction? BuildFix(
         SyntaxNode root,
         SemanticModel semanticModel,
         Diagnostic diagnostic,
@@ -58,8 +75,8 @@ public sealed class VerseLogCodeFixProvider : CodeFixProvider
             return null;
         if (memberAccess.Parent is not InvocationExpressionSyntax invocation) return null;
 
-        VerseLogMethods.Replacement? replacement = VerseLogMethods.Classify(memberAccess.Name.Identifier.Text);
-        if (replacement == null) return null;
+        VerseLogMethods.Replacement? replacement = classify(memberAccess.Name.Identifier.Text);
+        if (replacement?.FixMethodName == null) return null;
 
         SeparatedSyntaxList<ArgumentSyntax> arguments = invocation.ArgumentList.Arguments;
 
@@ -67,13 +84,15 @@ public sealed class VerseLogCodeFixProvider : CodeFixProvider
         if (arguments.Any(a => a.NameColon != null)) return null;
 
         if (semanticModel.GetSymbolInfo(invocation).Symbol is not IMethodSymbol targetMethod) return null;
-        INamedTypeSymbol? hostLog = semanticModel.Compilation.GetTypeByMetadataName(HostLog.TypeName);
+        INamedTypeSymbol? hostLog = semanticModel.Compilation.GetTypeByMetadataName(hostTypeName);
         if (!SymbolEqualityComparer.Default.Equals(targetMethod.ContainingType, hostLog)) return null;
         if (!MatchesExpectedShape(replacement.Value, targetMethod, arguments)) return null;
 
+        bool keyIsString = replacement.Value.SwapsArguments
+            && targetMethod.Parameters[1].Type.SpecialType == SpecialType.System_String;
         return CodeAction.Create(
             $"Replace with RimWorks.RimLogging.Log.{replacement.Value.FixMethodName}",
-            _ => ReplaceInvocationAsync(document, root, invocation, replacement.Value, arguments),
+            _ => ReplaceInvocationAsync(document, root, invocation, replacement.Value, arguments, keyIsString),
             equivalenceKey: replacement.Value.FixMethodName);
     }
 
@@ -92,21 +111,23 @@ public sealed class VerseLogCodeFixProvider : CodeFixProvider
         }
 
         if (targetMethod.Parameters[0].Type.SpecialType != SpecialType.System_String) return false;
-        if (replacement.SwapsArguments && targetMethod.Parameters[1].Type.SpecialType != SpecialType.System_Int32)
-            return false;
-        return true;
+        return !replacement.SwapsArguments || IsFixableKeyType(targetMethod.Parameters[1].Type.SpecialType);
     }
+
+    private static bool IsFixableKeyType(SpecialType type)
+        => type is SpecialType.System_Int32 or SpecialType.System_String;
 
     private static Task<Document> ReplaceInvocationAsync(
         Document document,
         SyntaxNode root,
         InvocationExpressionSyntax invocation,
         VerseLogMethods.Replacement replacement,
-        SeparatedSyntaxList<ArgumentSyntax> arguments)
+        SeparatedSyntaxList<ArgumentSyntax> arguments,
+        bool keyIsString)
     {
         string textArgumentText = arguments[0].Expression.ToString();
         string argsText = replacement.SwapsArguments
-            ? $"{KeyExpressionText(arguments[1].Expression)}, {textArgumentText}"
+            ? $"{KeyExpressionText(arguments[1].Expression, keyIsString)}, {textArgumentText}"
             : textArgumentText;
 
         ExpressionSyntax qualifiedMethod = SyntaxFactory
@@ -122,9 +143,11 @@ public sealed class VerseLogCodeFixProvider : CodeFixProvider
         return Task.FromResult(document.WithSyntaxRoot(newRoot));
     }
 
-    // an int literal key becomes a string literal; anything else gets .ToString() appended
-    private static string KeyExpressionText(ExpressionSyntax key)
+    // a string key passes through; an int literal key becomes a string literal; anything else gets .ToString() appended
+    private static string KeyExpressionText(ExpressionSyntax key, bool keyIsString)
     {
+        if (keyIsString) return key.ToString();
+
         if (key is LiteralExpressionSyntax { Token.Value: int intValue })
             return "\"" + intValue.ToString(CultureInfo.InvariantCulture) + "\"";
 

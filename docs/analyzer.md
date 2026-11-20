@@ -84,7 +84,7 @@ These call shapes get no fix, and stay squiggled for a human to handle:
 - a named argument, like `Log.ErrorOnce(text: msg, key: 1)`
 - the `Log.Message(object)` overload, which has no string to move
 - a call that passes a value for one of those trailing optional parameters
-- a `Once` method whose key is not an `int`
+- a `Once` method whose key is not an `int` or a `string`
 - anything the fix can't tell apart from those at the call site
 
 Fix-all only ever touches call sites that already carry the diagnostic. It never removes an

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -26,6 +27,8 @@ public sealed class VerseLogUsageAnalyzer : DiagnosticAnalyzer
 
     private readonly string hostTypeName;
 
+    private readonly Func<string, VerseLogMethods.Replacement?> classify;
+
     private readonly DiagnosticDescriptor sharedKeyRule;
 
     private readonly DiagnosticDescriptor lostChannelRule;
@@ -37,8 +40,14 @@ public sealed class VerseLogUsageAnalyzer : DiagnosticAnalyzer
     }
 
     internal VerseLogUsageAnalyzer(string hostTypeName)
+        : this(hostTypeName, VerseLogMethods.Classify)
+    {
+    }
+
+    internal VerseLogUsageAnalyzer(string hostTypeName, Func<string, VerseLogMethods.Replacement?> classify)
     {
         this.hostTypeName = hostTypeName;
+        this.classify = classify;
         sharedKeyRule = new DiagnosticDescriptor(
             SharedKeyRuleId,
             hostTypeName + " once-key is shared with every other mod",
@@ -87,7 +96,7 @@ public sealed class VerseLogUsageAnalyzer : DiagnosticAnalyzer
         IMethodSymbol target = invocation.TargetMethod;
         if (!SymbolEqualityComparer.Default.Equals(target.ContainingType, hostLog)) return;
 
-        VerseLogMethods.Replacement? replacement = VerseLogMethods.Classify(target.Name);
+        VerseLogMethods.Replacement? replacement = classify(target.Name);
         if (replacement == null) return;
 
         context.ReportDiagnostic(Diagnostic.Create(
