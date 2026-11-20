@@ -158,8 +158,8 @@ class Caller { void Run() { Log.ErrorOnceTo(""MPF.Worldgen"", ""some-key"", ""bo
             "Verse.Log once-key is shared with every other mod",
             found.Descriptor.Title.ToString(CultureInfo.InvariantCulture));
         Assert.Equal(
-            "Verse.Log.ErrorOnce and WarningOnce record their int key in one static HashSet shared by "
-            + "the whole game. Any other mod that picks the same number silently swallows your message. "
+            "Verse.Log.ErrorOnce and WarningOnce record their key in one set shared by the whole "
+            + "game. Any other mod that picks the same key silently swallows your message. "
             + "RimLogging keys off a string in its own table, and keeps the channel you pass.",
             found.Descriptor.Description.ToString(CultureInfo.InvariantCulture));
     }
@@ -176,7 +176,7 @@ class Caller { void Run() { Log.ErrorOnceTo(""MPF.Worldgen"", ""some-key"", ""bo
             "Verse.Log write loses its channel and context",
             found.Descriptor.Title.ToString(CultureInfo.InvariantCulture));
         Assert.Equal(
-            "RimLogging's Harmony patch does capture this call, so the entry is not lost. It arrives "
+            "RimLogging does capture this call, so the entry is not lost. It arrives "
             + "as plain text though: the channel is inferred from the calling assembly rather than "
             + "stated, and there is no message template and no structured context.",
             found.Descriptor.Description.ToString(CultureInfo.InvariantCulture));
@@ -199,6 +199,23 @@ class Caller { void Run() { Log.ErrorOnceTo(""MPF.Worldgen"", ""some-key"", ""bo
             "Acme.Log once-key",
             sharedKey.Descriptor.Title.ToString(CultureInfo.InvariantCulture),
             StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AnotherHostType_GetsDescriptionsThatHoldForAnyHost()
+    {
+        ImmutableArray<Diagnostic> found = Diagnose(
+            @"Acme.Log.ErrorOnce(""boom"", 42); Acme.Log.Error(""boom"");",
+            hostStub: AcmeStub,
+            analyzer: new VerseLogUsageAnalyzer("Acme.Log"));
+
+        string sharedKey = Assert.Single(found, d => d.Id == VerseLogUsageAnalyzer.SharedKeyRuleId)
+            .Descriptor.Description.ToString(CultureInfo.InvariantCulture);
+        string lostChannel = Assert.Single(found, d => d.Id == VerseLogUsageAnalyzer.LostChannelRuleId)
+            .Descriptor.Description.ToString(CultureInfo.InvariantCulture);
+        Assert.StartsWith("Acme.Log.ErrorOnce and WarningOnce ", sharedKey, StringComparison.Ordinal);
+        Assert.DoesNotContain("int key", sharedKey, StringComparison.Ordinal);
+        Assert.DoesNotContain("Harmony", lostChannel, StringComparison.Ordinal);
     }
 
     [Fact]
