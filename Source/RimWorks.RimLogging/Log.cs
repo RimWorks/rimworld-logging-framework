@@ -420,6 +420,33 @@ public static class Log
         => EmitInternal(LogLevel.Error, channel, message, null, null, ex, new CallSite(SourceLocation.Empty, line, file));
 
     /// <summary>
+    /// Log at Error when the condition is false (default channel). The message defaults to the condition's
+    /// source text. Never throws and never stops the caller.
+    /// </summary>
+    public static void Assert(
+        bool condition,
+        [CallerArgumentExpression(nameof(condition))] string? message = null,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+        => AssertTo(DefaultChannel, condition, message, line, file);
+
+    /// <summary>
+    /// Log at Error when the condition is false (explicit channel). The message defaults to the condition's
+    /// source text. Never throws and never stops the caller.
+    /// </summary>
+    public static void AssertTo(
+        string channel,
+        bool condition,
+        [CallerArgumentExpression(nameof(condition))] string? message = null,
+        [CallerLineNumber] int line = 0,
+        [CallerFilePath] string file = "")
+    {
+        if (condition) return;
+        EmitInternal(LogLevel.Error, channel, "Assertion failed: " + message, null, null, null,
+                 new CallSite(SourceLocation.Empty, line, file));
+    }
+
+    /// <summary>
     /// Log at Error only the first time this key is seen. For callers in a tick loop, where the
     /// same error would otherwise land sixty times a second.
     /// </summary>

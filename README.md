@@ -58,6 +58,9 @@ Log.Warn("low food", new { pawn, days_left = 2 });
 // Exceptions: pass the exception first, or fold it into the context.
 Log.Error(ex, "save failed");
 
+// Assertions: a false condition logs an error and the code keeps running.
+Log.Assert(pawn.Map != null);
+
 // Tick-loop throttling: once ever, or at most once per interval. The key is global.
 Log.WarnOnce("no-power", "the reactor has no power");
 Log.WarnEvery("no-power", TimeSpan.FromMinutes(1), "the reactor still has no power");

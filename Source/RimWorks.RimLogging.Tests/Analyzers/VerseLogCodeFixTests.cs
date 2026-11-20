@@ -70,6 +70,7 @@ namespace Acme
         public static void WarningOnce(string text, long key) { }
         public static void Notice(string text) { }
         public static void Trace(string text) { }
+        public static void Ensure(bool condition, string message = null) { }
     }
 }";
 
@@ -83,6 +84,7 @@ namespace RimWorks.RimLogging
         public static void Info(string message) { }
         public static void ErrorOnce(string key, string message) { }
         public static void WarnOnce(string key, string message) { }
+        public static void Assert(bool condition, string message = null) { }
     }
 }";
 
@@ -244,6 +246,90 @@ namespace RimWorks.RimLogging
         Assert.Empty(actions);
     }
 
+    [Fact]
+    public async Task AddedMethodThatCopiesArguments_IsRewrittenWithItsConditionAsWritten()
+    {
+        string fixedText = await ApplyFixAsync(
+            "Acme.Log.Ensure(x > 0);",
+            "int x",
+            hostStub: AcmeStub,
+            host: AcmeHost());
+
+        Assert.Contains("RimWorks.RimLogging.Log.Assert(x > 0)", fixedText, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task AddedMethodThatCopiesArguments_KeepsBothArgumentsInOrder()
+    {
+        string fixedText = await ApplyFixAsync(
+            @"Acme.Log.Ensure(x > 0, ""x must be positive"");",
+            "int x",
+            hostStub: AcmeStub,
+            host: AcmeHost());
+
+        Assert.Contains(
+            @"RimWorks.RimLogging.Log.Assert(x > 0, ""x must be positive"")",
+            fixedText,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task AddedMethodThatCopiesArguments_WithANamedArgument_OffersNoFixButDiagnosticStillFires()
+    {
+        (ImmutableArray<Diagnostic> diagnostics, ImmutableArray<CodeAction> actions) =
+            await RegisterFixesWithDiagnosticsAsync(
+                @"Acme.Log.Ensure(x > 0, message: ""x must be positive"");",
+                "int x",
+                hostStub: AcmeStub,
+                host: AcmeHost());
+
+        Assert.Equal(VerseLogUsageAnalyzer.LostChannelRuleId, Assert.Single(diagnostics).Id);
+        Assert.Empty(actions);
+    }
+
+    [Fact]
+    public async Task EveryFixAction_SharesOneEquivalenceKey()
+    {
+        ImmutableArray<CodeAction> actions = await RegisterFixesAsync(
+            @"Verse.Log.Message(""a""); Verse.Log.Warning(""b""); Verse.Log.Error(""c""); Verse.Log.ErrorOnce(""d"", 1);");
+
+        Assert.Equal(4, actions.Length);
+        Assert.Single(actions.Select(a => a.EquivalenceKey).Distinct());
+    }
+
+    [Fact]
+    public async Task FixAll_RewritesMessageWarningAndErrorInOnePass()
+    {
+        (Document document, ImmutableArray<Diagnostic> diagnostics) = await DiagnoseAsync(
+            @"Verse.Log.Message(""a""); Verse.Log.Warning(""b""); Verse.Log.Error(""c"");",
+            string.Empty,
+            VerseStub);
+        Assert.Equal(3, diagnostics.Length);
+
+        var provider = new VerseLogCodeFixProvider();
+        var actions = new List<CodeAction>();
+        await provider.RegisterCodeFixesAsync(
+            new CodeFixContext(document, diagnostics[0], (action, _) => actions.Add(action), CancellationToken.None));
+
+        var fixAllContext = new FixAllContext(
+            document,
+            provider,
+            FixAllScope.Document,
+            Assert.Single(actions).EquivalenceKey,
+            new[] { VerseLogUsageAnalyzer.LostChannelRuleId },
+            new FixedDiagnosticProvider(diagnostics),
+            CancellationToken.None);
+        CodeAction fixAll = (await provider.GetFixAllProvider().GetFixAsync(fixAllContext))!;
+        ImmutableArray<CodeActionOperation> operations = await fixAll.GetOperationsAsync(CancellationToken.None);
+        ApplyChangesOperation apply = Assert.Single(operations.OfType<ApplyChangesOperation>());
+        string fixedText = (await apply.ChangedSolution.GetDocument(document.Id)!.GetTextAsync()).ToString();
+
+        Assert.Contains(@"RimWorks.RimLogging.Log.Info(""a"")", fixedText, StringComparison.Ordinal);
+        Assert.Contains(@"RimWorks.RimLogging.Log.Warn(""b"")", fixedText, StringComparison.Ordinal);
+        Assert.Contains(@"RimWorks.RimLogging.Log.Error(""c"")", fixedText, StringComparison.Ordinal);
+        Assert.DoesNotContain("Verse.Log", fixedText, StringComparison.Ordinal);
+    }
+
     private static (VerseLogUsageAnalyzer Analyzer, VerseLogCodeFixProvider Provider) AcmeHost()
     {
         return (
@@ -251,12 +337,14 @@ namespace RimWorks.RimLogging
             {
                 "Notice" => new AnalyzerMethods.Replacement(false, "Log.InfoTo(channel, message)", "Info", false),
                 "Trace" => new AnalyzerMethods.Replacement(false, "Log.DebugTo(channel, message)", null, false),
+                "Ensure" => new AnalyzerMethods.Replacement(false, "Log.AssertTo(channel, condition)", "Assert", false, true),
                 _ => AnalyzerMethods.Classify(name),
             }),
             new VerseLogCodeFixProvider("Acme.Log", name => name switch
             {
                 "Notice" => new FixMethods.Replacement(false, "Log.InfoTo(channel, message)", "Info", false),
                 "Trace" => new FixMethods.Replacement(false, "Log.DebugTo(channel, message)", null, false),
+                "Ensure" => new FixMethods.Replacement(false, "Log.AssertTo(channel, condition)", "Assert", false, true),
                 _ => FixMethods.Classify(name),
             }));
     }
@@ -312,6 +400,28 @@ namespace RimWorks.RimLogging
         }
 
         return (diagnostics, actions.ToImmutableArray());
+    }
+
+    private sealed class FixedDiagnosticProvider : FixAllContext.DiagnosticProvider
+    {
+        private readonly ImmutableArray<Diagnostic> diagnostics;
+
+        public FixedDiagnosticProvider(ImmutableArray<Diagnostic> diagnostics) => this.diagnostics = diagnostics;
+
+        public override Task<IEnumerable<Diagnostic>> GetDocumentDiagnosticsAsync(
+            Document document,
+            CancellationToken cancellationToken)
+            => Task.FromResult<IEnumerable<Diagnostic>>(diagnostics);
+
+        public override Task<IEnumerable<Diagnostic>> GetProjectDiagnosticsAsync(
+            Project project,
+            CancellationToken cancellationToken)
+            => Task.FromResult(Enumerable.Empty<Diagnostic>());
+
+        public override Task<IEnumerable<Diagnostic>> GetAllDiagnosticsAsync(
+            Project project,
+            CancellationToken cancellationToken)
+            => Task.FromResult<IEnumerable<Diagnostic>>(diagnostics);
     }
 
     private static async Task<(Document Document, ImmutableArray<Diagnostic> Diagnostics)> DiagnoseAsync(
