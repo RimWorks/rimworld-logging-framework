@@ -79,6 +79,16 @@ preserves behavior without guessing. Pick a channel by hand afterward with `Log.
 The fix also applies to a method with more parameters after the text and the key. Each extra
 parameter must be optional, and the call must leave it out.
 
+A build that links the analyzer source can flag more method names through
+`VerseLogMethods.ClassifyAddedMethod`. Such a method can copy its arguments, for a host method
+whose first parameter is not the message. The fix then keeps the arguments as written, in the
+same order, and skips the preceding shape checks. Only the named-argument rule below still
+applies.
+
+One fix-all run rewrites every flagged call for a rule. A single
+`dotnet format analyzers --diagnostics RIMLOG002` run fixes the `Message`, `Warning` and `Error`
+calls in a file together.
+
 These call shapes get no fix, and stay squiggled for a human to handle:
 
 - a named argument, like `Log.ErrorOnce(text: msg, key: 1)`

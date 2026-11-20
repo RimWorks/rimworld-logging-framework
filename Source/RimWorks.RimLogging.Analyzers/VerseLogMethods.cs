@@ -10,11 +10,22 @@ internal static partial class VerseLogMethods
     internal readonly struct Replacement
     {
         internal Replacement(bool sharesVanillaKey, string signature, string? fixMethodName, bool swapsArguments)
+            : this(sharesVanillaKey, signature, fixMethodName, swapsArguments, false)
+        {
+        }
+
+        internal Replacement(
+            bool sharesVanillaKey,
+            string signature,
+            string? fixMethodName,
+            bool swapsArguments,
+            bool copiesArguments)
         {
             SharesVanillaKey = sharesVanillaKey;
             Signature = signature;
             FixMethodName = fixMethodName;
             SwapsArguments = swapsArguments;
+            CopiesArguments = copiesArguments;
         }
 
         /// <summary>True for the <c>Once</c> methods, which dedupe against one global int set.</summary>
@@ -31,6 +42,12 @@ internal static partial class VerseLogMethods
 
         /// <summary>True when the fix moves the key argument in front of the message.</summary>
         internal bool SwapsArguments { get; }
+
+        /// <summary>
+        /// True when the fix copies the call's arguments as written, in the same order, without
+        /// checking the host method's parameter types. <see cref="SwapsArguments"/> is ignored then.
+        /// </summary>
+        internal bool CopiesArguments { get; }
     }
 
     /// <summary>

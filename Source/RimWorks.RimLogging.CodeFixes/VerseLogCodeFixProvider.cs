@@ -23,6 +23,8 @@ public sealed class VerseLogCodeFixProvider : CodeFixProvider
 {
     private const string RimLoggingLogTypeName = "RimWorks.RimLogging.Log";
 
+    private const string EquivalenceKey = nameof(VerseLogCodeFixProvider);
+
     private readonly string hostTypeName;
 
     private readonly Func<string, VerseLogMethods.Replacement?> classify;
@@ -86,14 +88,16 @@ public sealed class VerseLogCodeFixProvider : CodeFixProvider
         if (semanticModel.GetSymbolInfo(invocation).Symbol is not IMethodSymbol targetMethod) return null;
         INamedTypeSymbol? hostLog = semanticModel.Compilation.GetTypeByMetadataName(hostTypeName);
         if (!SymbolEqualityComparer.Default.Equals(targetMethod.ContainingType, hostLog)) return null;
-        if (!MatchesExpectedShape(replacement.Value, targetMethod, arguments)) return null;
+        if (!replacement.Value.CopiesArguments && !MatchesExpectedShape(replacement.Value, targetMethod, arguments))
+            return null;
 
-        bool keyIsString = replacement.Value.SwapsArguments
+        bool keyIsString = !replacement.Value.CopiesArguments
+            && replacement.Value.SwapsArguments
             && targetMethod.Parameters[1].Type.SpecialType == SpecialType.System_String;
         return CodeAction.Create(
             $"Replace with RimWorks.RimLogging.Log.{replacement.Value.FixMethodName}",
             _ => ReplaceInvocationAsync(document, root, invocation, replacement.Value, arguments, keyIsString),
-            equivalenceKey: replacement.Value.FixMethodName);
+            equivalenceKey: EquivalenceKey);
     }
 
     // catches the Message(object) overload, which has no textual RimLogging equivalent
@@ -125,15 +129,12 @@ public sealed class VerseLogCodeFixProvider : CodeFixProvider
         SeparatedSyntaxList<ArgumentSyntax> arguments,
         bool keyIsString)
     {
-        string textArgumentText = arguments[0].Expression.ToString();
-        string argsText = replacement.SwapsArguments
-            ? $"{KeyExpressionText(arguments[1].Expression, keyIsString)}, {textArgumentText}"
-            : textArgumentText;
-
         ExpressionSyntax qualifiedMethod = SyntaxFactory
             .ParseExpression($"{RimLoggingLogTypeName}.{replacement.FixMethodName}")
             .WithAdditionalAnnotations(Simplifier.Annotation);
-        ArgumentListSyntax newArgumentList = SyntaxFactory.ParseArgumentList($"({argsText})");
+        ArgumentListSyntax newArgumentList = replacement.CopiesArguments
+            ? invocation.ArgumentList
+            : RewrittenArgumentList(replacement, arguments, keyIsString);
 
         InvocationExpressionSyntax newInvocation = SyntaxFactory
             .InvocationExpression(qualifiedMethod, newArgumentList)
@@ -141,6 +142,18 @@ public sealed class VerseLogCodeFixProvider : CodeFixProvider
 
         SyntaxNode newRoot = root.ReplaceNode(invocation, newInvocation);
         return Task.FromResult(document.WithSyntaxRoot(newRoot));
+    }
+
+    private static ArgumentListSyntax RewrittenArgumentList(
+        VerseLogMethods.Replacement replacement,
+        SeparatedSyntaxList<ArgumentSyntax> arguments,
+        bool keyIsString)
+    {
+        string textArgumentText = arguments[0].Expression.ToString();
+        string argsText = replacement.SwapsArguments
+            ? $"{KeyExpressionText(arguments[1].Expression, keyIsString)}, {textArgumentText}"
+            : textArgumentText;
+        return SyntaxFactory.ParseArgumentList($"({argsText})");
     }
 
     // a string key passes through; an int literal key becomes a string literal; anything else gets .ToString() appended
