@@ -13,7 +13,7 @@
         <li>brrainz.harmony</li>
         <li>concordlib.concord</li>
     </loadAfter>
-    <description>Log viewer and bug report sharing for RimWorld. Read your log inside the game, filter it down to the red error you actually care about, and share it as a link with one click. The bundle carries your mod list and game version, trimmed to fit the upload limit.
+    <description>Enhanced logging for RimWorld, with a log viewer and bug report sharing. Filter your log down to the red error you actually care about, and share it as a link with one click. The bundle carries your mod list and game version, trimmed to fit the upload limit.
 
 If you have used HugsLib's publish-log button, this covers the same job. HugsLib uploads the whole file as one wall of text. RimLogging lets you narrow to one channel and one level first, then sends what is left.
 

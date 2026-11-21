@@ -1,6 +1,6 @@
 # RimLogging：RimWorld 日志查看与错误报告分享
 
-在游戏里直接看 RimWorld 的日志。把它筛到你真正关心的那条红色报错，然后一键分享成链接。RimLogging 同时也是给模组作者用的结构化日志框架，它把 `Verse.Log` 和 `UnityEngine.Debug.Log` 换成所有模组共用的一条管线。
+RimWorld 的增强日志。把日志筛到你真正关心的那条红色报错，然后一键分享成链接。RimLogging 同时也是给模组作者用的结构化日志框架，它把 `Verse.Log` 和 `UnityEngine.Debug.Log` 换成所有模组共用的一条管线。
 
 ## 怎么分享你的 RimWorld 日志
 
