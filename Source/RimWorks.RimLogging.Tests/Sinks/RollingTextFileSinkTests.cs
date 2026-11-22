@@ -8,6 +8,7 @@ namespace RimWorks.RimLogging.Tests.Sinks;
 
 public class RollingTextFileSinkTests : IDisposable
 {
+    private readonly LogLevel _savedPrintStackAt = Logging.PrintStackAt;
     private readonly string _tempDir;
 
     public RollingTextFileSinkTests()
@@ -17,12 +18,13 @@ public class RollingTextFileSinkTests : IDisposable
 
     public void Dispose()
     {
+        Logging.PrintStackAt = _savedPrintStackAt;
         if (Directory.Exists(_tempDir))
             Directory.Delete(_tempDir, recursive: true);
         GC.SuppressFinalize(this);
     }
 
-    private static LogEntry MakeEntry(LogLevel level = LogLevel.Info, string message = "test")
+    private static LogEntry MakeEntry(LogLevel level = LogLevel.Info, string message = "test", string? stackTrace = null)
     {
         return new LogEntry
         {
@@ -33,7 +35,7 @@ public class RollingTextFileSinkTests : IDisposable
             RenderedMessage = message,
             Context = null,
             Source = default,
-            StackTrace = null,
+            StackTrace = stackTrace,
             Exception = null,
         };
     }
@@ -130,5 +132,19 @@ public class RollingTextFileSinkTests : IDisposable
         Assert.Contains("important", content);
         Assert.DoesNotContain("<color=red>", content);
         Assert.DoesNotContain("</color>", content);
+    }
+
+    [Fact]
+    public void Write_SinkLevelAtTrace_WritesTheTraceWhileTheGlobalLevelIsWarn()
+    {
+        Logging.PrintStackAt = LogLevel.Warn;
+        LogEntry entry = MakeEntry(LogLevel.Info, "with-trace", "at Foo.Bar (Foo:12)");
+
+        RollingTextFileSink sink = new RollingTextFileSink(_tempDir) { PrintStackAt = LogLevel.Trace };
+        sink.Write(entry);
+        sink.Dispose();
+
+        string content = File.ReadAllText(sink.FilePath);
+        Assert.Contains("with-trace\nat Foo.Bar (Foo:12)", content, StringComparison.Ordinal);
     }
 }

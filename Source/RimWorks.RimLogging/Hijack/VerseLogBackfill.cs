@@ -17,7 +17,7 @@ internal static class VerseLogBackfill
         foreach (Verse.LogMessage message in Verse.Log.Messages)
         {
             LogLevel level = VerseLevelMapping.FromVerseMessageTypeId((int)message.type);
-            Log.EmitCaptured(level, "Vanilla", message.text, message.StackTrace);
+            Log.EmitCaptured(level, "Vanilla", message.text, message.StackTrace, callerOnStack: false);
         }
     }
 }

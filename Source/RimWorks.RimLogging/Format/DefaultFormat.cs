@@ -13,14 +13,24 @@ public static class DefaultFormat
     /// <param name="entry">The log entry supplying token values.</param>
     /// <param name="stripRichText">When <c>true</c>, rich-text tags are stripped from the message token.</param>
     /// <returns>The fully rendered line.</returns>
+    /// <remarks><c>{stack}</c> renders only for an entry at or above <see cref="Logging.PrintStackAt"/>.</remarks>
     public static string Render(string template, LogEntry entry, bool stripRichText)
+        => Render(template, entry, stripRichText, Logging.PrintStackAt);
+
+    /// <summary>Renders the full template for the given entry, substituting all recognized tokens.</summary>
+    /// <param name="template">The format template string.</param>
+    /// <param name="entry">The log entry supplying token values.</param>
+    /// <param name="stripRichText">When <c>true</c>, rich-text tags are stripped from the message token.</param>
+    /// <param name="printStackAt">The lowest level whose stored trace the <c>{stack}</c> token renders.</param>
+    /// <returns>The fully rendered line.</returns>
+    public static string Render(string template, LogEntry entry, bool stripRichText, LogLevel printStackAt)
     {
         System.Text.StringBuilder sb = new System.Text.StringBuilder(template.Length + entry.RenderedMessage.Length + 64);
         int cursor = 0;
         foreach ((int open, int close, string token) in ScanTokens(template))
         {
             if (open > cursor) sb.Append(template, cursor, open - cursor);
-            string resolved = ResolveToken(token, entry, stripRichText);
+            string resolved = ResolveToken(token, entry, stripRichText, printStackAt);
             if (resolved.Length == 0 && TryConsumeEmptyBracketGroup(template, open, close, sb, out int advance))
             {
                 cursor = advance;
@@ -59,10 +69,13 @@ public static class DefaultFormat
     /// <param name="stripRichText">When <c>true</c>, rich-text tags are stripped from token values.</param>
     /// <returns>The rendered prefix up to (but excluding) the <c>{message}</c> token, or the full template if no such token exists.</returns>
     public static string RenderPrefixOnly(string template, LogEntry entry, bool stripRichText)
+        => RenderPrefixOnly(template, entry, stripRichText, Logging.PrintStackAt);
+
+    private static string RenderPrefixOnly(string template, LogEntry entry, bool stripRichText, LogLevel printStackAt)
     {
         (int open, _) = FindToken(template, "message");
         string prefix = open < 0 ? template : template.Substring(0, open);
-        return Render(prefix, entry, stripRichText);
+        return Render(prefix, entry, stripRichText, printStackAt);
     }
 
     /// <summary>
@@ -74,9 +87,12 @@ public static class DefaultFormat
     /// <param name="stripRichText">When <c>true</c>, rich-text tags are stripped from token values.</param>
     /// <returns>The rendered tail after the <c>{message}</c> token.</returns>
     public static string RenderSuffixOnly(string template, LogEntry entry, bool stripRichText)
+        => RenderSuffixOnly(template, entry, stripRichText, Logging.PrintStackAt);
+
+    private static string RenderSuffixOnly(string template, LogEntry entry, bool stripRichText, LogLevel printStackAt)
     {
         (_, int close) = FindToken(template, "message");
-        return close < 0 ? string.Empty : Render(template.Substring(close + 1), entry, stripRichText);
+        return close < 0 ? string.Empty : Render(template.Substring(close + 1), entry, stripRichText, printStackAt);
     }
 
     /// <summary>
@@ -88,11 +104,23 @@ public static class DefaultFormat
     /// <param name="colorHex">Six-digit hex colour applied to the prefix.</param>
     /// <returns>The rendered line, exception and context included.</returns>
     public static string RenderWithColoredPrefix(string template, LogEntry entry, string colorHex)
+        => RenderWithColoredPrefix(template, entry, colorHex, Logging.PrintStackAt);
+
+    /// <summary>
+    /// Builds a line whose prefix is wrapped in a Unity colour tag and whose message and tail
+    /// are not, for sinks that colour the prefix alone.
+    /// </summary>
+    /// <param name="template">The format template string.</param>
+    /// <param name="entry">The log entry supplying token values.</param>
+    /// <param name="colorHex">Six-digit hex colour applied to the prefix.</param>
+    /// <param name="printStackAt">The lowest level whose stored trace the <c>{stack}</c> token renders.</param>
+    /// <returns>The rendered line, exception and context included.</returns>
+    public static string RenderWithColoredPrefix(string template, LogEntry entry, string colorHex, LogLevel printStackAt)
         => "<color=#" + colorHex + ">"
-           + RenderPrefixOnly(template, entry, stripRichText: false)
+           + RenderPrefixOnly(template, entry, stripRichText: false, printStackAt)
            + "</color>"
            + entry.RenderedMessage
-           + RenderSuffixOnly(template, entry, stripRichText: false);
+           + RenderSuffixOnly(template, entry, stripRichText: false, printStackAt);
 
     /// <summary>
     /// Returns the brace positions of the <c>{token}</c> occurrence, or (-1, -1) if absent.
@@ -107,7 +135,7 @@ public static class DefaultFormat
 
     /// <summary>
     /// Yields every well-formed <c>{token}</c> in order, stopping at the first unclosed brace.
-    /// <see cref="Render"/> and <see cref="FindToken"/> share it so they cannot drift apart.
+    /// <see cref="Render(string, LogEntry, bool, LogLevel)"/> and <see cref="FindToken"/> share it so they cannot drift apart.
     /// </summary>
     private static IEnumerable<(int OpenIndex, int CloseIndex, string Token)> ScanTokens(string template)
     {
@@ -123,7 +151,7 @@ public static class DefaultFormat
         }
     }
 
-    private static string ResolveToken(string token, LogEntry e, bool strip)
+    private static string ResolveToken(string token, LogEntry e, bool strip, LogLevel printStackAt)
     {
         switch (token)
         {
@@ -135,7 +163,7 @@ public static class DefaultFormat
             case "message": return strip ? RichText.Strip(e.RenderedMessage) : e.RenderedMessage;
             case "ctx": return RenderUnconsumedContext(e);
             case "exc": return e.Exception != null ? "\n" + e.Exception.ToString() : string.Empty;
-            case "stack": return string.IsNullOrEmpty(e.StackTrace) ? string.Empty : "\n" + e.StackTrace;
+            case "stack": return e.Level < printStackAt || string.IsNullOrEmpty(e.StackTrace) ? string.Empty : "\n" + e.StackTrace;
             default: return "{" + token + "}";
         }
     }

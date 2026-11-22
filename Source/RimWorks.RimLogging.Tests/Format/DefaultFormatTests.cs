@@ -308,7 +308,7 @@ public class DefaultFormatTests
     [Fact]
     public void Render_StackToken_AppendsTraceOnItsOwnLine()
     {
-        LogEntry entry = MakeEntry(stackTrace: "at Foo.Bar (Foo:12)");
+        LogEntry entry = MakeEntry(level: LogLevel.Warn, stackTrace: "at Foo.Bar (Foo:12)");
 
         string result = DefaultFormat.Render("{message}{stack}", entry, stripRichText: false);
 
@@ -330,7 +330,7 @@ public class DefaultFormatTests
     [Fact]
     public void Render_DefaultTemplate_IncludesTheCapturedStack()
     {
-        LogEntry entry = MakeEntry(stackTrace: "at Foo.Bar (Foo:12)");
+        LogEntry entry = MakeEntry(level: LogLevel.Warn, stackTrace: "at Foo.Bar (Foo:12)");
 
         string result = DefaultFormat.Render(DefaultFormat.Default, entry, stripRichText: false);
 

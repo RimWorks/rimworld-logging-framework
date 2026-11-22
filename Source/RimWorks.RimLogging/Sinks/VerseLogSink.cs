@@ -24,6 +24,9 @@ public sealed class VerseLogSink : ILogSink
     /// <summary>Gets or sets the format template used to render the log prefix.</summary>
     public string FormatTemplate { get; set; } = DefaultFormat.Default;
 
+    /// <summary>Gets or sets the lowest level whose stored stack trace this sink prints, or <c>null</c> to follow <see cref="Logging.PrintStackAt"/>.</summary>
+    public LogLevel? PrintStackAt { get; set; }
+
     /// <summary>
     /// Initializes a new <see cref="VerseLogSink"/>.
     /// </summary>
@@ -39,7 +42,7 @@ public sealed class VerseLogSink : ILogSink
         string colorHex = def?.ColorHex ?? SeverityColors.GetHex(entry.Level);
         string template = Logging.SettingsFor(entry.Channel).TemplateOr(FormatTemplate);
 
-        VanillaWriter?.Invoke(entry.Level, DefaultFormat.RenderWithColoredPrefix(template, entry, colorHex));
+        VanillaWriter?.Invoke(entry.Level, DefaultFormat.RenderWithColoredPrefix(template, entry, colorHex, PrintStackAt ?? Logging.PrintStackAt));
     }
 
     /// <inheritdoc/>

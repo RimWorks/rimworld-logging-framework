@@ -11,7 +11,7 @@ internal static class VerseLogPatchHelpers
     /// Walks the stack past patcher and pipeline frames to the first external assembly, and
     /// returns its channel, mod name and packageId. Falls back to Vanilla with neither.
     /// </summary>
-    internal static (string Channel, string? Mod, string? PackageId) ResolveCaller()
+    internal static (string Channel, string? Mod, string? PackageId, StackTrace Walk) ResolveCaller()
     {
         StackTrace st = new StackTrace(2, false);
         for (int i = 0; i < st.FrameCount; i++)
@@ -23,8 +23,9 @@ internal static class VerseLogPatchHelpers
             if (CallerFrameClassifier.IsInternalFrame(ns, asm)) continue;
             return (AssemblyChannelCache.Resolve(dt!.Assembly),
                 ModNameCache.ForAssembly(dt.Assembly),
-                ModNameCache.PackageIdForAssembly(dt.Assembly));
+                ModNameCache.PackageIdForAssembly(dt.Assembly),
+                st);
         }
-        return ("Vanilla", null, null);
+        return ("Vanilla", null, null, st);
     }
 }

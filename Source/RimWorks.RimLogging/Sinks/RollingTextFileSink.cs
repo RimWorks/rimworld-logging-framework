@@ -14,6 +14,9 @@ public sealed class RollingTextFileSink : RollingFileSink
     /// <summary>Gets or sets the format template used to render each log line.</summary>
     public string FormatTemplate { get; set; } = DefaultFormat.Default;
 
+    /// <summary>Gets or sets the lowest level whose stored stack trace this sink prints, or <c>null</c> to follow <see cref="Logging.PrintStackAt"/>.</summary>
+    public LogLevel? PrintStackAt { get; set; }
+
     /// <summary>
     /// Initializes a new <see cref="RollingTextFileSink"/>.
     /// </summary>
@@ -27,5 +30,5 @@ public sealed class RollingTextFileSink : RollingFileSink
 
     /// <inheritdoc/>
     protected override string FormatLine(LogEntry entry)
-        => DefaultFormat.Render(Logging.SettingsFor(entry.Channel).TemplateOr(FormatTemplate), entry, stripRichText: true);
+        => DefaultFormat.Render(Logging.SettingsFor(entry.Channel).TemplateOr(FormatTemplate), entry, stripRichText: true, PrintStackAt ?? Logging.PrintStackAt);
 }

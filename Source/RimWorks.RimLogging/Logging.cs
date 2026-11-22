@@ -17,6 +17,9 @@ public static class Logging
     /// <summary>When <c>true</c>, every emitted entry captures and stores a formatted stack trace. Defaults to <c>true</c>.</summary>
     public static bool CaptureStackTraces { get; set; } = true;
 
+    /// <summary>The lowest level whose stored stack trace a text sink prints under the line. Defaults to <see cref="LogLevel.Warn"/>.</summary>
+    public static LogLevel PrintStackAt { get; set; } = LogLevel.Warn;
+
     /// <summary>Supplies the current game tick, or <c>null</c> when no game is running.</summary>
     public static System.Func<int?>? TickProvider { get; set; }
 
