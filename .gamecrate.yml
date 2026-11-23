@@ -33,3 +33,12 @@ profiles:
     gameVersion: '1.7'
     aliases:
       - rimlog17-harmony
+  rimlogging-17-trace:
+    extends: rimlogging-17
+    modSettings:
+      - file: Mod_RimWorks.RimLogging_LoggingMod.xml
+        class: RimWorks.RimLogging.Settings.LoggingSettings
+        values:
+          printStackAt: Trace
+        replace:
+          - printStackAt

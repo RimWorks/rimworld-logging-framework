@@ -1,4 +1,4 @@
-.PHONY: help all clean restore build build-core test format lint pack
+.PHONY: help all clean restore build build-core test format lint pack live-proof
 
 CONFIG ?= Debug
 SLN := RimWorks.RimLogging.slnx
@@ -19,11 +19,12 @@ help:
 	@echo "  format           dotnet format"
 	@echo "  lint             dotnet format --verify-no-changes"
 	@echo "  pack             create nuget packages (Release)"
+	@echo "  live-proof       run the probe mod headless on 1.6 and 1.7 and check its output"
 
 all: restore build
 
 clean:
-	rm -rf [0-9].[0-9]
+	rm -rf [0-9].[0-9] Probe/[0-9].[0-9]
 	rm -rf Source/*/bin Source/*/obj
 
 restore:
@@ -47,3 +48,6 @@ lint:
 
 pack:
 	dotnet pack Source/RimWorks.RimLogging/RimWorks.RimLogging.csproj -c Release --nologo -o out/nupkg
+
+live-proof:
+	bash scripts/live-proof.sh

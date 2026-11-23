@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+    <name>RimLogging Probe</name>
+    <packageId>RimWorks.RimLogging.Probe</packageId>
+    <author>RimWorks</author>
+    <supportedVersions>
+        <li>1.5</li>
+        <li>1.6</li>
+        <li>1.7</li>
+    </supportedVersions>
+    <loadAfter>
+        <li>RimWorks.RimLogging</li>
+    </loadAfter>
+    <description>Test mod for RimLogging. It logs a fixed set of lines once the game has loaded its defs, so scripts/live-proof.sh can check what each sink wrote. It is not part of a release.</description>
+</ModMetaData>

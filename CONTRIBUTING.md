@@ -62,6 +62,34 @@ make lint                                                                 # dotn
 - Never delete, weaken, or rewrite a test to make a change pass.
 - Do not claim that an interrupted or timed-out run passed.
 
+## Live proof
+
+The probe mod in `Probe/` proves what xunit cannot reach: the `Verse.Log` hooks, `VerseLogSink`,
+the saved settings and the `SinkDef` fields. Its code is in `Source/RimWorks.RimLogging.Probe/`.
+Once the game loads its defs, the probe logs a fixed set of lines. Each line carries a tag that
+starts with `[rimlogging-probe]`. A patch in the probe turns on the JSON sink and sets
+`printStackAt` to `Trace` on the rolling text sink.
+
+```bash
+make live-proof              # needs gamecrate and jq, and takes up to 25 minutes
+```
+
+`make live-proof` runs `scripts/live-proof.sh` from the repo root. The script builds 1.6 and 1.7.
+It then runs the probe headless with `gamecrate` on each of the `rimlogging`, `rimlogging-harmony`,
+`rimlogging-17` and `rimlogging-17-harmony` profiles. A fifth run uses `rimlogging-17-trace`.
+The `modSettings` block of that profile tells `gamecrate` to save `printStackAt` as `Trace` in
+`Config/Mod_RimWorks.RimLogging_LoggingMod.xml`, the settings file the game reads. After that run,
+the script checks that the file has the `Trace` value. If it does not, the script fails and names
+the `gamecrate` fix that writes the file, `fix(cli): keep a profile's mod settings files through
+resolution`. The script then checks that line 1 has frames under it in the game log. The script
+prints one pass or fail line per check. It exits non-zero when a check fails or a run never logs
+the marker.
+
+The script stops before a run when the saved settings for that instance set `logDirectory`. It
+also stops when they set `printStackAt` to a level other than `Warn`. Reset that setting in the
+settings window and run it again. The release zip and Steam leave out `Probe/`, because
+`.steamignore` lists it.
+
 ## Architecture
 
 | Project | Targets | Holds |
