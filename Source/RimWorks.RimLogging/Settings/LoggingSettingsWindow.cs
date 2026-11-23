@@ -137,6 +137,16 @@ public static class LoggingSettingsWindow
         l.CheckboxLabeled("CRL_Settings_CaptureStackTraces".Translate(), ref s.captureStackTraces);
 
         l.Gap();
+        l.Label("CRL_Settings_PrintStackAt".Translate() + ": " + s.printStackAt);
+        if (l.ButtonText(s.printStackAt.ToString()))
+        {
+            List<FloatMenuOption> opts = new();
+            foreach (LogLevel lv in Enum.GetValues(typeof(LogLevel)))
+                opts.Add(new FloatMenuOption(lv.ToString(), () => s.printStackAt = lv));
+            Find.WindowStack.Add(new FloatMenu(opts));
+        }
+
+        l.Gap();
         if (l.ButtonText("CRL_Settings_Reset".Translate())) Reset(s);
     }
 
@@ -155,6 +165,7 @@ public static class LoggingSettingsWindow
         s.logDirectory = LogDirectory.Default;
         s.retentionCount = LoggingSettingsDefaults.RetentionCount;
         s.captureStackTraces = LoggingSettingsDefaults.CaptureStackTraces;
+        s.printStackAt = LoggingSettingsDefaults.PrintStackAt;
         s.rimworksUrl = LoggingSettingsDefaults.RimWorksUrl;
         s.sinkOverrideNames.Clear();
         s.sinkOverrideStates.Clear();

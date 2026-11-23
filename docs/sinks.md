@@ -54,6 +54,24 @@ Or load it from XML so the bootstrap phase instantiates it:
 
 `sinkClass` is an assembly-qualified type name. The implementation needs a public parameterless constructor for XML loading. Built-in sinks: `VerseLog`, `RollingText` (enabled by default), `RollingJson` (NDJSON, off by default).
 
+`printStackAt` sets the lowest level whose stored stack trace a text sink prints under the line.
+`VerseLogSink` and `RollingTextFileSink` read it. A def without it follows the global **Print
+stack traces in text logs from** setting, which defaults to `Warn`. An exception attached to a
+line prints at every level. This patch prints the trace under every line in the rolling text
+file:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<Patch>
+    <Operation Class="PatchOperationAdd">
+        <xpath>Defs/RimWorks.RimLogging.Sinks.SinkDef[defName="RollingText"]</xpath>
+        <value>
+            <printStackAt>Trace</printStackAt>
+        </value>
+    </Operation>
+</Patch>
+```
+
 `enabledByDefault` is only the default. The mod settings page lists every `SinkDef` under **Log destinations**, and a user's choice there wins. Only RimLogging stores only the sinks the user has touched, so a sink you add later still starts on its own default.
 
 ## The NDJSON row

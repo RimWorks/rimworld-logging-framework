@@ -4,6 +4,7 @@
     <CRL_Settings_LogDir>日志目录</CRL_Settings_LogDir>
     <CRL_Settings_Retention>保留的日志文件数</CRL_Settings_Retention>
     <CRL_Settings_CaptureStackTraces>为每条记录捕获堆栈跟踪</CRL_Settings_CaptureStackTraces>
+    <CRL_Settings_PrintStackAt>在文本日志中打印堆栈跟踪的最低级别</CRL_Settings_PrintStackAt>
     <CRL_Settings_UploadBundle>上传日志包</CRL_Settings_UploadBundle>
     <CRL_Settings_UploadNoBuffer>没有正在运行的内存日志缓冲区，因此没有可上传的内容。</CRL_Settings_UploadNoBuffer>
     <CRL_Settings_Reset>重置为默认值</CRL_Settings_Reset>

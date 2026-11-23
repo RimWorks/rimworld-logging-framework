@@ -14,4 +14,10 @@ public class SinkDef : Verse.Def
 
     /// <summary>Whether this sink is registered on startup unless explicitly disabled by the user.</summary>
     public bool enabledByDefault = true;
+
+    /// <summary>
+    /// Level at or above which a text sink prints the stored stack trace, or <c>null</c> to follow
+    /// <see cref="Logging.PrintStackAt"/>. Sink types without a print level ignore it.
+    /// </summary>
+    public LogLevel? printStackAt = null;
 }

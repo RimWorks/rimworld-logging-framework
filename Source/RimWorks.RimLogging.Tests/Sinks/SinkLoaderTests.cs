@@ -1,13 +1,23 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using RimWorks.RimLogging;
 using RimWorks.RimLogging.Sinks;
 using Xunit;
 
 namespace RimWorks.RimLogging.Tests.Sinks;
 
-public class SinkLoaderTests
+public class SinkLoaderTests : IDisposable
 {
+    private readonly string _tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+
+    public void Dispose()
+    {
+        if (Directory.Exists(_tempDir))
+            Directory.Delete(_tempDir, recursive: true);
+        GC.SuppressFinalize(this);
+    }
+
     private static readonly IReadOnlyDictionary<Type, Func<LogLevel, ILogSink?>> EmptyFactories =
         new Dictionary<Type, Func<LogLevel, ILogSink?>>();
 
@@ -154,6 +164,48 @@ public class SinkLoaderTests
 
         MemoryLogSink sink = Assert.IsType<MemoryLogSink>(Assert.Single(result).Value);
         Assert.Equal(LogLevel.Info, sink.MinLevel);
+    }
+
+    [Fact]
+    public void Build_SpecWithPrintLevel_GivesTheTextSinkThatLevel()
+    {
+        using RollingTextFileSink sink = BuildTextSink(LogLevel.Error);
+        Assert.Equal(LogLevel.Error, sink.PrintStackAt);
+    }
+
+    [Fact]
+    public void Build_SpecWithoutPrintLevel_LeavesTheTextSinkFollowingTheGlobalLevel()
+    {
+        using RollingTextFileSink sink = BuildTextSink(null);
+        Assert.Null(sink.PrintStackAt);
+    }
+
+    [Fact]
+    public void Build_SpecWithPrintLevel_StillBuildsASinkTypeWithoutOne()
+    {
+        List<string> warnings = [];
+        List<KeyValuePair<string, ILogSink>> result = SinkPlan.Build(
+            [new SinkSpec("TestDef", typeof(TestParameterlessSink).AssemblyQualifiedName!, LogLevel.Trace, true, LogLevel.Error)],
+            EmptyFactories,
+            warnings.Add);
+
+        Assert.IsType<TestParameterlessSink>(Assert.Single(result).Value);
+        Assert.Empty(warnings);
+    }
+
+    private RollingTextFileSink BuildTextSink(LogLevel? printStackAt)
+    {
+        Dictionary<Type, Func<LogLevel, ILogSink?>> factories = new()
+        {
+            [typeof(RollingTextFileSink)] = minLevel => new RollingTextFileSink(_tempDir, 1, minLevel),
+        };
+
+        List<KeyValuePair<string, ILogSink>> result = SinkPlan.Build(
+            [new SinkSpec("TestDef", typeof(RollingTextFileSink).AssemblyQualifiedName!, LogLevel.Trace, true, printStackAt)],
+            factories,
+            _ => { });
+
+        return Assert.IsType<RollingTextFileSink>(Assert.Single(result).Value);
     }
 
     private sealed class TestParameterlessSink : ILogSink

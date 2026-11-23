@@ -9,5 +9,6 @@ internal static class LoggingSettingsDefaults
     internal const LogLevel GlobalMinLevel = LogLevel.Info;
     internal const int RetentionCount = 5;
     internal const bool CaptureStackTraces = true;
+    internal const LogLevel PrintStackAt = LogLevel.Warn;
     internal const string RimWorksUrl = "https://rimworks.org/api/bundle";
 }

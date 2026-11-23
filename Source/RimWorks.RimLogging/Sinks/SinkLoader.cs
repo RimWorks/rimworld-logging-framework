@@ -40,7 +40,8 @@ internal static class SinkLoader
 
         IEnumerable<SinkSpec> specs = defs.Select(def =>
             new SinkSpec(def.defName, def.sinkClass, def.minLevel,
-                SinkToggles.IsEnabled(def.defName, def.enabledByDefault, overrideNames, overrideStates)));
+                SinkToggles.IsEnabled(def.defName, def.enabledByDefault, overrideNames, overrideStates),
+                def.printStackAt));
 
         foreach (KeyValuePair<string, ILogSink> built in SinkPlan.Build(specs, factories, Bootstrap.PanicLog.Warn))
         {

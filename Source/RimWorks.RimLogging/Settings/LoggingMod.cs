@@ -29,6 +29,7 @@ public sealed class LoggingMod : Mod
         LoggingSettingsWindow.Render(Settings, inRect);
         Logging.GlobalMinLevel = Settings.globalMinLevel;
         Logging.CaptureStackTraces = Settings.captureStackTraces;
+        Logging.PrintStackAt = Settings.printStackAt;
     }
 
     /// <summary>The category label shown for this mod in RimWorld's mod settings list.</summary>

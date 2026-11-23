@@ -32,6 +32,9 @@ public sealed class LoggingSettings : ModSettings
     /// <summary>When <c>true</c>, every emitted entry captures and stores a formatted stack trace. Defaults to <c>true</c>.</summary>
     public bool captureStackTraces = LoggingSettingsDefaults.CaptureStackTraces;
 
+    /// <summary>Lowest level whose stored stack trace a text sink prints under the line. Defaults to <see cref="LogLevel.Warn"/>.</summary>
+    public LogLevel printStackAt = LoggingSettingsDefaults.PrintStackAt;
+
     /// <summary>The rimworks.org endpoint bug-report bundles are uploaded to.</summary>
     public string rimworksUrl = LoggingSettingsDefaults.RimWorksUrl;
 
@@ -45,6 +48,7 @@ public sealed class LoggingSettings : ModSettings
         Scribe_Values.Look(ref logDirectory, "logDirectory", string.Empty);
         Scribe_Values.Look(ref retentionCount, "retentionCount", LoggingSettingsDefaults.RetentionCount);
         Scribe_Values.Look(ref captureStackTraces, "captureStackTraces", LoggingSettingsDefaults.CaptureStackTraces);
+        Scribe_Values.Look(ref printStackAt, "printStackAt", LoggingSettingsDefaults.PrintStackAt);
         Scribe_Values.Look(ref rimworksUrl, "rimworksUrl", LoggingSettingsDefaults.RimWorksUrl);
         Scribe_Values.Look(ref logViewerDetailPlacement, "logViewerDetailPlacement", Viewer.DetailPlacement.Bottom);
         Scribe_Collections.Look(ref filterPresetNames, "filterPresetNames", LookMode.Value);
