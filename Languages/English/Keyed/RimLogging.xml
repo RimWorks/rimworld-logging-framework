@@ -5,6 +5,7 @@
     <CRL_Settings_Retention>Retained log files</CRL_Settings_Retention>
     <CRL_Settings_RimWorksUrl>rimworks.org upload URL</CRL_Settings_RimWorksUrl>
     <CRL_Settings_CaptureStackTraces>Capture stack traces for every entry</CRL_Settings_CaptureStackTraces>
+    <CRL_Settings_PrintStackAt>Print stack traces in text logs from</CRL_Settings_PrintStackAt>
     <CRL_Settings_UploadBundle>Upload log bundle</CRL_Settings_UploadBundle>
     <CRL_Settings_UploadNoBuffer>No in-memory log buffer is active, so there is nothing to upload.</CRL_Settings_UploadNoBuffer>
     <CRL_Settings_Reset>Reset to defaults</CRL_Settings_Reset>

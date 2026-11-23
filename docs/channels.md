@@ -36,6 +36,16 @@ The `format` template accepts these tokens: `{ts}`, `{level}`, `{channel}`, `{mo
 `{message}`, `{ctx}`, `{exc}` and `{stack}`. A token you leave out is not written, so a channel
 that overrides `format` without `{stack}` shows no stack trace.
 
+`captureStackAt` and the print level are two separate thresholds. With capture on for a line,
+RimLogging stores a stack trace for it. With capture off, a line captured live from `Verse.Log`
+still gets its `[File:line]` source prefix. A text sink writes that stored trace only for a line at
+the print level or higher, which is `Warn` by default. The **Print stack traces in text logs
+from** setting sets the level, and a `SinkDef` can override it with `printStackAt`.
+
+The `{stack}` token follows the print level, in the default template and in a channel `format`
+override alike. Below the level, `{stack}` renders empty. The `{exc}` token prints an attached
+exception at every level.
+
 `destinations` matches `SinkDef` defNames. A sink you register from code with
 `Logging.RegisterSink` has no defName, so no `destinations` list can name it and none filters it.
 That is deliberate: a diagnostic or CI sink registered in code sees every channel.

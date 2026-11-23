@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
@@ -31,6 +32,9 @@ public class CapturedSourceTests : LogSinkFixtureBase
     {
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static void Capture(string text) => Log.EmitCaptured(LogLevel.Error, "Vanilla", text);
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static void CaptureLive(string text) => Log.EmitCaptured(LogLevel.Info, "Vanilla", text, callerOnStack: true);
     }
 
     private static void EndWalksAtAFilelessCaller()
@@ -134,12 +138,159 @@ public class CapturedSourceTests : LogSinkFixtureBase
     }
 
     [Fact]
-    public void StackCaptureOff_MeansNoSourceEither_SinceTheWalkIsWhatCosts()
+    public void StackCaptureOff_ALiveCaptureStillResolvesItsSource()
     {
         Logging.CaptureStackTraces = false;
 
         Log.EmitCaptured(LogLevel.Error, "Unity", "boom", "unity stack", callerOnStack: true);
 
-        Assert.False(Assert.Single(_sink.Entries).Source.IsCallerProvided);
+        LogEntry entry = Assert.Single(_sink.Entries);
+        Assert.True(entry.Source.IsCallerProvided, "a live capture should resolve its caller without a stored stack");
+        Assert.Equal(nameof(StackCaptureOff_ALiveCaptureStillResolvesItsSource), entry.Source.Method);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void LogLiveFromHere(string text)
+        => Log.EmitCaptured(LogLevel.Info, "Vanilla", text, callerOnStack: true);
+
+    [Fact]
+    public void WithCaptureOff_ALiveLineGetsTheFileAndLineOfTheFirstFrameThatHasAFile()
+    {
+        foreach (bool capture in new[] { true, false })
+        {
+            Logging.CaptureStackTraces = capture;
+            LogLiveFromHere("hello");
+        }
+
+        Assert.Equal(2, _sink.Entries.Count);
+        SourceLocation walked = _sink.Entries[0].Source;
+        SourceLocation looked = _sink.Entries[1].Source;
+        Assert.True(walked.IsCallerProvided, "the full walk should find the caller");
+        Assert.Equal(nameof(LogLiveFromHere), walked.Method);
+        Assert.Equal(walked.File, looked.File);
+        Assert.Equal(walked.Line, looked.Line);
+        Assert.Equal(walked.Method, looked.Method);
+        Assert.Null(_sink.Entries[1].StackTrace);
+    }
+
+    private static Action<string> AcmeChainWithoutFiles(MethodInfo target)
+    {
+        AssemblyBuilder asm = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("Acme.Chain"), AssemblyBuilderAccess.Run);
+        TypeBuilder type = asm.DefineDynamicModule("Acme.Chain")
+            .DefineType("Acme.Chain.Relay", TypeAttributes.Public | TypeAttributes.Abstract | TypeAttributes.Sealed);
+        MethodBuilder inner = type.DefineMethod("Inner", MethodAttributes.Public | MethodAttributes.Static,
+            typeof(void), new[] { typeof(string) });
+        inner.SetImplementationFlags(MethodImplAttributes.NoInlining);
+        ILGenerator il = inner.GetILGenerator();
+        il.Emit(OpCodes.Ldarg_0);
+        il.Emit(OpCodes.Call, target);
+        il.Emit(OpCodes.Ret);
+        MethodBuilder outer = type.DefineMethod("Outer", MethodAttributes.Public | MethodAttributes.Static,
+            typeof(void), new[] { typeof(string) });
+        outer.SetImplementationFlags(MethodImplAttributes.NoInlining);
+        il = outer.GetILGenerator();
+        il.Emit(OpCodes.Ldarg_0);
+        il.Emit(OpCodes.Call, inner);
+        il.Emit(OpCodes.Ret);
+        return type.CreateType().GetMethod("Outer")!.CreateDelegate<Action<string>>();
+    }
+
+    [Fact]
+    public void WithCaptureOff_ACallerTwoFramesBelowFramesWithoutAFileGivesItsOwnFileAndLine()
+    {
+        CallerFrameClassifier.HostFrameHook = (type, _) => type == typeof(HostLogPlumbing).FullName;
+        Action<string> relay = AcmeChainWithoutFiles(typeof(HostLogPlumbing).GetMethod(nameof(HostLogPlumbing.CaptureLive))!);
+
+        foreach (bool capture in new[] { true, false })
+        {
+            Logging.CaptureStackTraces = capture;
+            relay("hello");
+        }
+
+        Assert.Equal(2, _sink.Entries.Count);
+        SourceLocation walked = _sink.Entries[0].Source;
+        SourceLocation looked = _sink.Entries[1].Source;
+        Assert.Equal(nameof(WithCaptureOff_ACallerTwoFramesBelowFramesWithoutAFileGivesItsOwnFileAndLine), looked.Method);
+        Assert.True(looked.IsCallerProvided, "the caller below the fileless frames should give its file and line");
+        Assert.Contains(nameof(CapturedSourceTests), looked.File);
+        Assert.Equal(walked.File, looked.File);
+        Assert.Equal(walked.Line, looked.Line);
+    }
+
+    public static class HookPlumbing
+    {
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static void Capture(string text)
+        {
+            System.Diagnostics.StackTrace walk = TakeWalk();
+            Log.EmitCaptured(LogLevel.Info, "Vanilla", text, callerOnStack: true, callerWalk: walk);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static System.Diagnostics.StackTrace TakeWalk() => new System.Diagnostics.StackTrace(2, false);
+    }
+
+    [Fact]
+    public void WithCaptureOff_ALiveLineResolvesItsSourceFromTheWalkTheHookAlreadyTook()
+    {
+        CallerFrameClassifier.HostFrameHook = (type, _) => type == typeof(HookPlumbing).FullName;
+
+        foreach (bool capture in new[] { true, false })
+        {
+            Logging.CaptureStackTraces = capture;
+            HookPlumbing.Capture("hello");
+        }
+
+        Assert.Equal(2, _sink.Entries.Count);
+        SourceLocation walked = _sink.Entries[0].Source;
+        SourceLocation looked = _sink.Entries[1].Source;
+        Assert.Equal(nameof(WithCaptureOff_ALiveLineResolvesItsSourceFromTheWalkTheHookAlreadyTook), looked.Method);
+        Assert.True(looked.IsCallerProvided, "the handed walk should resolve the caller");
+        Assert.Equal(walked.File, looked.File);
+        Assert.Equal(walked.Line, looked.Line);
+    }
+
+    [Fact]
+    public void WithCaptureOff_AReplayedLineWhoseStoredTraceIsEmptyHasAnEmptySource()
+    {
+        Logging.CaptureStackTraces = false;
+
+        Log.EmitCaptured(LogLevel.Info, "Vanilla", "hello", string.Empty, callerOnStack: false);
+
+        LogEntry entry = Assert.Single(_sink.Entries);
+        Assert.Equal(string.Empty, entry.Source.File);
+        Assert.Equal(0, entry.Source.Line);
+        Assert.Null(entry.Source.Method);
+    }
+
+    [Fact]
+    public void WithCaptureOff_ALiveLineReportsPatchedByAsUnavailable()
+    {
+        Logging.CaptureStackTraces = false;
+        LogLiveFromHere("captured");
+        Log.Info("direct");
+
+        Logging.CaptureStackTraces = true;
+        LogLiveFromHere("captured");
+        Log.Info("direct");
+
+        Assert.Equal(4, _sink.Entries.Count);
+        Assert.Null(_sink.Entries[0].PatchedBy);
+        Assert.Null(_sink.Entries[1].PatchedBy);
+        Assert.Empty(Assert.IsAssignableFrom<IReadOnlyList<string>>(_sink.Entries[2].PatchedBy));
+        Assert.Empty(Assert.IsAssignableFrom<IReadOnlyList<string>>(_sink.Entries[3].PatchedBy));
+    }
+
+    [Fact]
+    public void WithCaptureOff_ABridgeLineAndAReplayedLineKeepAnEmptyPatchedBy()
+    {
+        Logging.CaptureStackTraces = false;
+
+        Log.EmitCaptured(LogLevel.Error, "Unity", "boom", "unity stack", callerOnStack: true);
+        Log.EmitCaptured(LogLevel.Error, "Vanilla", "boom", "old stack", callerOnStack: false);
+
+        Assert.Equal(2, _sink.Entries.Count);
+        Assert.Empty(Assert.IsAssignableFrom<IReadOnlyList<string>>(_sink.Entries[0].PatchedBy));
+        Assert.Empty(Assert.IsAssignableFrom<IReadOnlyList<string>>(_sink.Entries[1].PatchedBy));
     }
 }

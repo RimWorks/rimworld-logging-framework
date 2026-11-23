@@ -4,6 +4,7 @@
     <CRL_Settings_LogDir>Directorio de registros</CRL_Settings_LogDir>
     <CRL_Settings_Retention>Archivos de registro conservados</CRL_Settings_Retention>
     <CRL_Settings_CaptureStackTraces>Capturar la traza de pila en cada entrada</CRL_Settings_CaptureStackTraces>
+    <CRL_Settings_PrintStackAt>Mostrar la traza de pila en los registros de texto desde</CRL_Settings_PrintStackAt>
     <CRL_Settings_UploadBundle>Subir paquete de registros</CRL_Settings_UploadBundle>
     <CRL_Settings_UploadNoBuffer>No hay ningún búfer de registros en memoria activo, así que no hay nada que subir.</CRL_Settings_UploadNoBuffer>
     <CRL_Settings_Reset>Restablecer valores predeterminados</CRL_Settings_Reset>

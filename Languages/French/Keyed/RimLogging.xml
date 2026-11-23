@@ -4,6 +4,7 @@
     <CRL_Settings_LogDir>Répertoire des journaux</CRL_Settings_LogDir>
     <CRL_Settings_Retention>Fichiers journaux conservés</CRL_Settings_Retention>
     <CRL_Settings_CaptureStackTraces>Capturer la pile d'appels pour chaque entrée</CRL_Settings_CaptureStackTraces>
+    <CRL_Settings_PrintStackAt>Afficher la pile d'appels dans les journaux texte à partir de</CRL_Settings_PrintStackAt>
     <CRL_Settings_UploadBundle>Téléverser le lot de journaux</CRL_Settings_UploadBundle>
     <CRL_Settings_UploadNoBuffer>Aucun tampon de journaux en mémoire n'est actif, il n'y a donc rien à téléverser.</CRL_Settings_UploadNoBuffer>
     <CRL_Settings_Reset>Réinitialiser aux valeurs par défaut</CRL_Settings_Reset>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Patch>
+    <Operation Class="PatchOperationReplace">
+        <xpath>Defs/RimWorks.RimLogging.Sinks.SinkDef[defName="RollingJson"]/enabledByDefault</xpath>
+        <value>
+            <enabledByDefault>true</enabledByDefault>
+        </value>
+    </Operation>
+    <Operation Class="PatchOperationAdd">
+        <xpath>Defs/RimWorks.RimLogging.Sinks.SinkDef[defName="RollingText"]</xpath>
+        <value>
+            <printStackAt>Trace</printStackAt>
+        </value>
+    </Operation>
+</Patch>

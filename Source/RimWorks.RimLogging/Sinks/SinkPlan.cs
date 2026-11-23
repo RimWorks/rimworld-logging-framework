@@ -21,9 +21,17 @@ internal static class SinkPlan
             if (!spec.Enabled) continue;
             ILogSink? sink = TryCreate(spec, factories, warn);
             if (sink == null) continue;
+            ApplyPrintStackAt(sink, spec.PrintStackAt);
             sinks.Add(new KeyValuePair<string, ILogSink>(spec.DefName, sink));
         }
         return sinks;
+    }
+
+    private static void ApplyPrintStackAt(ILogSink sink, LogLevel? printStackAt)
+    {
+        System.Reflection.PropertyInfo? property = sink.GetType().GetProperty(nameof(RollingTextFileSink.PrintStackAt), typeof(LogLevel?));
+        if (property?.CanWrite == true)
+            property.SetValue(sink, printStackAt);
     }
 
     internal static ILogSink? TryCreate(

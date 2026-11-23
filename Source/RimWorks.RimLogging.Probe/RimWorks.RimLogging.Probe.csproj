@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>$(GameTfm)</TargetFramework>
+        <AssemblyName>RimWorks.RimLogging.Probe</AssemblyName>
+        <RootNamespace>RimLoggingProbe</RootNamespace>
+        <OutDir>$(MSBuildProjectDirectory)\..\..\Probe\$(GameVersion)\Assemblies\</OutDir>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+        <IsPackable>false</IsPackable>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Reference Include="$(GamecrateRefs)/*.dll"
+                   Exclude="$(GamecrateRefs)/System.*.dll;$(GamecrateRefs)/System.dll;$(GamecrateRefs)/Microsoft.*.dll;$(GamecrateRefs)/mscorlib.dll;$(GamecrateRefs)/netstandard.dll;$(GamecrateRefs)/WindowsBase.dll">
+            <Private>False</Private>
+        </Reference>
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.*" PrivateAssets="all" Condition="'$(GameTfm)' != 'net10.0'">
+            <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\RimWorks.RimLogging\RimWorks.RimLogging.csproj" Private="false"/>
+    </ItemGroup>
+</Project>

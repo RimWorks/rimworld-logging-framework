@@ -4,6 +4,7 @@
     <CRL_Settings_LogDir>Protokollverzeichnis</CRL_Settings_LogDir>
     <CRL_Settings_Retention>Aufbewahrte Protokolldateien</CRL_Settings_Retention>
     <CRL_Settings_CaptureStackTraces>Stacktrace für jeden Eintrag erfassen</CRL_Settings_CaptureStackTraces>
+    <CRL_Settings_PrintStackAt>Stacktrace in Textprotokollen ausgeben ab</CRL_Settings_PrintStackAt>
     <CRL_Settings_UploadBundle>Protokollpaket hochladen</CRL_Settings_UploadBundle>
     <CRL_Settings_UploadNoBuffer>Es ist kein Protokollpuffer im Arbeitsspeicher aktiv, daher gibt es nichts zum Hochladen.</CRL_Settings_UploadNoBuffer>
     <CRL_Settings_Reset>Auf Standardwerte zurücksetzen</CRL_Settings_Reset>
