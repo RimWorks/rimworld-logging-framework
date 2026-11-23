@@ -705,7 +705,7 @@ public static class Log
     /// Entry point for logs captured outside our call sites. Set <c>callerOnStack</c> for a live
     /// capture, where the original caller is still below us; a replay must leave it false.
     /// </summary>
-    internal static void EmitCaptured(LogLevel level, string channel, string text, string? stackTrace = null, string? mod = null, string? modId = null, bool callerOnStack = false, System.Diagnostics.StackTrace? callerWalk = null)
+    internal static void EmitCaptured(LogLevel level, string channel, string text, string? stackTrace = null, string? mod = null, string? modId = null, Capture.CallerOnStack callerOnStack = default)
     {
         string? tagged = Capture.TaggedMessageChannel.Read(text, Capture.TaggedMessageChannel.ConcordRoot);
         if (tagged != null)
@@ -724,10 +724,10 @@ public static class Log
         System.Diagnostics.StackTrace? walk = stackTrace == null && wantStack
             ? new System.Diagnostics.StackTrace(1, true)
             : null;
-        IReadOnlyList<string>? patchedBy = callerOnStack && stackTrace == null && !wantStack ? null : Array.Empty<string>();
+        IReadOnlyList<string>? patchedBy = callerOnStack.Live && stackTrace == null && !wantStack ? null : Array.Empty<string>();
         string? captured = stackTrace ?? (walk != null ? Capture.StackWalker.FormatTrace(walk, out patchedBy) : null);
 
-        SourceLocation src = CapturedSource(walk, callerOnStack, wantStack, callerWalk, captured, text);
+        SourceLocation src = CapturedSource(walk, callerOnStack, wantStack, captured, text);
 
         LogEntry e = new LogEntry
         {
@@ -746,12 +746,12 @@ public static class Log
         Logging.Emit(e);
     }
 
-    private static SourceLocation CapturedSource(System.Diagnostics.StackTrace? walk, bool live, bool wantStack, System.Diagnostics.StackTrace? callerWalk, string? captured, string text)
+    private static SourceLocation CapturedSource(System.Diagnostics.StackTrace? walk, Capture.CallerOnStack caller, bool wantStack, string? captured, string text)
     {
         SourceLocation src = SourceLocation.Empty;
         if (walk != null) src = Capture.StackWalker.FirstCallerFrame(walk);
-        else if (live && wantStack) src = Capture.StackWalker.WalkOnce();
-        else if (live) src = Capture.SourceCache.FirstCallerFrame(callerWalk);
+        else if (caller.Live && wantStack) src = Capture.StackWalker.WalkOnce();
+        else if (caller.Live) src = Capture.SourceCache.FirstCallerFrame(caller.Walk);
         if (src.IsCallerProvided) return src;
 
         bool walkFoundCallerWithoutFile = Capture.StackWalker.FirstCallerEndsWithoutFile
