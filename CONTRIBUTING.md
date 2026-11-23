@@ -52,7 +52,7 @@ prose in `README.md` and `docs/`.
 ```bash
 make test                                                                 # xunit suites
 dotnet test RimWorks.RimLogging.slnx --filter "FullyQualifiedName~LogEntryTests"  # one class
-make lint                                                                 # dotnet format check
+make lint                                                                 # dotnet format check, then the CI analyzer gate
 ```
 
 - Run the full suite before committing. All tests must pass.

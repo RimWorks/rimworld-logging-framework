@@ -17,7 +17,7 @@ help:
 	@echo "  build-core       build only RimWorks.RimLogging"
 	@echo "  test             run xunit suites"
 	@echo "  format           dotnet format"
-	@echo "  lint             dotnet format --verify-no-changes"
+	@echo "  lint             dotnet format --verify-no-changes, then the CI analyzer gate"
 	@echo "  pack             create nuget packages (Release)"
 	@echo "  live-proof       run the probe mod headless on 1.6 and 1.7 and check its output"
 
@@ -45,6 +45,7 @@ format:
 
 lint:
 	dotnet format $(SLN) --verify-no-changes
+	dotnet format analyzers $(SLN) --severity info --verify-no-changes
 
 pack:
 	dotnet pack Source/RimWorks.RimLogging/RimWorks.RimLogging.csproj -c Release --nologo -o out/nupkg
