@@ -85,10 +85,10 @@ resolution`. The script then checks that line 1 has frames under it in the game 
 prints one pass or fail line per check. It exits non-zero when a check fails or a run never logs
 the marker.
 
-The script stops before a run when the saved settings for that instance set `logDirectory`. It
-also stops when they set `printStackAt` to a level other than `Warn`. Reset that setting in the
-settings window and run it again. The release zip and Steam leave out `Probe/`, because
-`.steamignore` lists it.
+The script stops before a run when the saved settings for that instance set `logDirectory` to a
+folder other than the default. It also stops when they set `printStackAt` to a level other than
+`Warn`. Reset that setting in the settings window and run it again. The release zip and Steam leave
+out `Probe/`, because `.steamignore` lists it.
 
 ## Architecture
 

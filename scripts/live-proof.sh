@@ -76,8 +76,10 @@ prove() {
     local settings="$data_dir/Config/$settings_name" stamp="$work/$profile.stamp" out="$work/$profile.out" code tries=0
     while :; do
         if [[ -f "$settings" ]]; then
-            grep -qE '<logDirectory>[^<]' "$settings" \
-                && stop "$settings sets logDirectory, so the rolling files land somewhere this script cannot read. clear it in the settings window and run again"
+            local saved
+            saved=$(grep -oE '<logDirectory>[^<]+' "$settings" | head -1 | cut -d'>' -f2)
+            [[ -z "$saved" || "$saved" == *"/${rolling_rel#config/}" ]] \
+                || stop "$settings sets logDirectory to $saved, so the rolling files land somewhere this script cannot read. clear it in the settings window and run again"
             if [[ "$kind" == "plain" ]]; then
                 local level
                 level=$(grep -oE '<printStackAt>[^<]*' "$settings" | head -1 | cut -d'>' -f2)
