@@ -223,7 +223,7 @@ public class CapturedSourceTests : LogSinkFixtureBase
         public static void Capture(string text)
         {
             System.Diagnostics.StackTrace walk = TakeWalk();
-            Log.EmitCaptured(LogLevel.Info, "Vanilla", text, callerOnStack: true, callerWalk: walk);
+            Log.EmitCaptured(LogLevel.Info, "Vanilla", text, callerOnStack: walk);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -277,8 +277,8 @@ public class CapturedSourceTests : LogSinkFixtureBase
         Assert.Equal(4, _sink.Entries.Count);
         Assert.Null(_sink.Entries[0].PatchedBy);
         Assert.Null(_sink.Entries[1].PatchedBy);
-        Assert.Empty(Assert.IsAssignableFrom<IReadOnlyList<string>>(_sink.Entries[2].PatchedBy));
-        Assert.Empty(Assert.IsAssignableFrom<IReadOnlyList<string>>(_sink.Entries[3].PatchedBy));
+        Assert.Empty(Assert.IsType<IReadOnlyList<string>>(_sink.Entries[2].PatchedBy, exactMatch: false));
+        Assert.Empty(Assert.IsType<IReadOnlyList<string>>(_sink.Entries[3].PatchedBy, exactMatch: false));
     }
 
     [Fact]
@@ -290,7 +290,7 @@ public class CapturedSourceTests : LogSinkFixtureBase
         Log.EmitCaptured(LogLevel.Error, "Vanilla", "boom", "old stack", callerOnStack: false);
 
         Assert.Equal(2, _sink.Entries.Count);
-        Assert.Empty(Assert.IsAssignableFrom<IReadOnlyList<string>>(_sink.Entries[0].PatchedBy));
-        Assert.Empty(Assert.IsAssignableFrom<IReadOnlyList<string>>(_sink.Entries[1].PatchedBy));
+        Assert.Empty(Assert.IsType<IReadOnlyList<string>>(_sink.Entries[0].PatchedBy, exactMatch: false));
+        Assert.Empty(Assert.IsType<IReadOnlyList<string>>(_sink.Entries[1].PatchedBy, exactMatch: false));
     }
 }
